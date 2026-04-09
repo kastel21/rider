@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Edit history{% endblock %}
+{% block content %}
+<h1>Edit history — report {{ report.pk }}</h1>
+<ul class="history-list">
+  {% for s in snapshots %}
+  <li>
+    <strong>{{ s.created_at }}</strong> — {{ s.editor }} — {{ s.summary }}
+  </li>
+  {% empty %}
+  <li>No history entries.</li>
+  {% endfor %}
+</ul>
+<p><a href="{% url 'operations:pc_report_edit' report.pk %}">Back to edit</a></p>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Drivers{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Drivers</h1>
+  <p class="muted" style="margin:0 0 0.75rem;font-size:0.92rem;">
+    Sign-in <strong>username</strong> for each account is in the first column (used at login).
+  </p>
+  <p style="margin:0 0 1rem;">
+    <a href="{% url 'operations:pc_manage' %}">← Manage data</a>
+    ·
+    <a href="{% url 'operations:pc_manage_driver_add' %}">Add driver</a>
+  </p>
+  <div style="overflow-x:auto;">
+    <table class="data-table responsive-stack-table">
+      <thead>
+        <tr>
+          <th scope="col">Username</th>
+          <th scope="col">Display name</th>
+          <th scope="col">District / province</th>
+          <th scope="col">Vehicle</th>
+          <th scope="col">Active</th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for rp in drivers %}
+        <tr>
+          <td data-label="Username"><strong class="driver-username">{{ rp.user.username }}</strong></td>
+          <td data-label="Display name">{{ rp.user.get_full_name|default:"—" }}</td>
+          <td data-label="District / province">{% if rp.district %}{{ rp.district.name }}{% elif rp.province %}{{ rp.province.name }}{% else %}—{% endif %}</td>
+          <td data-label="Vehicle">{% if rp.car %}{{ rp.car.code }}{% else %}—{% endif %}</td>
+          <td data-label="Active">{% if rp.user.is_active %}Yes{% else %}No{% endif %}</td>
+          <td data-label="Actions">
+            <a href="{% url 'operations:pc_manage_driver_edit' rp.pk %}">Edit</a>
+            {% if rp.user.is_active %}
+            ·
+            <a href="{% url 'operations:pc_manage_driver_deactivate' rp.pk %}">Deactivate</a>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6">No drivers in your scope.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}
+  <p class="muted" style="margin-top:1rem;">
+    Page {{ page_obj.number }} of {{ paginator.num_pages }}
+    {% if page_obj.has_previous %}· <a href="?page={{ page_obj.previous_page_number }}">Previous</a>{% endif %}
+    {% if page_obj.has_next %}· <a href="?page={{ page_obj.next_page_number }}">Next</a>{% endif %}
+  </p>
+  {% endif %}
+</div>
+{% endblock %}

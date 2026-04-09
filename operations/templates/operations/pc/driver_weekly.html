@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Provincial driver weekly{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Provincial driver weekly</h1>
+  <p class="muted">Summaries for drivers in your provinces.</p>
+  <table class="responsive-stack-table" style="width:100%;border-collapse:collapse;font-size:14px;">
+    <thead>
+      <tr style="text-align:left;border-bottom:2px solid #cbd5e1;">
+        <th style="padding:8px;">Week ending</th>
+        <th style="padding:8px;">District</th>
+        <th style="padding:8px;">Driver</th>
+        <th style="padding:8px;">Trips</th>
+        <th style="padding:8px;">Samples</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in object_list %}
+      <tr style="border-bottom:1px solid #e2e8f0;">
+        <td data-label="Week ending" style="padding:8px;">{{ row.week_ending }}</td>
+        <td data-label="District" style="padding:8px;">{{ row.district.name }}</td>
+        <td data-label="Driver" style="padding:8px;">{{ row.driver_name }}</td>
+        <td data-label="Trips" style="padding:8px;">{{ row.trips_count }}</td>
+        <td data-label="Samples" style="padding:8px;">{{ row.samples_transported }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="muted" style="padding:12px;">No entries yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<div class="card">
+  <h2>Add entry</h2>
+  <form method="post" action="">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {{ form.as_p }}
+    <p><button type="submit">Save</button></p>
+  </form>
+</div>
+{% endblock %}

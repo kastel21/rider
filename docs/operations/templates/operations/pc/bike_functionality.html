@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Bike functionality{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Bike functionality</h1>
+  <p class="muted">Update status for bikes in your provinces.</p>
+  {% if page_obj %}
+    <p class="muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</p>
+  {% endif %}
+  <table style="width:100%;border-collapse:collapse;font-size:14px;">
+    <thead>
+      <tr style="text-align:left;border-bottom:2px solid #cbd5e1;">
+        <th style="padding:8px;">Registration</th>
+        <th style="padding:8px;">District</th>
+        <th style="padding:8px;">Province</th>
+        <th style="padding:8px;">Status</th>
+        <th style="padding:8px;"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for bike in bikes %}
+      <tr style="border-bottom:1px solid #e2e8f0;">
+        <td style="padding:8px;">{{ bike.registration_number }}</td>
+        <td style="padding:8px;">{{ bike.district.name }}</td>
+        <td style="padding:8px;">{{ bike.district.province.name }}</td>
+        <td style="padding:8px;">{{ bike.get_functionality_status_display }}</td>
+        <td style="padding:8px;"><a href="{% url 'operations:pc_bike_edit' bike.pk %}">Edit</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="muted" style="padding:12px;">No bikes in scope.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if page_obj %}
+    <p style="margin-top:12px;">
+      {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">Previous</a>{% endif %}
+      {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">Next</a>{% endif %}
+    </p>
+  {% endif %}
+</div>
+{% endblock %}

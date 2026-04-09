@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Edit rider{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Edit rider</h1>
+  <p style="margin:0 0 1rem;"><a href="{% url 'operations:pc_manage_riders' %}">← Riders</a></p>
+  <p class="muted" style="font-size:0.92rem;margin-bottom:1rem;">
+    Account: <strong>{{ rider_user.username }}</strong>
+    {% if rider_user.email %} · {{ rider_user.email }}{% endif %}
+  </p>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% for field in form %}
+    <p>
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label><br>
+      {{ field }}
+      {% if field.help_text %}<span class="muted" style="font-size:0.85rem;">{{ field.help_text }}</span>{% endif %}
+      {{ field.errors }}
+    </p>
+    {% endfor %}
+    <button type="submit" class="btn-dash btn-dash-primary">Save</button>
+  </form>
+</div>
+{% endblock %}

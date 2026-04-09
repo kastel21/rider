@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Accidents & incomplete trips{% endblock %}
+{% block body_class %}dashboard-shell pc-accidents-incomplete-page{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Accidents &amp; incomplete trips</h1>
+  <p class="muted" style="margin:0 0 0.75rem;font-size:0.92rem;">
+    Enter counts per district for the selected week (Monday–Sunday). <strong>Accidents</strong> and <strong>Incomplete trips</strong> are separate tables: each tab has its own rows, district picks, and save. Saving one tab does not change the other tab’s stored values.
+  </p>
+
+  <form method="get" action="{% url 'operations:pc_accidents_incomplete' %}" class="report-week-filter report-week-picker" id="pc-trans-week-form">
+    <input type="hidden" name="tab" value="{{ active_tab }}" id="pc-trans-active-tab-field">
+    <div class="report-week-picker__inner">
+      <label for="id-pc-trans-week" class="report-week-picker__label">
+        <span class="report-week-picker__label-text">Date in week</span>
+      </label>
+      <input
+        type="date"
+        id="id-pc-trans-week"
+        name="week"
+        value="{{ selected_week_start|date:'Y-m-d' }}"
+        class="report-week-filter__input report-week-picker__input"
+        aria-describedby="pc-trans-week-range-desc"
+        autocomplete="off"
+      >
+      <button type="submit" class="btn-dash btn-dash-primary">Apply</button>
+    </div>
+  </form>
+  <p id="pc-trans-week-range-desc" class="muted" style="margin-top:0.65rem;">
+    Showing: <strong>{{ week_range_label }}</strong>
+    <span class="muted" style="margin-left:0.75rem;">
+      <a href="{% url 'operations:pc_accidents_incomplete' %}?week={{ pc_prev_week }}&tab={{ active_tab }}">Previous week</a>
+      ·
+      <a href="{% url 'operations:pc_accidents_incomplete' %}?week={{ pc_next_week }}&tab={{ active_tab }}">Next week</a>
+    </span>
+  </p>
+</div>
+
+<div class="card pc-trans-stats" data-pc-trans-tabs data-active-tab="{{ active_tab }}">
+  <div class="driver-trip-tablist pc-trans-tablist" role="tablist" aria-label="Accidents and incomplete trips">
+    <button type="button" class="driver-trip-tab pc-trans-tab" role="tab" id="pc-trans-tab-accidents" aria-selected="{% if active_tab == 'accidents' %}true{% else %}false{% endif %}" aria-controls="pc-trans-panel-accidents" data-pc-trans-tab="accidents" tabindex="{% if active_tab == 'accidents' %}0{% else %}-1{% endif %}">
+      Accidents
+    </button>
+    <button type="button" class="driver-trip-tab pc-trans-tab" role="tab" id="pc-trans-tab-incomplete" aria-selected="{% if active_tab == 'incomplete' %}true{% else %}false{% endif %}" aria-controls="pc-trans-panel-incomplete" data-pc-trans-tab="incomplete" tabindex="{% if active_tab == 'incomplete' %}0{% else %}-1{% endif %}">
+      Incomplete trips
+    </button>
+  </div>
+
+  <p class="muted pc-trans-tab-hint" style="margin:0 0 0.75rem;font-size:0.88rem;" id="pc-trans-tab-hint">
+    <span data-pc-trans-hint="accidents"{% if active_tab != "accidents" %} hidden{% endif %}><strong>Accidents:</strong> district and number of rider accidents only.</span>
+    <span data-pc-trans-hint="incomplete"{% if active_tab != "incomplete" %} hidden{% endif %}><strong>Incomplete trips:</strong> incomplete bike transport, non-IST specimen counts, and comments — rider accidents are entered on the Accidents tab.</span>
+  </p>
+
+  <div class="pc-trans-panel" data-pc-trans-panel="accidents" id="pc-trans-panel-accidents" role="tabpanel" aria-labelledby="pc-trans-tab-accidents"{% if active_tab != "accidents" %} hidden{% endif %}>
+    <form method="post" action="{% url 'operations:pc_accidents_incomplete' %}?week={{ selected_week_start|date:'Y-m-d' }}" class="pc-trans-stats-form" id="pc-trans-acc-form">
+      {% csrf_token %}
+      {{ acc_formset.management_form }}
+      {{ acc_formset.non_form_errors }}
+      <div style="overflow-x:auto;margin-top:0.5rem;">
+        <table class="data-table pc-trans-data-table pc-trans-data-table--accidents">
+          <thead>
+            <tr>
+              <th class="pc-trans-col pc-trans-col--district" scope="col">District</th>
+              <th class="pc-trans-col pc-trans-col--accidents" scope="col">Number of rider accidents</th>
+            </tr>
+          </thead>
+          <tbody data-pc-trans-tbody data-pc-trans-prefix="{{ acc_formset.prefix }}">
+            {% for form in acc_formset %}
+            <tr class="pc-trans-row" data-pc-trans-row>
+              <td class="pc-trans-col pc-trans-col--district">
+                {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+                {{ form.district.errors }}{{ form.district }}
+              </td>
+              <td class="pc-trans-col pc-trans-col--accidents">{{ form.rider_accidents.errors }}{{ form.rider_accidents }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:0.65rem;">
+        <button type="button" class="btn-dash btn-dash-secondary pc-trans-add-row" data-pc-trans-add-row>Add row</button>
+      </p>
+      <p style="margin-top:0.65rem;">
+        <button type="submit" name="pc_trans_save_scope" value="accidents" class="btn-dash btn-dash-primary">Save accidents</button>
+      </p>
+    </form>
+  </div>
+
+  <div class="pc-trans-panel" data-pc-trans-panel="incomplete" id="pc-trans-panel-incomplete" role="tabpanel" aria-labelledby="pc-trans-tab-incomplete"{% if active_tab != "incomplete" %} hidden{% endif %}>
+    <form method="post" action="{% url 'operations:pc_accidents_incomplete' %}?week={{ selected_week_start|date:'Y-m-d' }}" class="pc-trans-stats-form" id="pc-trans-inc-form">
+      {% csrf_token %}
+      {{ inc_formset.management_form }}
+      {{ inc_formset.non_form_errors }}
+      <div style="overflow-x:auto;margin-top:0.5rem;">
+        <table class="data-table pc-trans-data-table pc-trans-data-table--incomplete">
+          <thead>
+            <tr>
+              <th class="pc-trans-col pc-trans-col--district" scope="col">District</th>
+              <th class="pc-trans-col" scope="col">Total incomplete bike transport trips</th>
+              <th class="pc-trans-col" scope="col">Total specimens (non-IST)</th>
+              <th class="pc-trans-col" scope="col">Ambulance</th>
+              <th class="pc-trans-col" scope="col">Alternative IP transport</th>
+              <th class="pc-trans-col" scope="col">MoHCC arranged transport</th>
+              <th class="pc-trans-col" scope="col">Courier</th>
+              <th class="pc-trans-col" scope="col">Other non-IST</th>
+              <th class="pc-trans-col" scope="col">Comments</th>
+            </tr>
+          </thead>
+          <tbody data-pc-trans-tbody data-pc-trans-prefix="{{ inc_formset.prefix }}">
+            {% for form in inc_formset %}
+            <tr class="pc-trans-row" data-pc-trans-row>
+              <td class="pc-trans-col pc-trans-col--district">
+                {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+                {{ form.district.errors }}{{ form.district }}
+              </td>
+              <td>{{ form.incomplete_bike_transport_trips.errors }}{{ form.incomplete_bike_transport_trips }}</td>
+              <td>{{ form.specimens_non_ist_total.errors }}{{ form.specimens_non_ist_total }}</td>
+              <td>{{ form.specimens_ambulance.errors }}{{ form.specimens_ambulance }}</td>
+              <td>{{ form.specimens_alternative_ip_transport.errors }}{{ form.specimens_alternative_ip_transport }}</td>
+              <td>{{ form.specimens_mohcc_arranged_transport.errors }}{{ form.specimens_mohcc_arranged_transport }}</td>
+              <td>{{ form.specimens_courier.errors }}{{ form.specimens_courier }}</td>
+              <td>{{ form.specimens_other_non_ist.errors }}{{ form.specimens_other_non_ist }}</td>
+              <td>{{ form.comments.errors }}{{ form.comments }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:0.65rem;">
+        <button type="button" class="btn-dash btn-dash-secondary pc-trans-add-row" data-pc-trans-add-row>Add row</button>
+      </p>
+      <p style="margin-top:0.65rem;">
+        <button type="submit" name="pc_trans_save_scope" value="incomplete" class="btn-dash btn-dash-primary">Save incomplete trips</button>
+      </p>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/pc-accidents-incomplete-tabs.js' %}" defer></script>
+<script src="{% static 'js/pc-trans-stats-add-row.js' %}" defer></script>
+{% endblock %}

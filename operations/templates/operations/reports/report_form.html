@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+{% load static %}
+{% block body_class %}dashboard-shell report-form-page{% endblock %}
+{% block title %}{% if report %}Edit{% else %}New{% endif %} report{% endblock %}
+{% block extra_head %}
+  {% if user_role == 'rider' or user_role == 'driver' %}
+  <link rel="manifest" href="{% static 'manifest.json' %}">
+  {% endif %}
+{% endblock %}
+{% block content %}
+{% if user_role == 'rider' or user_role == 'driver' %}
+<div data-sync-root>
+  <p class="sync-status" id="sync-status">
+    Sync: <span id="sync-state">idle</span>
+    <span id="sync-pending-wrap" style="margin-left:0.5rem;">Pending: <strong id="sync-pending-count"></strong></span>
+    <button type="button" class="btn-dash" id="sync-now-btn" style="margin-left:0.75rem;">Sync now</button>
+  </p>
+</div>
+{% endif %}
+  <form method="post" action="{% if report %}{% url 'operations:report_edit' report.pk %}{% if request.GET.draft_cleared == '1' %}?draft_cleared=1{% endif %}{% endif %}" id="report-form" data-report-form data-week-start="{% if sync_week_start %}{{ sync_week_start }}{% elif report %}{{ report.week_start|date:'Y-m-d' }}{% endif %}"{% if report_facilities_ajax_url %} data-facilities-url="{{ report_facilities_ajax_url }}"{% endif %}>
+{% if user_role == 'rider' or user_role == 'driver' %}
+  <input type="hidden" name="client_uuid" id="id_client_uuid" value="{{ offline_client_uuid|default:'' }}">
+{% endif %}
+<div class="card">
+  <h1>{% if report %}Edit{% else %}New{% endif %} weekly report</h1>
+  {% if report_location %}
+  <p class="muted">
+    {{ report_location.province_name }} · {{ report_location.district_name }}
+  </p>
+  {% endif %}
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+
+    <h2>Rider details (read-only)</h2>
+    <div class="dashboard-info-grid">
+      <div class="dashboard-info-item"><span>Name of Rider</span><strong>{{ demographics.rider_name }}</strong></div>
+      <div class="dashboard-info-item"><span>Province</span><strong>{{ demographics.province|default:"-" }}</strong></div>
+      <div class="dashboard-info-item"><span>District</span><strong>{{ demographics.district|default:"-" }}</strong></div>
+      {% if is_pc_edit %}
+      {% if report.rider.profile.role == 'driver' %}
+      <div class="dashboard-info-item"><span>Vehicle</span><strong>{% if report.car %}{{ report.car.code }}{% else %}—{% endif %}</strong></div>
+      {% else %}
+      <div class="dashboard-info-item"><span>{% if report.car %}Vehicle{% else %}Bike{% endif %}</span><strong>{% if report.car %}{{ report.car.code }}{% elif report.bike %}{{ report.bike.code }}{% else %}—{% endif %}</strong></div>
+      {% endif %}
+      {% endif %}
+    </div>
+    {% if is_pc_edit %}
+    <div class="dashboard-info-grid" style="margin-top:0.75rem;">
+      <div class="dashboard-info-item">
+        <span>Status</span>
+        <strong>{{ report.get_status_display }}</strong>
+      </div>
+      <div class="dashboard-info-item">
+        <span>Submitted</span>
+        <strong>{% if report.submitted_at %}{{ report.submitted_at|date:"Y-m-d H:i" }}{% else %}—{% endif %}</strong>
+      </div>
+      <div class="dashboard-info-item">
+        <span>Review started</span>
+        <strong>{% if report.review_started_at %}{{ report.review_started_at|date:"Y-m-d H:i" }}{% else %}—{% endif %}</strong>
+      </div>
+      <div class="dashboard-info-item">
+        <span>Review completed</span>
+        <strong>{% if report.reviewed_at %}{{ report.reviewed_at|date:"Y-m-d H:i" }}{% else %}—{% endif %}</strong>
+      </div>
+    </div>
+    <div class="dashboard-info-grid pc-visit-schedule-row" style="margin-top:0.75rem;">
+      <div class="dashboard-info-item">
+        <span>Visits recorded this week</span>
+        <strong>{{ pc_visit_count }}</strong>
+      </div>
+      <div class="dashboard-info-item field">
+        <label for="{{ form.scheduled_visits.id_for_label }}"><strong>{{ form.scheduled_visits.label }}</strong></label>
+        {{ form.scheduled_visits }}
+        {{ form.scheduled_visits.errors }}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if not is_pc_edit %}
+    <h2>Main fields</h2>
+    <div class="main-field-grid">
+      {% for field in form.visible_fields %}
+      <div class="field">
+        <label for="{{ field.id_for_label }}"><strong>{{ field.label }}</strong></label><br>
+        {{ field }}
+        {% if field.help_text %}<span class="muted" style="font-size:12px;display:block;margin-top:4px;">{{ field.help_text }}</span>{% endif %}
+        {{ field.errors }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if trip_formset or trip_formset_relay %}
+    <h2 class="trip-entries-main-heading" style="margin-top:1.5rem;">Trip entries</h2>
+    {% if driver_dual_tabs %}
+    <p class="muted" style="margin:-0.25rem 0 0.75rem;font-size:0.9rem;max-width:42rem;">
+      Use the tabs for relayed samples vs first-time transport. Each tab is a full trip list. Enter <strong>0</strong> where there is nothing to report; both tabs save in one submit.
+    </p>
+    <div class="driver-trip-tabs" data-driver-trip-tabs>
+      <div class="driver-trip-tablist" role="tablist" aria-label="Trip categories">
+        <button type="button" class="driver-trip-tab" role="tab" id="driver-tab-btn-relay" aria-selected="true" aria-controls="driver-tab-panel-relay" data-driver-tab="relay" tabindex="0">
+          Samples relayed (not carried for the first time)
+        </button>
+        <button type="button" class="driver-trip-tab" role="tab" id="driver-tab-btn-first" aria-selected="false" aria-controls="driver-tab-panel-first" data-driver-tab="first" tabindex="-1">
+          Samples transported for the first time
+        </button>
+      </div>
+      <div class="driver-trip-tab-panels">
+        <div class="driver-trip-tab-panel" role="tabpanel" id="driver-tab-panel-relay" aria-labelledby="driver-tab-btn-relay" data-driver-tab-panel="relay">
+          {% include "operations/reports/_trip_entries_stack.html" with trip_formset=trip_formset_relay is_pc_edit=is_pc_edit %}
+        </div>
+        <div class="driver-trip-tab-panel" role="tabpanel" id="driver-tab-panel-first" aria-labelledby="driver-tab-btn-first" data-driver-tab-panel="first" hidden>
+          {% include "operations/reports/_trip_entries_stack.html" with trip_formset=trip_formset_first is_pc_edit=is_pc_edit %}
+        </div>
+      </div>
+    </div>
+    {% else %}
+      {% include "operations/reports/_trip_entries_stack.html" with trip_formset=trip_formset is_pc_edit=is_pc_edit %}
+    {% endif %}
+    {% endif %}
+
+    {% if rejection_formset %}
+    <h2 style="margin-top:1.5rem;">Sample rejections</h2>
+    <p class="muted" style="margin:0 0 0.75rem;font-size:0.9rem;">
+      Per sample type: total rejected must equal the sum of the reason columns when total &gt; 0.
+    </p>
+    {{ rejection_formset.management_form }}
+    {{ rejection_formset.non_form_errors }}
+    <div class="rejection-table-wrap" data-rejection-table-wrap>
+      <table class="rejection-data-table">
+        <thead>
+          <tr>
+            <th class="rejection-th-num" scope="col">#</th>
+            <th scope="col">{{ rejection_formset.empty_form.sample_type.label }}</th>
+            <th scope="col">{{ rejection_formset.empty_form.rejected_total.label }}</th>
+            <th scope="col" title="{{ rejection_formset.empty_form.rejected_too_old.label }}">Too old</th>
+            <th scope="col" title="{{ rejection_formset.empty_form.rejected_patient_info_mismatch.label }}">Info mismatch</th>
+            <th scope="col" title="{{ rejection_formset.empty_form.rejected_request_form_missing.label }}">Form missing</th>
+            <th scope="col" title="{{ rejection_formset.empty_form.rejected_sample_missing.label }}">Sample missing</th>
+            <th scope="col">{{ rejection_formset.empty_form.rejected_other.label }}</th>
+            <th class="rejection-th-del" scope="col">Remove</th>
+          </tr>
+        </thead>
+        <tbody data-rejection-prefix="rejections" data-rejection-tbody>
+          {% for rej_form in rejection_formset %}
+          <tr class="rejection-row" data-rejection-row>
+            <td class="rejection-td-num">
+              {% for hidden in rej_form.hidden_fields %}{{ hidden }}{% endfor %}
+              <span class="rejection-row-num">{{ forloop.counter }}</span>
+            </td>
+            <td>{{ rej_form.sample_type.errors }}{{ rej_form.sample_type }}</td>
+            <td>{{ rej_form.rejected_total.errors }}{{ rej_form.rejected_total }}</td>
+            <td>{{ rej_form.rejected_too_old.errors }}{{ rej_form.rejected_too_old }}</td>
+            <td>{{ rej_form.rejected_patient_info_mismatch.errors }}{{ rej_form.rejected_patient_info_mismatch }}</td>
+            <td>{{ rej_form.rejected_request_form_missing.errors }}{{ rej_form.rejected_request_form_missing }}</td>
+            <td>{{ rej_form.rejected_sample_missing.errors }}{{ rej_form.rejected_sample_missing }}</td>
+            <td>{{ rej_form.rejected_other.errors }}{{ rej_form.rejected_other }}</td>
+            <td class="rejection-td-del">
+              {% if rej_form.DELETE %}
+              <label class="rejection-del-label" for="{{ rej_form.DELETE.id_for_label }}">{{ rej_form.DELETE }}</label>
+              {% else %}—{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:0.65rem;">
+      <button type="button" class="btn-dash btn-dash-secondary" id="rejection-add-row" data-rejection-add>Add row</button>
+    </p>
+    {% endif %}
+
+</div>
+
+{% if is_rider_form %}
+<div class="card" style="margin-top:1rem;">
+  {% if report %}
+  <h2>Submit for review</h2>
+  <p class="muted" style="margin-bottom:12px;">Save your work with <strong>Save draft</strong> or <strong>Save and submit</strong>. When ready for a PC to review, use <strong>Submit for review</strong> (after saving).</p>
+  <div class="record-form-actions">
+    <button type="submit" class="btn-dash btn-dash-draft">Save draft</button>
+    <button type="submit" name="action" value="submit" class="btn-dash btn-dash-submit">Save and submit</button>
+    {% if report.status == 'draft' or report.status == 'rejected' %}
+    <button type="submit" class="btn-dash btn-dash-submit" formaction="{% url 'operations:report_submit' report.pk %}">Submit for review</button>
+    {% endif %}
+  </div>
+  {% else %}
+  <h2>Save report</h2>
+  <p class="muted" style="margin-bottom:12px;">Save your weekly report and trip entries.</p>
+  <div class="record-form-actions">
+    <button type="submit" class="btn-dash btn-dash-draft">Save draft</button>
+    <button type="submit" name="action" value="submit" class="btn-dash btn-dash-submit">Save and submit</button>
+  </div>
+  {% endif %}
+</div>
+{% else %}
+{% if is_pc_edit %}
+<div class="card" style="margin-top:1rem;">
+  <div class="field">
+    <label for="{{ form.pc_notes.id_for_label }}"><strong>{{ form.pc_notes.label }}</strong></label><br>
+    {{ form.pc_notes }}
+    {% if form.pc_notes.help_text %}<span class="muted" style="font-size:12px;display:block;margin-top:4px;">{{ form.pc_notes.help_text }}</span>{% endif %}
+    {{ form.pc_notes.errors }}
+  </div>
+</div>
+{% endif %}
+<div class="card" style="margin-top:1rem;">
+  <div class="record-form-actions">
+    <button type="submit" class="btn-dash btn-dash-primary">Save</button>
+  </div>
+</div>
+{% endif %}
+
+  </form>
+
+{% if week_saved_trips is not None %}
+<div class="card" style="margin-top:1rem;">
+  <h2>Trip rows on file for this week</h2>
+  <p class="muted" style="margin-bottom:0.75rem;">{{ week_range_label }} — saved in the database (updates when you save a draft)</p>
+  <div style="overflow-x:auto;">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Date</th>
+          <th>Transport</th>
+          <th>Purpose</th>
+          <th>Route</th>
+          <th>From</th>
+          <th>To</th>
+          <th>Specimens</th>
+          <th>Results</th>
+          <th>Fuel</th>
+          <th>Distance</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in week_saved_trips %}
+        <tr>
+          <td>{{ row.sequence }}</td>
+          <td>{{ row.entry_date|default:"-" }}</td>
+          <td>{{ row.get_transport_kind_display }}</td>
+          <td>{% if row.visit_purpose %}{{ row.get_visit_purpose_display }}{% else %}—{% endif %}</td>
+          <td>{% if row.route_kind %}{{ row.get_route_kind_display }}{% else %}—{% endif %}</td>
+          <td>{{ row.origin_facility.name|default:"—" }}</td>
+          <td>{{ row.destination_facility.name|default:"—" }}</td>
+          <td>{{ row.specimens_total }}</td>
+          <td>{{ row.results_total }}</td>
+          <td>{{ row.fuel_used }} / {{ row.fuel_allocated }}</td>
+          <td>{{ row.distance_travelled }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="11">No trip rows saved for this week yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+{% block extra_js %}
+{% if trip_formset or trip_formset_relay %}
+<script src="{% static 'js/report-trip-routing.js' %}" defer></script>
+<script src="{% static 'js/report-fuel-validation.js' %}" defer></script>
+{% endif %}
+{% if driver_dual_tabs %}
+<script src="{% static 'js/driver-trip-tabs.js' %}" defer></script>
+{% endif %}
+{% if rejection_formset %}
+<script src="{% static 'js/rejection-table.js' %}" defer></script>
+{% endif %}
+{% if user_role == 'rider' or user_role == 'driver' %}
+<script src="{% static 'js/offline-sync.js' %}" defer></script>
+{% endif %}
+{% endblock %}

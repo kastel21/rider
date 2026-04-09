@@ -1,0 +1,10 @@
+# Embedded runtime for Chaquopy Android APK (no MSSQL/PostgreSQL drivers).
+# tzdata: IANA time zones for zoneinfo (required on Android; no system tz database).
+tzdata>=2024.1
+Django>=4.2,<5
+python-dotenv>=1.0
+openpyxl>=3.1
+reportlab>=4.0
+djangorestframework>=3.14
+djangorestframework-simplejwt>=5.3
+whitenoise>=6.6

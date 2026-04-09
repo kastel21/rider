@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Add driver{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Add driver</h1>
+  <p style="margin:0 0 1rem;">
+    Creates a sign-in for this driver with the username and password you choose.
+    <a href="{% url 'operations:pc_manage_drivers' %}">← Drivers</a>
+  </p>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% for field in form %}
+    <p>
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label><br>
+      {{ field }}
+      {{ field.errors }}
+    </p>
+    {% endfor %}
+    <button type="submit" class="btn-dash btn-dash-primary">Create driver</button>
+  </form>
+</div>
+{% endblock %}

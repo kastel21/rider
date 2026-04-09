@@ -1,0 +1,29 @@
+irectory](#afterextract)
+     * Same setup as {@link beforePack}
+     */
+    readonly afterExtract?: Hook<AfterExtractContext, void> | string | null;
+    /**
+     * The function (or path to file or module id) to be [run after pack](#afterpack) (but before pack into distributable format and sign).
+     * Same setup as {@link beforePack}
+     */
+    readonly afterPack?: Hook<AfterPackContext, void> | string | null;
+    /**
+     * The function (or path to file or module id) to be [run after pack and sign](#aftersign) (but before pack into distributable format).
+     * Same setup as {@link beforePack}
+     */
+    readonly afterSign?: Hook<AfterPackContext, void> | string | null;
+    /**
+     * The function (or path to file or module id) to be run on artifact build start.
+     * Same setup as {@link beforePack}
+     */
+    readonly artifactBuildStarted?: Hook<ArtifactBuildStarted, void> | string | null;
+    /**
+     * The function (or path to file or module id) to be run on artifact build completed.
+     * Same setup as {@link beforePack}
+     */
+    readonly artifactBuildCompleted?: Hook<ArtifactCreated, void> | string | null;
+    /**
+     * The function (or path to file or module id) to be run after all artifacts are built.
+  
+  ```typescript
+  

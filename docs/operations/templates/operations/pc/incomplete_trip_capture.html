@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Incomplete trip capture{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Incomplete trip capture</h1>
+  <p class="muted">Incomplete bike transport and specimen routing counts.</p>
+  <div style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:720px;">
+      <thead>
+        <tr style="text-align:left;border-bottom:2px solid #cbd5e1;">
+          <th style="padding:8px;">Date</th>
+          <th style="padding:8px;">District</th>
+          <th style="padding:8px;">Incomplete trips</th>
+          <th style="padding:8px;">Non-IST</th>
+          <th style="padding:8px;">Ambulance</th>
+          <th style="padding:8px;">Alt IP</th>
+          <th style="padding:8px;">MoHCC</th>
+          <th style="padding:8px;">Courier</th>
+          <th style="padding:8px;">Other</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in object_list %}
+        <tr style="border-bottom:1px solid #e2e8f0;">
+          <td style="padding:8px;">{{ row.date }}</td>
+          <td style="padding:8px;">{{ row.district.name }}</td>
+          <td style="padding:8px;">{{ row.incomplete_bike_transport_trips }}</td>
+          <td style="padding:8px;">{{ row.specimens_non_ist_methods }}</td>
+          <td style="padding:8px;">{{ row.specimens_ambulance }}</td>
+          <td style="padding:8px;">{{ row.specimens_alternative_ip_transport }}</td>
+          <td style="padding:8px;">{{ row.specimens_mohcc_arranged_transport }}</td>
+          <td style="padding:8px;">{{ row.specimens_courier }}</td>
+          <td style="padding:8px;">{{ row.specimens_other_non_ist_methods }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="9" class="muted" style="padding:12px;">No entries yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="card">
+  <h2>Add entry</h2>
+  <form method="post" action="">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {{ form.as_p }}
+    <p><button type="submit">Save</button></p>
+  </form>
+</div>
+{% endblock %}

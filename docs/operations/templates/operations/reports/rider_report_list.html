@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}My reports{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>My weekly reports</h1>
+  <p class="muted"><a href="{% url 'operations:report_create' %}">Create a new report</a> for the current week.</p>
+  {% include "operations/reports/_report_table.html" %}
+</div>
+{% endblock %}

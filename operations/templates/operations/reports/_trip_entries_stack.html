@@ -1,0 +1,133 @@
+{% comment %}
+  Inline stack of trip entry cards. Expects: trip_formset, optional is_pc_edit.
+{% endcomment %}
+{{ trip_formset.management_form }}
+<div class="trip-entries-stack">
+  {% for rform in trip_formset %}
+  <div class="card card--nested" data-trip-routing-card>
+    {% for hidden in rform.hidden_fields %}{{ hidden }}{% endfor %}
+    <div class="trip-card-head">
+      <h3><span class="trip-row-badge">{{ forloop.counter }}</span> Trip</h3>
+      {% if rform.DELETE %}
+      <label class="delete-toggle" for="{{ rform.DELETE.id_for_label }}">
+        {{ rform.DELETE }} <span>Delete row</span>
+      </label>
+      {% endif %}
+    </div>
+
+    {% if is_pc_edit and 'transport_kind' in rform.fields %}
+    <p class="muted trip-transport-kind-line" style="margin:0 0 0.75rem 0;">
+      <strong>Transport category:</strong>
+      {% if rform.instance.pk %}{{ rform.instance.get_transport_kind_display }}{% else %}—{% endif %}
+    </p>
+    {% endif %}
+
+    <div class="trip-subsection">
+      <div class="trip-route-fields">
+        <div class="field">
+          <label for="{{ rform.visit_purpose.id_for_label }}"><strong>{{ rform.visit_purpose.label }}</strong></label><br>
+          {{ rform.visit_purpose.errors }}
+          {{ rform.visit_purpose }}
+        </div>
+        <div class="field">
+          <label for="{{ rform.route_kind.id_for_label }}"><strong>{{ rform.route_kind.label }}</strong></label><br>
+          {{ rform.route_kind.errors }}
+          {{ rform.route_kind }}
+        </div>
+        <div class="trip-from-to-row">
+          <div class="field">
+            <label for="{{ rform.origin_facility.id_for_label }}"><strong>From</strong></label><br>
+            {{ rform.origin_facility.errors }}
+            {{ rform.origin_facility }}
+          </div>
+          <div class="field">
+            <label for="{{ rform.destination_facility.id_for_label }}"><strong>To</strong></label><br>
+            {{ rform.destination_facility.errors }}
+            {{ rform.destination_facility }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="trip-subsection">
+      <div class="trip-subsection-title">Entry date</div>
+      <div class="field trip-entry-date-readonly">
+        <p class="muted trip-entry-date-value">
+          {% if rform.instance.pk %}{{ rform.instance.entry_date|date:"Y-m-d" }}{% else %}{% now "Y-m-d" %}{% endif %}
+        </p>
+        {{ rform.entry_date.errors }}
+      </div>
+    </div>
+
+    <div class="trip-subsection">
+      <div class="trip-subsection-title">Number of specimens transported</div>
+      <div class="capture-table-wrap">
+        <table class="capture-metric-table">
+          <thead>
+            <tr>
+              <th scope="col">Type</th>
+              <th scope="col">Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">{{ rform.vl_blood_plasma.label }}</th><td>{{ rform.vl_blood_plasma.errors }}{{ rform.vl_blood_plasma }}</td></tr>
+            <tr><th scope="row">{{ rform.vl_dbs.label }}</th><td>{{ rform.vl_dbs.errors }}{{ rform.vl_dbs }}</td></tr>
+            <tr><th scope="row">{{ rform.eid_blood.label }}</th><td>{{ rform.eid_blood.errors }}{{ rform.eid_blood }}</td></tr>
+            <tr><th scope="row">{{ rform.eid_dbs.label }}</th><td>{{ rform.eid_dbs.errors }}{{ rform.eid_dbs }}</td></tr>
+            <tr><th scope="row">{{ rform.sputum.label }}</th><td>{{ rform.sputum.errors }}{{ rform.sputum }}</td></tr>
+            <tr><th scope="row">{{ rform.sputum_culture_dr.label }}</th><td>{{ rform.sputum_culture_dr.errors }}{{ rform.sputum_culture_dr }}</td></tr>
+            <tr><th scope="row">{{ rform.hpv.label }}</th><td>{{ rform.hpv.errors }}{{ rform.hpv }}</td></tr>
+            <tr><th scope="row">{{ rform.specimens_other_specify.label }}</th><td>{{ rform.specimens_other_specify.errors }}{{ rform.specimens_other_specify }}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="trip-subsection">
+      <div class="trip-subsection-title">Number of results transported</div>
+      <div class="capture-table-wrap">
+        <table class="capture-metric-table capture-metric-table--results">
+          <thead>
+            <tr>
+              <th scope="col">Type</th>
+              <th scope="col">Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">{{ rform.results_vl_blood_plasma.label }}</th><td>{{ rform.results_vl_blood_plasma.errors }}{{ rform.results_vl_blood_plasma }}</td></tr>
+            <tr><th scope="row">{{ rform.results_vl_dbs.label }}</th><td>{{ rform.results_vl_dbs.errors }}{{ rform.results_vl_dbs }}</td></tr>
+            <tr><th scope="row">{{ rform.results_eid_blood.label }}</th><td>{{ rform.results_eid_blood.errors }}{{ rform.results_eid_blood }}</td></tr>
+            <tr><th scope="row">{{ rform.results_eid_dbs.label }}</th><td>{{ rform.results_eid_dbs.errors }}{{ rform.results_eid_dbs }}</td></tr>
+            <tr><th scope="row">{{ rform.results_sputum.label }}</th><td>{{ rform.results_sputum.errors }}{{ rform.results_sputum }}</td></tr>
+            <tr><th scope="row">{{ rform.results_sputum_culture_dr.label }}</th><td>{{ rform.results_sputum_culture_dr.errors }}{{ rform.results_sputum_culture_dr }}</td></tr>
+            <tr><th scope="row">{{ rform.results_hpv.label }}</th><td>{{ rform.results_hpv.errors }}{{ rform.results_hpv }}</td></tr>
+            <tr><th scope="row">{{ rform.results_other_specify.label }}</th><td>{{ rform.results_other_specify.errors }}{{ rform.results_other_specify }}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="trip-subsection">
+      <div class="trip-subsection-title">Fuel &amp; distance</div>
+      <div class="fuel-strip">
+        <div class="field">
+          <label for="{{ rform.fuel_allocated.id_for_label }}"><strong>{{ rform.fuel_allocated.label }}</strong></label><br>
+          {{ rform.fuel_allocated.errors }}
+          {{ rform.fuel_allocated }}
+        </div>
+        <div class="field">
+          <label for="{{ rform.fuel_used.id_for_label }}"><strong>{{ rform.fuel_used.label }}</strong></label><br>
+          {{ rform.fuel_used.errors }}
+          {{ rform.fuel_used }}
+        </div>
+        <div class="field">
+          <label for="{{ rform.distance_travelled.id_for_label }}"><strong>{{ rform.distance_travelled.label }}</strong></label><br>
+          {{ rform.distance_travelled.errors }}
+          {{ rform.distance_travelled }}
+        </div>
+        <p class="fuel-strip-live-error" data-fuel-live-msg hidden aria-live="polite"></p>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>

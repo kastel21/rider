@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Audit log{% endblock %}
+{% block content %}
+<h1>Audit log</h1>
+<table class="data-table responsive-stack-table">
+  <thead>
+    <tr><th>When</th><th>Report</th><th>Action</th><th>Actor</th></tr>
+  </thead>
+  <tbody>
+    {% for e in entries %}
+    <tr>
+      <td data-label="When">{{ e.created_at }}</td>
+      <td data-label="Report">#{{ e.report_id }}</td>
+      <td data-label="Action">{{ e.action }}</td>
+      <td data-label="Actor">{{ e.actor }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="4">No entries.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

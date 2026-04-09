@@ -1,0 +1,19 @@
+{% if user.is_authenticated %}
+<header class="top-nav app-top-nav">
+  <div class="top-nav__left">
+    <button type="button" class="app-sidebar__mobile-toggle" id="sidebar-mobile-toggle" aria-expanded="false" aria-controls="app-sidebar" title="Open menu">
+      <span class="app-sidebar__mobile-toggle-bar" aria-hidden="true"></span>
+      <span class="app-sidebar__mobile-toggle-bar" aria-hidden="true"></span>
+      <span class="app-sidebar__mobile-toggle-bar" aria-hidden="true"></span>
+    </button>
+    <div class="brand">{% firstof user.get_full_name user.username %}</div>
+  </div>
+  <nav class="nav-links nav-links--minimal">
+    <span class="user-label">{{ user.username }}{% if user_role %} ({{ user_role }}){% endif %}</span>
+    <form method="post" action="{% url 'operations:logout' %}" class="nav-logout-form">
+      {% csrf_token %}
+      <button type="submit" class="nav-logout-link">Log out</button>
+    </form>
+  </nav>
+</header>
+{% endif %}

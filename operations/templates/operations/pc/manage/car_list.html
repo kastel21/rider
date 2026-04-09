@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Cars{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Cars (driver vehicles)</h1>
+  <p style="margin:0 0 1rem;">
+    <a href="{% url 'operations:pc_manage' %}">← Manage data</a>
+    ·
+    <a href="{% url 'operations:pc_manage_car_add' %}">Add vehicle</a>
+  </p>
+  <p class="muted" style="font-size:0.92rem;margin-bottom:1rem;">
+    Vehicle registration and status (specimen non-pickup days, mitigation) for drivers — parallel to <a href="{% url 'operations:pc_manage_bikes' %}">bikes</a> for riders.
+  </p>
+  <div style="overflow-x:auto;">
+    <table class="data-table responsive-stack-table">
+      <thead>
+        <tr>
+          <th>Registration</th>
+          <th>District</th>
+          <th>Active</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for car in cars %}
+        <tr>
+          <td data-label="Registration">{{ car.code }}</td>
+          <td data-label="District">{% if car.district %}{{ car.district.name }}{% else %}—{% endif %}</td>
+          <td data-label="Active">{% if car.active %}Yes{% else %}No{% endif %}</td>
+          <td data-label="Actions">
+            <a href="{% url 'operations:pc_manage_car_edit' car.pk %}">Edit</a>
+            ·
+            <a href="{% url 'operations:pc_manage_car_delete' car.pk %}">Delete</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4">No vehicles in your scope.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}
+  <p class="muted" style="margin-top:1rem;">
+    Page {{ page_obj.number }} of {{ paginator.num_pages }}
+    {% if page_obj.has_previous %}· <a href="?page={{ page_obj.previous_page_number }}">Previous</a>{% endif %}
+    {% if page_obj.has_next %}· <a href="?page={{ page_obj.next_page_number }}">Next</a>{% endif %}
+  </p>
+  {% endif %}
+</div>
+{% endblock %}

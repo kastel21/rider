@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Delete facility{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Delete facility</h1>
+  <p>Delete <strong>{{ facility.name }}</strong> ({{ facility.district.name }})? This will fail if the facility is referenced on trip entries.</p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn-dash">Confirm</button>
+    <a href="{% url 'operations:pc_manage_facilities' %}" class="btn-dash">Cancel</a>
+  </form>
+</div>
+{% endblock %}

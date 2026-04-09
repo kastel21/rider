@@ -1,0 +1,387 @@
+/**
+ * App chrome: sidebar + two-column layout.
+ * Loaded after standalone-shell.css and dashboard-record.css so these rules win.
+ * Uses body.dashboard-shell theme vars (--dash-*) with hex fallbacks.
+ */
+
+/* Logged-out / no sidebar: single column */
+body.dashboard-shell .app-layout--anon {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #f1f5f9;
+  background: var(--dash-bg);
+}
+
+body.dashboard-shell .app-layout--anon .app-main-column {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+body.dashboard-shell.has-sidebar .app-layout {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  min-height: 100vh;
+  position: relative;
+  background: #f1f5f9;
+  background: var(--dash-bg);
+}
+
+body.dashboard-shell .app-layout--anon .app-main-column {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+}
+
+body.dashboard-shell.has-sidebar .app-main-column {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: #f1f5f9;
+  background: var(--dash-bg);
+}
+
+/* Sidebar: explicit fallbacks so it never inherits dark :root from standalone-shell */
+body.dashboard-shell.has-sidebar .app-sidebar {
+  flex: 0 0 240px;
+  width: 240px;
+  max-width: 240px;
+  box-sizing: border-box;
+  background: #ffffff;
+  background: var(--dash-surface);
+  border-right: 1px solid #e2e8f0;
+  border-right: 1px solid var(--dash-border);
+  box-shadow: 2px 0 8px rgba(15, 23, 42, 0.06);
+  display: flex;
+  flex-direction: column;
+  transition: width 0.2s ease, flex-basis 0.2s ease, transform 0.2s ease;
+  z-index: 35;
+}
+
+body.dashboard-shell.has-sidebar .app-sidebar__inner {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+body.dashboard-shell.has-sidebar .app-sidebar__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0.5rem 0.5rem 0.25rem;
+  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--dash-border);
+  flex-shrink: 0;
+}
+
+body.dashboard-shell.has-sidebar .app-sidebar__collapse-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: 1px solid #cbd5e1;
+  border: 1px solid var(--dash-border-strong);
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #0f172a;
+  color: var(--dash-text);
+  cursor: pointer;
+}
+
+body.dashboard-shell.has-sidebar .app-sidebar__collapse-btn:hover {
+  background: #e2e8f0;
+}
+
+body.dashboard-shell.has-sidebar .app-sidebar__collapse-icon {
+  display: inline-block;
+  transition: transform 0.2s ease;
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1;
+  color: #0f172a;
+  color: var(--dash-text);
+}
+
+body.dashboard-shell.sidebar-collapsed.has-sidebar .app-sidebar__collapse-icon {
+  transform: rotate(180deg);
+}
+
+body.dashboard-shell.has-sidebar .app-sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+body.dashboard-shell.has-sidebar .app-sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 8px;
+  color: #0f172a;
+  color: var(--dash-text);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+body.dashboard-shell.has-sidebar .app-sidebar__link:hover {
+  background: rgba(29, 78, 216, 0.08);
+  color: #1d4ed8;
+  color: var(--dash-primary);
+}
+
+body.dashboard-shell.has-sidebar .app-sidebar__glyph {
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: rgba(29, 78, 216, 0.1);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #1d4ed8;
+  color: var(--dash-primary);
+}
+
+body.dashboard-shell.sidebar-collapsed.has-sidebar .app-sidebar {
+  flex-basis: 64px;
+  width: 64px;
+  max-width: 64px;
+}
+
+body.dashboard-shell.sidebar-collapsed.has-sidebar .app-sidebar__text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+body.dashboard-shell.sidebar-collapsed.has-sidebar .app-sidebar__link {
+  justify-content: center;
+  padding: 0.55rem;
+}
+
+body.dashboard-shell.sidebar-collapsed.has-sidebar .app-sidebar__toolbar {
+  justify-content: center;
+}
+
+body.dashboard-shell.has-sidebar .app-sidebar__mobile-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: 1px solid #cbd5e1;
+  border: 1px solid var(--dash-border-strong);
+  border-radius: 8px;
+  background: #f8fafc;
+  cursor: pointer;
+}
+
+body.dashboard-shell.has-sidebar .app-sidebar__mobile-toggle-bar {
+  display: block;
+  height: 2px;
+  width: 1.1rem;
+  margin: 0 auto;
+  background: #0f172a;
+  background: var(--dash-text);
+  border-radius: 1px;
+}
+
+body.dashboard-shell.has-sidebar .app-sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  z-index: 30;
+  pointer-events: auto;
+}
+
+/* Ensure the backdrop never intercepts taps when hidden. */
+body.dashboard-shell.has-sidebar .app-sidebar-backdrop[hidden] {
+  display: none !important;
+  pointer-events: none;
+}
+
+body.dashboard-shell.sidebar-mobile-open {
+  overflow: hidden;
+}
+
+body.dashboard-shell.has-sidebar .top-nav.app-top-nav {
+  flex-shrink: 0;
+}
+
+body.dashboard-shell.has-sidebar .top-nav__left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+body.dashboard-shell.has-sidebar .nav-links--minimal a {
+  margin-right: 0.75rem;
+}
+
+body.dashboard-shell.has-sidebar .nav-links--minimal {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+}
+
+/* Logout must be POST (Django LogoutView); style submit like nav links */
+body.dashboard-shell.has-sidebar .nav-links--minimal .nav-logout-form {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  vertical-align: baseline;
+  position: fixed;
+  top: 0.75rem;
+  right: 0.9rem;
+  z-index: 60;
+}
+
+body.dashboard-shell.has-sidebar .nav-links--minimal .nav-logout-link {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0.42rem 0.7rem;
+  font: inherit;
+  color: #1d4ed8;
+  color: var(--dash-primary, #1d4ed8);
+  cursor: pointer;
+  margin-right: 0;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
+}
+
+body.dashboard-shell.has-sidebar .nav-links--minimal .nav-logout-link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  body.dashboard-shell.has-sidebar .top-nav.app-top-nav {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.65rem 0.85rem;
+    padding: 0.7rem 0.9rem;
+  }
+
+  body.dashboard-shell.has-sidebar .top-nav__left {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  body.dashboard-shell.has-sidebar .nav-links--minimal {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 0.5rem 0.65rem;
+  }
+
+  body.dashboard-shell.has-sidebar .nav-links--minimal a,
+  body.dashboard-shell.has-sidebar .nav-links--minimal .nav-logout-link,
+  body.dashboard-shell.has-sidebar .nav-links--minimal .user-label {
+    margin-right: 0;
+  }
+
+  body.dashboard-shell.has-sidebar .nav-links--minimal .nav-logout-form {
+    top: 0.55rem;
+    right: 0.6rem;
+  }
+
+  body.dashboard-shell.has-sidebar .nav-links--minimal .user-label {
+    width: 100%;
+    line-height: 1.3;
+  }
+
+  body.dashboard-shell.has-sidebar .app-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: min(280px, 88vw);
+    max-width: min(280px, 88vw);
+    flex: none;
+    transform: translateX(-100%);
+    box-shadow: 4px 0 24px rgba(15, 23, 42, 0.15);
+    pointer-events: none;
+  }
+
+  body.dashboard-shell .app-layout--sidebar-open .app-sidebar {
+    transform: translateX(0);
+    pointer-events: auto;
+  }
+
+  body.dashboard-shell.has-sidebar .app-sidebar-backdrop {
+    display: block;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+
+  body.dashboard-shell.sidebar-mobile-open.has-sidebar .app-sidebar-backdrop {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  body.dashboard-shell.has-sidebar .app-sidebar__mobile-toggle {
+    display: flex;
+  }
+
+  body.dashboard-shell.has-sidebar .app-sidebar__toolbar {
+    display: none;
+  }
+
+  body.dashboard-shell.sidebar-collapsed.has-sidebar .app-sidebar {
+    width: min(280px, 88vw);
+    max-width: min(280px, 88vw);
+  }
+
+  body.dashboard-shell.sidebar-collapsed.has-sidebar .app-sidebar__text {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+}
+
+@media (max-width: 640px) {
+  body.dashboard-shell.has-sidebar .top-nav.app-top-nav {
+    padding: 0.6rem 0.7rem;
+  }
+
+  body.dashboard-shell.has-sidebar .app-sidebar__mobile-toggle {
+    width: 2.35rem;
+    height: 2.35rem;
+  }
+
+  body.dashboard-shell.has-sidebar .brand {
+    font-size: 0.95rem;
+  }
+}

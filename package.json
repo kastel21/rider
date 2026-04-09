@@ -1,0 +1,33 @@
+{
+  "name": "rider-ops-app",
+  "private": true,
+  "main": "electron/main.js",
+  "scripts": {
+    "android:sync": "npx cap sync android",
+    "android:open": "npx cap open android",
+    "android:install:debug": "npx cap run android",
+    "android:bundle": "cd android && .\\gradlew.bat bundleRelease",
+    "cap:copy": "npx cap copy",
+    "desktop:start": "electron .",
+    "desktop:dist": "electron-builder --win --linux --mac"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/core": "^6.1.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.2",
+    "electron": "^28.3.3",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.example.riderops",
+    "productName": "RiderOps",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "electron/**/*"
+    ]
+  }
+}

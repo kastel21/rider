@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Facilities{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Facilities</h1>
+  <p style="margin:0 0 1rem;">
+    <a href="{% url 'operations:pc_manage' %}">← Manage data</a>
+    ·
+    <a href="{% url 'operations:pc_manage_facility_add' %}">Add facility</a>
+  </p>
+  <div style="overflow-x:auto;">
+    <table class="data-table responsive-stack-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Kind</th>
+          <th>District</th>
+          <th>Support type</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in facilities %}
+        <tr>
+          <td data-label="Name">{{ f.name }}</td>
+          <td data-label="Kind">{{ f.get_kind_display }}</td>
+          <td data-label="District">{{ f.district.name }}</td>
+          <td data-label="Support type">{{ f.support_type|default:"—" }}</td>
+          <td data-label="Actions">
+            <a href="{% url 'operations:pc_manage_facility_edit' f.pk %}">Edit</a>
+            ·
+            <a href="{% url 'operations:pc_manage_facility_delete' f.pk %}">Delete</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5">No facilities in your scope.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}
+  <p class="muted" style="margin-top:1rem;">
+    Page {{ page_obj.number }} of {{ paginator.num_pages }}
+    {% if page_obj.has_previous %}· <a href="?page={{ page_obj.previous_page_number }}">Previous</a>{% endif %}
+    {% if page_obj.has_next %}· <a href="?page={{ page_obj.next_page_number }}">Next</a>{% endif %}
+  </p>
+  {% endif %}
+</div>
+{% endblock %}

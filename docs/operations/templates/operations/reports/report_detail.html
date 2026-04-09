@@ -1,0 +1,40 @@
+﻿{% extends "base.html" %}
+{% block title %}Report {{ report.week }}{% endblock %}
+{% block content %}
+<div class="card">
+  <p><a href="{{ back_list_url }}">← Back to list</a></p>
+  <h1>Report — week ending {{ report.week }}</h1>
+  <p class="muted">Rider: {{ report.rider.user.get_username }} · Status: <strong>{{ report.get_status_display }}</strong></p>
+  <h2>Summary</h2>
+  <ul>
+    <li>Specimens total: {{ report.specimens_total }}</li>
+    <li>Results total: {{ report.results_total }}</li>
+    <li>Fuel allocated / used: {{ report.fuel_allocated }} / {{ report.fuel_used }}</li>
+  </ul>
+  {% if can_edit_report %}
+    <p><a href="{% url 'operations:report_edit' report.pk %}">Edit report</a></p>
+  {% endif %}
+  {% if report.status == 'DRAFT' %}
+  <form method="post" action="{% url 'operations:report_submit' report.pk %}" style="display:inline;">
+    {% csrf_token %}
+    <button type="submit" style="padding:8px 14px;border-radius:8px;background:#15803d;color:#fff;border:none;cursor:pointer;">Submit report</button>
+  </form>
+  {% endif %}
+  {% if user_role == 'PC' or user_role == 'ME' or user_role == 'ADMIN' %}
+    {% if report.status == 'SUBMITTED' %}
+    <form method="post" action="{% url 'operations:report_start_review' report.pk %}" style="display:inline;margin-left:8px;">
+      {% csrf_token %}
+      <button type="submit" style="padding:8px 14px;border-radius:8px;background:#b45309;color:#fff;border:none;cursor:pointer;">Start review</button>
+    </form>
+    {% endif %}
+    {% if report.status == 'SUBMITTED' or report.status == 'UNDER_REVIEW' %}
+    <form method="post" action="{% url 'operations:report_review' report.pk %}" style="display:inline;margin-left:8px;">
+      {% csrf_token %}
+      <button type="submit" style="padding:8px 14px;border-radius:8px;background:#1d4ed8;color:#fff;border:none;cursor:pointer;">Mark reviewed</button>
+    </form>
+    {% endif %}
+    <p style="margin-top:12px;"><a href="{% url 'operations:pc_report_edit' report.pk %}">PC full edit</a>
+      · <a href="{% url 'operations:report_edit_history' report.pk %}">Edit history</a></p>
+  {% endif %}
+</div>
+{% endblock %}

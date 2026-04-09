@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Bikes{% endblock %}
+{% block body_class %}dashboard-shell pc-bike-form-page{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Bikes</h1>
+  <p style="margin:0 0 1rem;">
+    <a href="{% url 'operations:pc_manage' %}">← Manage data</a>
+    ·
+    <a href="{% url 'operations:pc_manage_bike_add' %}">Add bike</a>
+  </p>
+  <div style="overflow-x:auto;">
+    <table class="data-table responsive-stack-table">
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>District</th>
+          <th>Active</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for bike in bikes %}
+        <tr>
+          <td data-label="Code">{{ bike.code }}</td>
+          <td data-label="District">{% if bike.district %}{{ bike.district.name }}{% else %}—{% endif %}</td>
+          <td data-label="Active">{% if bike.active %}Yes{% else %}No{% endif %}</td>
+          <td data-label="Actions">
+            <a href="{% url 'operations:pc_manage_bike_edit' bike.pk %}">Edit</a>
+            ·
+            <a href="{% url 'operations:pc_manage_bike_delete' bike.pk %}">Delete</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4">No bikes in your scope.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}
+  <p class="muted" style="margin-top:1rem;">
+    Page {{ page_obj.number }} of {{ paginator.num_pages }}
+    {% if page_obj.has_previous %}· <a href="?page={{ page_obj.previous_page_number }}">Previous</a>{% endif %}
+    {% if page_obj.has_next %}· <a href="?page={{ page_obj.next_page_number }}">Next</a>{% endif %}
+  </p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Riders{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Riders</h1>
+  <p style="margin:0 0 1rem;">
+    <a href="{% url 'operations:pc_manage' %}">← Manage data</a>
+    ·
+    <a href="{% url 'operations:pc_manage_rider_add' %}">Add rider</a>
+  </p>
+  <div style="overflow-x:auto;">
+    <table class="data-table responsive-stack-table">
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Name</th>
+          <th>District</th>
+          <th>Bike</th>
+          <th>Active</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for rp in riders %}
+        <tr>
+          <td data-label="Username">{{ rp.user.username }}</td>
+          <td data-label="Name">{{ rp.user.get_full_name|default:"—" }}</td>
+          <td data-label="District">{% if rp.district %}{{ rp.district.name }}{% else %}—{% endif %}</td>
+          <td data-label="Bike">{% if rp.bike %}{{ rp.bike.code }}{% else %}—{% endif %}</td>
+          <td data-label="Active">{% if rp.user.is_active %}Yes{% else %}No{% endif %}</td>
+          <td data-label="Actions">
+            <a href="{% url 'operations:pc_manage_rider_edit' rp.pk %}">Edit</a>
+            {% if rp.user.is_active %}
+            ·
+            <a href="{% url 'operations:pc_manage_rider_deactivate' rp.pk %}">Deactivate</a>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6">No riders in your scope.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if is_paginated %}
+  <p class="muted" style="margin-top:1rem;">
+    Page {{ page_obj.number }} of {{ paginator.num_pages }}
+    {% if page_obj.has_previous %}· <a href="?page={{ page_obj.previous_page_number }}">Previous</a>{% endif %}
+    {% if page_obj.has_next %}· <a href="?page={{ page_obj.next_page_number }}">Next</a>{% endif %}
+  </p>
+  {% endif %}
+</div>
+{% endblock %}

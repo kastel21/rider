@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Reports by rider (week){% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Reports by rider</h1>
+  <p class="muted" style="margin:0 0 0.75rem;font-size:0.92rem;">
+    Showing weekly reports for riders in your provinces. Pick any day in the week; the list uses that week (Monday–Sunday).
+  </p>
+
+  <form method="get" action="{% url 'operations:pc_reports' %}" class="report-week-filter report-week-picker" id="pc-week-form">
+    <div class="report-week-picker__inner">
+      <label for="id-pc-report-week" class="report-week-picker__label">
+        <span class="report-week-picker__label-text">Date in week</span>
+      </label>
+      <input
+        type="date"
+        id="id-pc-report-week"
+        name="week"
+        value="{{ selected_week_start|date:'Y-m-d' }}"
+        class="report-week-filter__input report-week-picker__input"
+        aria-describedby="pc-week-range-desc"
+        autocomplete="off"
+      >
+      <button type="submit" class="btn-dash btn-dash-primary">Apply</button>
+    </div>
+  </form>
+  <p id="pc-week-range-desc" class="muted" style="margin-top:0.65rem;">
+    Showing: <strong>{{ week_range_label }}</strong>
+    <span class="muted" style="margin-left:0.75rem;">
+      <a href="{% url 'operations:pc_reports' %}?week={{ pc_prev_week }}">Previous week</a>
+      ·
+      <a href="{% url 'operations:pc_reports' %}?week={{ pc_next_week }}">Next week</a>
+    </span>
+  </p>
+
+  <div style="overflow-x:auto;margin-top:1rem;">
+    <table class="data-table responsive-stack-table">
+      <thead>
+        <tr>
+          <th>Rider</th>
+          <th>District</th>
+          <th>Province</th>
+          <th>Status</th>
+          <th>Samples</th>
+          <th>Trips</th>
+          <th>Submitted</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in pc_report_rows %}
+        {% with r=row.report %}
+        <tr>
+          <td data-label="Rider">{{ r.rider.get_full_name|default:r.rider.username }}</td>
+          <td data-label="District">
+            {% if r.rider.rider_profile and r.rider.rider_profile.district %}
+              {{ r.rider.rider_profile.district.name }}
+            {% else %}
+              —
+            {% endif %}
+          </td>
+          <td data-label="Province">
+            {% if r.rider.rider_profile and r.rider.rider_profile.district and r.rider.rider_profile.district.province %}
+              {{ r.rider.rider_profile.district.province.name }}
+            {% elif r.rider.rider_profile and r.rider.rider_profile.province %}
+              {{ r.rider.rider_profile.province.name }}
+            {% else %}
+              —
+            {% endif %}
+          </td>
+          <td data-label="Status">{{ r.get_status_display }}</td>
+          <td data-label="Samples">{{ r.samples_collected }}</td>
+          <td data-label="Trips">{{ r.week_trip_count }}</td>
+          <td data-label="Submitted">{% if r.submitted_at %}{{ r.submitted_at|date:"Y-m-d H:i" }}{% else %}—{% endif %}</td>
+          <td data-label="Actions">
+            <a href="{% url 'operations:report_detail' r.pk %}">View</a>
+            {% if row.can_edit %}
+              | <a href="{% url 'operations:pc_report_edit' r.pk %}">Edit</a>
+            {% endif %}
+          </td>
+        </tr>
+        {% endwith %}
+        {% empty %}
+        <tr><td colspan="8">No reports for this week in your provinces.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+  (function () {
+    var w = document.getElementById("id-pc-report-week");
+    if (w) {
+      w.addEventListener("change", function () {
+        if (w.form) w.form.submit();
+      });
+    }
+  })();
+</script>
+{% endblock %}

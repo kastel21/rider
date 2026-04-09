@@ -1,0 +1,10 @@
+﻿{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Weekly reports</h1>
+  <p class="muted">All reports in your scope (PC / ME / Admin).</p>
+  <p><a href="{% url 'operations:report_export' %}">Export</a> · <a href="{% url 'operations:report_audit_log_list' %}">Audit log</a></p>
+  {% include "operations/reports/_report_table.html" %}
+</div>
+{% endblock %}

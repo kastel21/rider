@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<h1>Reports</h1>
+<table class="data-table responsive-stack-table">
+  <thead>
+    <tr><th>Updated</th><th>Rider</th><th>Status</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for r in reports %}
+    <tr>
+      <td data-label="Updated">{{ r.updated_at|date:"Y-m-d H:i" }}</td>
+      <td data-label="Rider">{{ r.rider.username }}</td>
+      <td data-label="Status">{{ r.get_status_display }}</td>
+      <td data-label="Actions">
+        {% if user_role == 'pc' or user_role == 'admin' %}
+          <a href="{% url 'operations:pc_report_edit' r.pk %}">Edit</a>
+        {% else %}
+          <a href="{% url 'operations:report_detail' r.pk %}">View</a>
+        {% endif %}
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="4">No reports.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

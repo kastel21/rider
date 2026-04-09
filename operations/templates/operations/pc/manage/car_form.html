@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block body_class %}dashboard-shell pc-bike-form-page{% endblock %}
+{% block title %}{% if object.pk %}Edit vehicle{% else %}Add vehicle{% endif %}{% endblock %}
+{% block content %}
+<div class="card pc-bike-form">
+  <header class="pc-bike-form__masthead">
+    <div>
+      <h1>{% if object.pk %}Edit vehicle{% else %}Add vehicle{% endif %}</h1>
+      <p class="muted pc-bike-form__lede">
+        Driver vehicle registration, specimen non-pickup day counts, mitigation, and affected facilities — same structure as <a href="{% url 'operations:pc_manage_bikes' %}">bike status</a> for riders.
+      </p>
+    </div>
+    <a href="{% url 'operations:pc_manage_cars' %}" class="btn-dash btn-dash-secondary pc-bike-form__back">← Back to cars</a>
+  </header>
+
+  <form method="post" class="pc-bike-form__form" novalidate>
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+
+    <section class="pc-form-section" aria-labelledby="car-reg-heading">
+      <h2 id="car-reg-heading" class="pc-form-section__title">Registration</h2>
+      <div class="pc-bike-form__reg-grid">
+        <div class="field">
+          <label for="{{ form.code.id_for_label }}"><strong>{{ form.code.label }}</strong></label><br>
+          {{ form.code }}
+          {% if form.code.help_text %}<span class="muted" style="font-size:0.85rem;display:block;margin-top:4px;">{{ form.code.help_text }}</span>{% endif %}
+          {{ form.code.errors }}
+        </div>
+        <div class="field">
+          <label for="{{ form.district.id_for_label }}"><strong>{{ form.district.label }}</strong></label><br>
+          {{ form.district }}
+          {% if form.district.help_text %}<span class="muted" style="font-size:0.85rem;display:block;margin-top:4px;">{{ form.district.help_text }}</span>{% endif %}
+          {{ form.district.errors }}
+        </div>
+      </div>
+      <div class="field">
+        <label for="{{ form.notes.id_for_label }}"><strong>{{ form.notes.label }}</strong></label><br>
+        {{ form.notes }}
+        {% if form.notes.help_text %}<span class="muted" style="font-size:0.85rem;display:block;margin-top:4px;">{{ form.notes.help_text }}</span>{% endif %}
+        {{ form.notes.errors }}
+      </div>
+      <div class="pc-bike-form__active">
+        {{ form.active.errors }}
+        <label for="{{ form.active.id_for_label }}">
+          {{ form.active }}
+          <span>{{ form.active.label }}</span>
+        </label>
+      </div>
+    </section>
+
+    <section class="pc-form-section" aria-labelledby="car-status-heading">
+      <h2 id="car-status-heading" class="pc-form-section__title">Car status</h2>
+      <p class="muted pc-form-section__intro">
+        Number of days when specimens were not picked up due to:
+      </p>
+      <div class="pc-specimen-non-pickup-block">
+        <div class="pc-specimen-non-pickup-scroll">
+          <table class="data-table pc-specimen-non-pickup-table">
+            <thead>
+              <tr>
+                <th scope="col" title="Vehicle breakdown">Breakdown</th>
+                <th scope="col" title="Vehicle on routine service / maintenance">Routine service</th>
+                <th scope="col" title="Vehicle had no fuel">No fuel</th>
+                <th scope="col" title="Driver on sick leave">Sick leave</th>
+                <th scope="col" title="Driver on annual leave">Annual leave</th>
+                <th scope="col" title="Inclement weather">Weather</th>
+                <th scope="col" title="Vehicle accident / damaged">Accident</th>
+                <th scope="col" title="Clinical IPs related issues">Clinical IPs</th>
+                <th scope="col" title="Other reasons — day count">Other (days)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{{ form.snp_bike_breakdown }}{{ form.snp_bike_breakdown.errors }}</td>
+                <td>{{ form.snp_bike_routine_service }}{{ form.snp_bike_routine_service.errors }}</td>
+                <td>{{ form.snp_bike_no_fuel }}{{ form.snp_bike_no_fuel.errors }}</td>
+                <td>{{ form.snp_rider_sick_leave }}{{ form.snp_rider_sick_leave.errors }}</td>
+                <td>{{ form.snp_rider_annual_leave }}{{ form.snp_rider_annual_leave.errors }}</td>
+                <td>{{ form.snp_inclement_weather }}{{ form.snp_inclement_weather.errors }}</td>
+                <td>{{ form.snp_bike_accident }}{{ form.snp_bike_accident.errors }}</td>
+                <td>{{ form.snp_clinical_ip }}{{ form.snp_clinical_ip.errors }}</td>
+                <td>{{ form.snp_other }}{{ form.snp_other.errors }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="field pc-snp-specify-wrap">
+          <label for="{{ form.snp_other_specify.id_for_label }}"><strong>{{ form.snp_other_specify.label }}</strong></label>
+          {{ form.snp_other_specify }}
+          {{ form.snp_other_specify.errors }}
+        </div>
+      </div>
+    </section>
+
+    <section class="pc-form-section pc-bike-form__mitigation-block">
+      <label for="{{ form.mitigation_measures.id_for_label }}" class="pc-form-section__title" style="display:block;">{{ form.mitigation_measures.label }}</label>
+      {% if form.mitigation_measures.help_text %}
+      <p class="muted pc-form-section__intro" style="margin-top:0.35rem;">{{ form.mitigation_measures.help_text }}</p>
+      {% endif %}
+      <div class="field" style="margin-top:0.5rem;">
+        {{ form.mitigation_measures }}
+        {{ form.mitigation_measures.errors }}
+      </div>
+    </section>
+
+    <section class="bike-affected-facilities-block" aria-labelledby="car-af-heading">
+      <span id="car-af-heading" class="bike-affected-facilities-label">{{ form.affected_facilities.label }}</span>
+      {% if form.affected_facilities.help_text %}
+      <p class="muted" style="font-size:0.9rem;margin:0.25rem 0 0.5rem;">{{ form.affected_facilities.help_text }}</p>
+      {% endif %}
+      {% if form.affected_facilities.field.queryset %}
+      <div class="bike-affected-facilities-checkboxes">
+        {{ form.affected_facilities }}
+      </div>
+      {{ form.affected_facilities.errors }}
+      {% else %}
+      <p class="muted" style="margin:0.35rem 0 0;font-size:0.92rem;">
+        Choose a <strong>district</strong> under Registration, then save (or continue after a validation error) to load facilities in that district for selection.
+      </p>
+      {% endif %}
+    </section>
+
+    <div class="pc-bike-form__actions record-form-actions">
+      <button type="submit" class="btn-dash btn-dash-primary">Save vehicle</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

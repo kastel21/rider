@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Operations Rider</string>
+    <string name="login_title">Sign in</string>
+    <string name="username_hint">Username</string>
+    <string name="password_hint">Password</string>
+    <string name="login_button">Log in</string>
+    <string name="login_error_remote_base">Set OPS_REMOTE_API_BASE in android/local.properties</string>
+    <string name="login_error_network">Network error. Check connection and server URL.</string>
+    <string name="main_loading">Starting…</string>
+    <string name="landing_title">Sync data</string>
+    <string name="landing_status_starting">Starting local server…</string>
+    <string name="landing_status_ready">Ready. Pull latest reference data when online.</string>
+    <string name="landing_status_syncing">Syncing…</string>
+    <string name="landing_status_synced">Last sync completed.</string>
+    <string name="landing_sync">Sync now</string>
+    <string name="landing_continue">Continue to login</string>
+    <string name="landing_config_error">Set OPS_REMOTE_API_BASE, OPS_SYNC_USERNAME, and OPS_EMBEDDED_IMPORT_SECRET in android/local.properties</string>
+    <string name="landing_server_failed">Local server failed: %1$s</string>
+    <string name="landing_server_failed_toast">Embedded Django server did not start</string>
+    <string name="landing_import_failed">Import failed</string>
+    <string name="landing_user_import_failed">User import failed (reference data may already be applied; retry sync)</string>
+</resources>

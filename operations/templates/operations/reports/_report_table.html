@@ -1,0 +1,37 @@
+{% if is_paginated %}
+  <p class="muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</p>
+{% endif %}
+<table class="responsive-stack-table" style="width:100%;border-collapse:collapse;font-size:14px;">
+  <thead>
+    <tr style="text-align:left;border-bottom:2px solid #cbd5e1;">
+      <th style="padding:8px;">Week</th>
+      <th style="padding:8px;">Rider</th>
+      <th style="padding:8px;">Status</th>
+      <th style="padding:8px;">Facility</th>
+      <th style="padding:8px;"></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in reports %}
+    <tr style="border-bottom:1px solid #e2e8f0;">
+      <td data-label="Week" style="padding:8px;">{{ r.week }}</td>
+      <td data-label="Rider" style="padding:8px;">{{ r.rider.user.get_username }}</td>
+      <td data-label="Status" style="padding:8px;">{{ r.get_status_display }}</td>
+      <td data-label="Facility" style="padding:8px;">{% if r.facility %}{{ r.facility.name }}{% else %}—{% endif %}</td>
+      <td data-label="Actions" style="padding:8px;"><a href="{% url 'operations:report_detail' r.pk %}">View</a>
+        {% if user_role == 'PC' or user_role == 'ME' or user_role == 'ADMIN' %}
+          · <a href="{% url 'operations:pc_report_edit' r.pk %}">PC edit</a>
+        {% endif %}
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5" class="muted" style="padding:12px;">No reports yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% if is_paginated %}
+  <p style="margin-top:12px;">
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">Previous</a>{% endif %}
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">Next</a>{% endif %}
+  </p>
+{% endif %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Referred samples{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Referred samples</h1>
+  <p class="muted">Referrals from labs in your province scope. Use Manage data → Facilities → Site code so the Lab column matches your register (District - code - name).</p>
+  <table class="responsive-stack-table" style="width:100%;border-collapse:collapse;font-size:14px;">
+    <thead>
+      <tr style="text-align:left;border-bottom:2px solid #cbd5e1;">
+        <th style="padding:8px;">Lab</th>
+        <th style="padding:8px;">Sample type</th>
+        <th style="padding:8px;">Test type</th>
+        <th style="padding:8px;">Total number of samples referred out</th>
+        <th style="padding:8px;">Lab samples referred to</th>
+        <th style="padding:8px;">Swift consignment number</th>
+        <th style="padding:8px;">Comments</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in object_list %}
+      <tr style="border-bottom:1px solid #e2e8f0;">
+        <td data-label="Lab" style="padding:8px;">{{ row.referring_lab_display }}</td>
+        <td data-label="Sample type" style="padding:8px;">{{ row.get_sample_type_display }}</td>
+        <td data-label="Test type" style="padding:8px;">{{ row.get_test_type_display }}</td>
+        <td data-label="Total referred" style="padding:8px;">{{ row.total_samples_referred_out }}</td>
+        <td data-label="Referred to" style="padding:8px;">{{ row.referred_to_lab_display }}</td>
+        <td data-label="Swift number" style="padding:8px;">{% if row.swift_consignment_number %}{{ row.swift_consignment_number }}{% else %}—{% endif %}</td>
+        <td data-label="Comments" style="padding:8px;">{% if row.comments %}{{ row.comments }}{% else %}—{% endif %}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" class="muted" style="padding:12px;">No entries yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<div class="card">
+  <h2>Add entry</h2>
+  <form method="post" action="">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {{ form.as_p }}
+    <p><button type="submit">Save</button></p>
+  </form>
+</div>
+{% endblock %}

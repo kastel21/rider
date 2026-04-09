@@ -1,0 +1,15 @@
+*.pyc
+__pycache__/
+.venv/
+venv/
+db.sqlite3
+# Bundled desktop snapshot (generated from project db.sqlite3 at build time)
+desktop_seed/db.sqlite3
+staticfiles/
+.env
+node_modules/
+dist-electron/
+build/
+dist/
+*.log
+.DS_Store

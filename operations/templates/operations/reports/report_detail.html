@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}Report #{{ report.pk }}{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Report #{{ report.pk }}</h1>
+  <p class="muted" style="margin:0.25rem 0 0;">
+    <strong>{{ report_subject.name }}</strong>
+    · {{ report_subject.province }} · {{ report_subject.district }}
+  </p>
+  <p class="muted" style="margin:0.35rem 0 0;font-size:0.92rem;">
+    Week: <strong>{{ week_range_label }}</strong>
+    {% if report.submitted_at %}
+      · Submitted {{ report.submitted_at|date:"Y-m-d H:i" }}
+    {% endif %}
+  </p>
+
+  {% if week_metrics %}
+  <div class="rider-home-metrics" style="margin-top:1rem;">
+    <div class="rider-home-metric-card">
+      <span class="rider-home-metric-label">Status</span>
+      <strong class="rider-home-metric-value">{{ week_metrics.status_display }}</strong>
+    </div>
+    <div class="rider-home-metric-card">
+      <span class="rider-home-metric-label">Samples collected</span>
+      <strong class="rider-home-metric-value">{{ week_metrics.samples_collected }}</strong>
+    </div>
+    <div class="rider-home-metric-card">
+      <span class="rider-home-metric-label">Trips</span>
+      <strong class="rider-home-metric-value">{{ week_metrics.trip_count }}</strong>
+    </div>
+    <div class="rider-home-metric-card">
+      <span class="rider-home-metric-label">Results moved</span>
+      <strong class="rider-home-metric-value">{{ week_metrics.total_results }}</strong>
+    </div>
+    <div class="rider-home-metric-card">
+      <span class="rider-home-metric-label">Distance (km)</span>
+      <strong class="rider-home-metric-value">{{ week_metrics.total_distance }}</strong>
+    </div>
+  </div>
+  {% endif %}
+
+  <h2 style="margin-top:1.25rem;">Details</h2>
+  <dl class="detail-grid">
+    {% if report.rider.profile.role == 'driver' %}
+    <dt>Vehicle registration</dt><dd>{% if report.car %}{{ report.car.code }}{% else %}—{% endif %}</dd>
+    {% else %}
+    <dt>{% if report.car %}Vehicle registration{% else %}Bike registration{% endif %}</dt><dd>{% if report.car %}{{ report.car.code }}{% elif report.bike %}{{ report.bike.code }}{% else %}—{% endif %}</dd>
+    {% endif %}
+    <dt>Data logger avg. temperature</dt><dd>{% if report.average_datalogger_temperature is not None %}{{ report.average_datalogger_temperature }}{% else %}—{% endif %}</dd>
+    <dt>Title</dt><dd>{{ report.title|default:"—" }}</dd>
+    <dt>Notes</dt><dd>{{ report.notes|linebreaksbr|default:"—" }}</dd>
+  </dl>
+  <h2>Trip rows for this week</h2>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Date</th>
+        <th>Purpose</th>
+        <th>Route</th>
+        <th>From</th>
+        <th>To</th>
+        <th>Specimens</th>
+        <th>Results</th>
+        <th>Fuel</th>
+        <th>Distance</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in report.trip_entries.all %}
+      <tr>
+        <td>{{ row.sequence }}</td>
+        <td>{{ row.entry_date|default:"-" }}</td>
+        <td>{% if row.visit_purpose %}{{ row.get_visit_purpose_display }}{% else %}—{% endif %}</td>
+        <td>{% if row.route_kind %}{{ row.get_route_kind_display }}{% else %}—{% endif %}</td>
+        <td>{{ row.origin_facility.name|default:"—" }}</td>
+        <td>{{ row.destination_facility.name|default:"—" }}</td>
+        <td>{{ row.specimens_total }}</td>
+        <td>{{ row.results_total }}</td>
+        <td>{{ row.fuel_used }} / {{ row.fuel_allocated }}</td>
+        <td>{{ row.distance_travelled }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="10">No trip rows yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h2>Sample rejections</h2>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Total</th>
+        <th>Too old</th>
+        <th>Info mismatch</th>
+        <th>Form missing</th>
+        <th>Sample missing</th>
+        <th>Other</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for rej in report.sample_rejections.all %}
+      <tr>
+        <td>{{ rej.get_sample_type_display }}</td>
+        <td>{{ rej.rejected_total }}</td>
+        <td>{{ rej.rejected_too_old }}</td>
+        <td>{{ rej.rejected_patient_info_mismatch }}</td>
+        <td>{{ rej.rejected_request_form_missing }}</td>
+        <td>{{ rej.rejected_sample_missing }}</td>
+        <td>{{ rej.rejected_other }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7">No sample rejections recorded.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <p style="margin-top:1rem;">
+    <a href="{{ detail_back_url }}">Back to list</a>
+    {% if rider_can_edit %}
+      | <a href="{% url 'operations:report_edit' report.pk %}">Edit (rider)</a>
+    {% endif %}
+    {% if pc_can_edit %}
+      | <a href="{% url 'operations:pc_report_edit' report.pk %}">Edit (PC)</a>
+    {% endif %}
+  </p>
+</div>
+{% endblock %}

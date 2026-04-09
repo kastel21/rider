@@ -1,0 +1,48 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% if ops_remote_api_base %}
+  <meta name="ops-api-base" content="{{ ops_remote_api_base }}">
+  {% endif %}
+  {% if ops_sync_mode %}
+  <meta name="ops-sync-mode" content="{{ ops_sync_mode }}">
+  {% endif %}
+  <title>{% block title %}Operations{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/standalone-shell.css' %}">
+  <link rel="stylesheet" href="{% static 'css/dashboard-record.css' %}">
+  <link rel="stylesheet" href="{% static 'css/app-chrome.css' %}">
+  {% block extra_css %}{% endblock %}
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="{% block body_class %}dashboard-shell{% endblock %}{% if user.is_authenticated %} has-sidebar{% endif %}">
+  {% csrf_token %}
+  <div class="app-layout{% if not user.is_authenticated %} app-layout--anon{% endif %}" id="app-layout">
+    {% if user.is_authenticated %}
+    {% include "components/sidebar.html" %}
+    {% endif %}
+    <div class="app-main-column">
+      {% if user.is_authenticated %}
+      {% include "components/nav.html" %}
+      {% endif %}
+      <main class="main-content">
+        {% if messages %}
+          <ul class="messages">
+            {% for message in messages %}
+              <li class="msg-{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+  {% if user.is_authenticated %}
+  <div class="app-sidebar-backdrop" id="app-sidebar-backdrop" hidden aria-hidden="true"></div>
+  <script src="{% static 'js/sidebar.js' %}" defer></script>
+  {% endif %}
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

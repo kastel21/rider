@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Edit bike · {{ object.registration_number }}{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Edit bike: {{ object.registration_number }}</h1>
+  <p class="muted">{{ object.district.name }} · {{ object.district.province.name }}</p>
+  <p><a href="{% url 'operations:pc_bike_functionality' %}">← Back to list</a></p>
+  <form method="post" action="">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {{ form.as_p }}
+    <p><button type="submit">Save</button></p>
+  </form>
+</div>
+{% endblock %}

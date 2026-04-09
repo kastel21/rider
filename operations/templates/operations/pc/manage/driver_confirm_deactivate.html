@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Deactivate driver{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Deactivate driver</h1>
+  <p>
+    Deactivate <strong>{{ driver_profile.user.username }}</strong>?
+    They will not be able to sign in. Weekly reports and history stay in the system.
+  </p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn-dash">Deactivate</button>
+    <a href="{% url 'operations:pc_manage_drivers' %}" class="btn-dash">Cancel</a>
+  </form>
+</div>
+{% endblock %}

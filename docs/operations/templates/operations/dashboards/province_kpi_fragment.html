@@ -1,0 +1,6 @@
+<div class="grid gap-4 sm:grid-cols-2">
+  <p class="text-sm text-gray-500">Specimens: <strong>{{ total_specimens|default:0 }}</strong></p>
+  <p class="text-sm text-gray-500">Results: <strong>{{ total_results|default:0 }}</strong></p>
+  <p class="text-sm text-gray-500">Fuel efficiency: <strong>{{ fuel_efficiency|floatformat:2 }}</strong></p>
+  <p class="text-sm text-gray-500">Visit completion: <strong>{{ visit_completion|floatformat:0 }}%</strong></p>
+</div>

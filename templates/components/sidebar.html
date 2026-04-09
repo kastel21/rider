@@ -1,0 +1,59 @@
+{% if user.is_authenticated %}
+<aside class="app-sidebar" id="app-sidebar" aria-label="Main navigation">
+  <div class="app-sidebar__inner">
+    <div class="app-sidebar__toolbar">
+      <button type="button" class="app-sidebar__collapse-btn" id="sidebar-collapse-toggle" aria-expanded="true" aria-controls="app-sidebar" title="Collapse sidebar">
+        <span class="app-sidebar__collapse-icon" aria-hidden="true">⟨</span>
+      </button>
+    </div>
+    <nav class="app-sidebar__nav">
+      <a href="{% url 'operations:role_redirect' %}" class="app-sidebar__link" title="Home">
+        <span class="app-sidebar__glyph" aria-hidden="true">H</span>
+        <span class="app-sidebar__text">Home</span>
+      </a>
+      {% if user_role == "pc" or user_role == "admin" %}
+      <a href="{% url 'operations:pc_reports' %}" class="app-sidebar__link" title="My reports">
+        <span class="app-sidebar__glyph" aria-hidden="true">R</span>
+        <span class="app-sidebar__text">My reports</span>
+      </a>
+      <a href="{% url 'operations:pc_manage' %}" class="app-sidebar__link" title="Manage data">
+        <span class="app-sidebar__glyph" aria-hidden="true">M</span>
+        <span class="app-sidebar__text">Manage data</span>
+      </a>
+      <a href="{% url 'operations:pc_manage_bikes' %}" class="app-sidebar__link" title="Bike status">
+        <span class="app-sidebar__glyph" aria-hidden="true">B</span>
+        <span class="app-sidebar__text">Bike status</span>
+      </a>
+      <a href="{% url 'operations:pc_referred_samples_list' %}" class="app-sidebar__link" title="Referred samples">
+        <span class="app-sidebar__glyph" aria-hidden="true">S</span>
+        <span class="app-sidebar__text">Referred samples</span>
+      </a>
+      <a href="{% url 'operations:pc_accidents_incomplete' %}" class="app-sidebar__link" title="Accidents and incomplete trips">
+        <span class="app-sidebar__glyph" aria-hidden="true">A</span>
+        <span class="app-sidebar__text">Accidents &amp; incomplete</span>
+      </a>
+      {% elif user_role == "me" %}
+      <a href="{% url 'operations:me_reports' %}" class="app-sidebar__link" title="My reports">
+        <span class="app-sidebar__glyph" aria-hidden="true">R</span>
+        <span class="app-sidebar__text">My reports</span>
+      </a>
+      {% else %}
+      <a href="{% url 'operations:rider_reports' %}" class="app-sidebar__link" title="My reports">
+        <span class="app-sidebar__glyph" aria-hidden="true">R</span>
+        <span class="app-sidebar__text">My reports</span>
+      </a>
+      {% endif %}
+      {% if user_role == "rider" or user_role == "driver" %}
+      <a href="{% url 'operations:report_create' %}" class="app-sidebar__link" title="New report">
+        <span class="app-sidebar__glyph" aria-hidden="true">N</span>
+        <span class="app-sidebar__text">New report</span>
+      </a>
+      {% endif %}
+      <a href="{% url 'operations:password_change' %}" class="app-sidebar__link" title="Change password">
+        <span class="app-sidebar__glyph" aria-hidden="true">P</span>
+        <span class="app-sidebar__text">Change password</span>
+      </a>
+    </nav>
+  </div>
+</aside>
+{% endif %}

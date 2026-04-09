@@ -1,0 +1,15 @@
+Django>=4.2
+python-dotenv>=1.0
+psycopg2-binary>=2.9
+django-tailwind>=3.8
+django-browser-reload>=1.12
+openpyxl>=3.1
+reportlab>=4.0
+djangorestframework>=3.14
+djangorestframework-simplejwt>=5.3
+mssql-django>=1.5
+pyodbc>=5.1
+# Desktop bundle (Waitress + pywebview + WhiteNoise; build with: pyinstaller rider_desktop.spec)
+whitenoise>=6.6
+waitress>=3.0
+pywebview>=5.0

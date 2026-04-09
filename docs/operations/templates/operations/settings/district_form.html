@@ -1,0 +1,93 @@
+mmedValue;
+      }
+      if (
+        parameterString !== '' &&
+        SafeStringPrototypeSearch(parameterString,
+                                  NOT_HTTP_TOKEN_CODE_POINT) === -1 &&
+        SafeStringPrototypeSearch(parameterValue,
+                                  NOT_HTTP_QUOTED_STRING_CODE_POINT) === -1 &&
+        paramsMap.has(parameterString) === false
+      ) {
+        paramsMap.set(parameterString, parameterValue);
+      }
+      position++;
+    }
+    this.#data = paramsMap;
+    this.#processed = true;
+  }
+}
+const MIMEParamsStringify = MIMEParams.prototype.toString;
+ObjectDefineProperty(MIMEParams.prototype, SymbolIterator, {
+  __proto__: null,
+  configurable: true,
+  value: MIMEParams.prototype.entries,
+  writable: true,
+});
+ObjectDefineProperty(MIMEParams.prototype, 'toJSON', {
+  __proto__: null,
+  configurable: true,
+  value: MIMEParamsStringify,
+  writable: true,
+});
+
+const { instantiateMimeParams } = MIMEParams;
+delete MIMEParams.instantiateMimeParams;
+
+class MIMEType {
+  #type;
+  #subtype;
+  #parameters;
+  constructor(string) {
+    string = `${string}`;
+    const data = parseTypeAndSubtype(string);
+    this.#type = data[0];
+    this.#subtype = data[1];
+    this.#parameters = instantiateMimeParams(StringPrototypeSlice(string, data[2]));
+  }
+
+  get type() {
+    return this.#type;
+  }
+
+  set type(v) {
+    v = `${v}`;
+    const invalidTypeIndex = SafeStringPrototypeSearch(v, NOT_HTTP_TOKEN_CODE_POINT);
+    if (v.length === 0 || invalidTypeIndex !== -1) {
+      throw new ERR_INVALID_MIME_SYNTAX('type', v, invalidTypeIndex);
+    }
+    this.#type = toASCIILower(v);
+  }
+
+  get subtype() {
+    return this.#subtype;
+  }
+
+  set subtype(v) {
+    v = `${v}`;
+    const invalidSubtypeIndex = SafeStringPrototypeSearch(v, NOT_HTTP_TOKEN_CODE_POINT);
+    if (v.length === 0 || invalidSubtypeIndex !== -1) {
+      throw new ERR_INVALID_MIME_SYNTAX('subtype', v, invalidSubtypeIndex);
+    }
+    this.#subtype = toASCIILower(v);
+  }
+
+  get essence() {
+    return `${this.#type}/${this.#subtype}`;
+  }
+
+  get params() {
+    return this.#parameters;
+  }
+
+  toString() {
+    let ret = `${this.#type}/${this.#subtype}`;
+    const paramStr = FunctionPrototypeCall(MIMEParamsStringify, this.#parameters);
+    if (paramStr.length) ret += `;${paramStr}`;
+    return ret;
+  }
+}
+ObjectDefineProperty(MIMEType.prototype, 'toJSON', {
+  __proto__: null,
+  configurable: true,
+  value: MIMEType.prototype.toString,
+  writable: tru
