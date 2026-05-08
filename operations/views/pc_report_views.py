@@ -1,8 +1,10 @@
+from decimal import Decimal, InvalidOperation
 from urllib.parse import urlencode
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
+from django.db.models import Sum
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views import View
@@ -10,7 +12,7 @@ from django.views.generic import ListView
 from django.views.generic.edit import UpdateView
 
 from ..forms import PCReportForm, ReportReviewForm, RiderTripEntryFormSet, SampleRejectionFormSet
-from ..models import ReportAuditLog, RiderWeeklyReport
+from ..models import ReportAuditLog, RiderTripEntry, RiderWeeklyReport
 from ..permissions import can_edit_report_as_pc, require_pc
 from ..selectors import (
     get_reports_queryset,
@@ -26,6 +28,68 @@ from .report_views import (
     _rollup_totals,
     _week_saved_table_context,
 )
+
+
+def _pc_fuel_week_totals_from_db(report: RiderWeeklyReport) -> dict:
+    s = report.trip_entries.aggregate(
+        a=Sum("fuel_allocated"),
+        u=Sum("fuel_used"),
+        d=Sum("distance_travelled"),
+    )
+    return {
+        "allocated": str(s["a"] if s["a"] is not None else Decimal("0")),
+        "used": str(s["u"] if s["u"] is not None else Decimal("0")),
+        "distance": str(s["d"] if s["d"] is not None else Decimal("0")),
+    }
+
+
+def _pc_fuel_week_totals_from_post(post) -> dict:
+    return {
+        "allocated": (post.get("pc_fuel_allocated_total") or "0").strip(),
+        "used": (post.get("pc_fuel_used_total") or "0").strip(),
+        "distance": (post.get("pc_distance_travelled_total") or "0").strip(),
+    }
+
+
+def _parse_pc_fuel_week_post(post) -> tuple[Decimal, Decimal, Decimal]:
+    def one(key: str) -> Decimal:
+        raw = (post.get(key) or "").strip().replace(",", ".")
+        if not raw:
+            return Decimal("0")
+        try:
+            return Decimal(raw)
+        except InvalidOperation as e:
+            raise ValueError("Enter a valid number for week fuel or distance totals.") from e
+
+    return (
+        one("pc_fuel_allocated_total"),
+        one("pc_fuel_used_total"),
+        one("pc_distance_travelled_total"),
+    )
+
+
+def _apply_pc_week_fuel_distance_rollup(
+    report: RiderWeeklyReport,
+    fuel_allocated: Decimal,
+    fuel_used: Decimal,
+    distance: Decimal,
+) -> None:
+    qs = report.trip_entries.order_by("sequence", "pk")
+    first = qs.first()
+    if not first:
+        return
+    RiderTripEntry.objects.filter(pk=first.pk).update(
+        fuel_allocated=fuel_allocated,
+        fuel_used=fuel_used,
+        distance_travelled=distance,
+    )
+    rest_ids = list(qs.exclude(pk=first.pk).values_list("pk", flat=True))
+    if rest_ids:
+        RiderTripEntry.objects.filter(pk__in=rest_ids).update(
+            fuel_allocated=Decimal("0"),
+            fuel_used=Decimal("0"),
+            distance_travelled=Decimal("0"),
+        )
 
 
 class PCReportEditView(LoginRequiredMixin, UpdateView):
@@ -55,6 +119,8 @@ class PCReportEditView(LoginRequiredMixin, UpdateView):
         return obj
 
     def get_context_data(self, **kwargs):
+        pc_fuel_post_override = kwargs.pop("pc_fuel_post_override", None)
+        pc_fuel_aggregate_errors = kwargs.pop("pc_fuel_aggregate_errors", None)
         ctx = super().get_context_data(**kwargs)
         ctx["is_pc_edit"] = True
         report = self.object
@@ -99,6 +165,12 @@ class PCReportEditView(LoginRequiredMixin, UpdateView):
         report = self.object
         ctx.update(_week_saved_table_context(report, report.rider, report.week_start))
         ctx["pc_visit_count"] = report.trip_entries.count()
+        if ctx.get("is_pc_edit"):
+            if pc_fuel_post_override is not None:
+                ctx["pc_fuel_week_totals"] = _pc_fuel_week_totals_from_post(pc_fuel_post_override)
+            else:
+                ctx["pc_fuel_week_totals"] = _pc_fuel_week_totals_from_db(report)
+            ctx["pc_fuel_aggregate_errors"] = list(pc_fuel_aggregate_errors or [])
         return ctx
 
     def form_valid(self, form):
@@ -112,7 +184,33 @@ class PCReportEditView(LoginRequiredMixin, UpdateView):
         )
         if not trip_formset.is_valid():
             return self.render_to_response(
-                self.get_context_data(form=form, trip_formset=trip_formset)
+                self.get_context_data(
+                    form=form,
+                    trip_formset=trip_formset,
+                    pc_fuel_post_override=self.request.POST,
+                )
+            )
+        try:
+            fuel_alloc, fuel_used, distance_km = _parse_pc_fuel_week_post(self.request.POST)
+        except ValueError as exc:
+            return self.render_to_response(
+                self.get_context_data(
+                    form=form,
+                    trip_formset=trip_formset,
+                    pc_fuel_post_override=self.request.POST,
+                    pc_fuel_aggregate_errors=[str(exc)],
+                )
+            )
+        if fuel_used > fuel_alloc:
+            return self.render_to_response(
+                self.get_context_data(
+                    form=form,
+                    trip_formset=trip_formset,
+                    pc_fuel_post_override=self.request.POST,
+                    pc_fuel_aggregate_errors=[
+                        "Fuel used cannot exceed fuel allocated (week totals)."
+                    ],
+                )
             )
         track = ["pc_notes", "scheduled_visits"]
         before = {k: getattr(self.object, k) for k in track}
@@ -122,6 +220,9 @@ class PCReportEditView(LoginRequiredMixin, UpdateView):
                 trip_formset.instance = self.object
                 trip_formset.save()
                 _resequence_trip_entries(self.object)
+                _apply_pc_week_fuel_distance_rollup(
+                    self.object, fuel_alloc, fuel_used, distance_km
+                )
                 _rollup_totals(self.object)
                 rejection_formset = SampleRejectionFormSet(
                     self.request.POST, instance=self.object, prefix="rejections"
@@ -133,6 +234,7 @@ class PCReportEditView(LoginRequiredMixin, UpdateView):
                             form=form,
                             trip_formset=trip_formset,
                             rejection_formset=rejection_formset,
+                            pc_fuel_post_override=self.request.POST,
                         )
                     )
                 rejection_formset.save()

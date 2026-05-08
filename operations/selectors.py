@@ -60,18 +60,19 @@ def monday_of_week_containing(day: date) -> date:
     return day - timedelta(days=day.weekday())
 
 
-def week_start_from_request(request) -> date:
+def week_start_from_request(request, *, default_week_monday: date | None = None) -> date:
     """
     Parse optional ``?week=YYYY-MM-DD`` (any day in the week); return that week's Monday.
-    Falls back to the current week's Monday if missing or invalid.
+    If the parameter is missing or invalid, returns ``default_week_monday`` when
+    provided, otherwise the current week's Monday.
     """
     raw = (request.GET.get("week") or "").strip()
     if not raw:
-        return monday_of_local_today()
+        return default_week_monday if default_week_monday is not None else monday_of_local_today()
     try:
         d = date.fromisoformat(raw[:10])
     except ValueError:
-        return monday_of_local_today()
+        return default_week_monday if default_week_monday is not None else monday_of_local_today()
     return monday_of_week_containing(d)
 
 
@@ -86,10 +87,18 @@ def rider_home_profile_metrics(user) -> dict:
     profile = getattr(user, "profile", None)
     role_display = profile.get_role_display() if profile else ""
     joined = getattr(user, "date_joined", None)
+    support_type = "—"
+    if rp:
+        if rp.support_type:
+            support_type = rp.get_support_type_display()
+        elif district and district.support_type:
+            support_type = district.get_support_type_display()
+
     return {
         "display_name": user.get_full_name() or user.username,
         "district": getattr(district, "name", None) or "—",
         "province": getattr(province, "name", None) or "—",
+        "support_type": support_type,
         "role_display": role_display,
         "member_since": joined.date() if joined else None,
         "total_reports": qs.count(),

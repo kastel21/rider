@@ -12,6 +12,7 @@ from .models import (
     Car,
     District,
     Facility,
+    PCAccidentDetail,
     PCDistrictWeeklyTransportStat,
     ReferredSample,
     RiderProfile,
@@ -23,7 +24,13 @@ from .models import (
     TripTransportKind,
     UserProfile,
 )
-from .selectors import bikes_queryset_for_rider_district, get_districts_queryset, get_facilities_queryset
+from .selectors import (
+    bikes_queryset_for_rider_district,
+    get_bikes_queryset,
+    get_districts_queryset,
+    get_facilities_queryset,
+    get_riders_queryset,
+)
 from .services.trip_facilities import (
     facilities_for_rider_endpoint,
     facility_allowed_for_user,
@@ -259,6 +266,10 @@ class RiderTripEntryForm(forms.ModelForm):
             "fuel_used",
             "distance_travelled",
         ]
+        labels = {
+            "specimens_other_specify": "others",
+            "results_other_specify": "others",
+        }
         widgets = {
             "transport_kind": forms.HiddenInput,
             "entry_date": forms.HiddenInput,
@@ -273,9 +284,13 @@ class RiderTripEntryForm(forms.ModelForm):
     def __init__(self, *args, user=None, pc_province_ids=None, **kwargs):
         self.driver_numeric_required = kwargs.pop("driver_numeric_required", False)
         self.include_transport_kind = kwargs.pop("include_transport_kind", False)
+        self._pc_aggregate_fuel = kwargs.pop("pc_aggregate_fuel", False)
         self._entry_user = user
         self._pc_province_ids = pc_province_ids
         super().__init__(*args, **kwargs)
+        if self._pc_aggregate_fuel:
+            for name in _DECIMAL_TRIP_FIELDS:
+                self.fields.pop(name, None)
         if not self.include_transport_kind:
             self.fields.pop("transport_kind", None)
         elif self._pc_province_ids is not None:
@@ -385,6 +400,53 @@ class RiderTripEntryForm(forms.ModelForm):
         cleaned = super().clean()
         if cleaned.get("DELETE"):
             return cleaned
+        if getattr(self, "_pc_aggregate_fuel", False):
+            cleaned["fuel_allocated"] = Decimal("0")
+            cleaned["fuel_used"] = Decimal("0")
+            cleaned["distance_travelled"] = Decimal("0")
+            if getattr(self.instance, "pk", None) and self.instance.entry_date is not None:
+                cleaned["entry_date"] = self.instance.entry_date
+            else:
+                cleaned["entry_date"] = timezone.localdate()
+            substantive = _row_has_substantive_trip_data(cleaned)
+            explicit_zero = self.driver_numeric_required and _driver_explicit_zero_row(cleaned)
+            if not substantive and not explicit_zero:
+                return cleaned
+            if explicit_zero and not substantive:
+                return cleaned
+            purpose = (cleaned.get("visit_purpose") or "").strip()
+            rk = (cleaned.get("route_kind") or "").strip()
+            origin = cleaned.get("origin_facility")
+            dest = cleaned.get("destination_facility")
+            if not purpose:
+                self.add_error("visit_purpose", "Select visit purpose for each trip row with data.")
+            if not rk:
+                self.add_error("route_kind", "Select route type for each trip row with data.")
+            if not origin:
+                self.add_error("origin_facility", "Select the From facility.")
+            if not dest:
+                self.add_error("destination_facility", "Select the To facility.")
+            if not (purpose and rk and origin and dest):
+                return cleaned
+            pair = route_endpoint_kinds(rk)
+            if not pair:
+                self.add_error("route_kind", "Invalid route type.")
+                return cleaned
+            u = self._entry_user
+            if u is None:
+                return cleaned
+            p_kw = {}
+            if self._pc_province_ids is not None:
+                p_kw["province_ids"] = self._pc_province_ids
+            if origin.kind != pair[0]:
+                self.add_error("origin_facility", "From site does not match this route type.")
+            elif not facility_allowed_for_user(u, origin, rk, "from", **p_kw):
+                self.add_error("origin_facility", "From site is not valid for your scope.")
+            if dest.kind != pair[1]:
+                self.add_error("destination_facility", "To site does not match this route type.")
+            elif not facility_allowed_for_user(u, dest, rk, "to", **p_kw):
+                self.add_error("destination_facility", "To site is not valid for your scope.")
+            return cleaned
         if self.driver_numeric_required:
             self._clean_driver_required_numerics(cleaned)
             if self._errors:
@@ -484,6 +546,7 @@ class RiderTripEntryInlineFormSet(BaseInlineFormSet):
         self.fixed_transport_kind = fixed_transport_kind
         self.driver_dual_mode = driver_dual_mode
         self.include_transport_kind = include_transport_kind
+        self.pc_aggregate_fuel = kwargs.pop("pc_aggregate_fuel", False)
         super().__init__(*args, **kwargs)
 
     def _construct_form(self, i, **kwargs):
@@ -491,6 +554,7 @@ class RiderTripEntryInlineFormSet(BaseInlineFormSet):
         kwargs["pc_province_ids"] = self._pc_province_ids
         kwargs["driver_numeric_required"] = self.driver_dual_mode
         kwargs["include_transport_kind"] = self.include_transport_kind
+        kwargs["pc_aggregate_fuel"] = self.pc_aggregate_fuel
         form = super()._construct_form(i, **kwargs)
         if self.driver_dual_mode and self.fixed_transport_kind is not None and not form.instance.pk:
             form.instance.transport_kind = self.fixed_transport_kind
@@ -594,8 +658,8 @@ class BikeForm(forms.ModelForm):
             "snp_inclement_weather": "Inclement weather",
             "snp_bike_accident": "Bike accident / damaged",
             "snp_clinical_ip": "Clinical IPs related issues",
-            "snp_other": "Other reasons (days)",
-            "snp_other_specify": "Other reasons — specify",
+            "snp_other": "other reasons (days)",
+            "snp_other_specify": "other reasons",
             "mitigation_measures": "Mitigation measures",
             "affected_facilities": "Affected facilities",
         }
@@ -697,8 +761,8 @@ class CarForm(forms.ModelForm):
             "snp_inclement_weather": "Inclement weather",
             "snp_bike_accident": "Vehicle accident / damaged",
             "snp_clinical_ip": "Clinical IPs related issues",
-            "snp_other": "Other reasons (days)",
-            "snp_other_specify": "Other reasons — specify",
+            "snp_other": "other reasons (days)",
+            "snp_other_specify": "other reasons",
             "mitigation_measures": "Mitigation measures",
             "affected_facilities": "Affected facilities",
         }
@@ -1065,6 +1129,7 @@ class ReferredSampleForm(forms.ModelForm):
 PC_TRANS_SAVE_ACCIDENTS = "accidents"
 PC_TRANS_SAVE_INCOMPLETE = "incomplete"
 PC_TRANS_FORM_PREFIX_ACCIDENTS = "pc_trans_acc"
+PC_TRANS_FORM_PREFIX_ACCIDENT_DETAILS = "pc_acc_det"
 PC_TRANS_FORM_PREFIX_INCOMPLETE = "pc_trans_inc"
 
 _PC_TRANS_INCOMPLETE_NUM_FIELDS = (
@@ -1132,6 +1197,114 @@ class PCDistrictWeeklyTransportStatAccidentsForm(forms.ModelForm):
         if d is None and ra == 0:
             return
         super()._post_clean()
+
+
+_PC_ACC_RIDER_BIKE_WIDGET = forms.Select(attrs={"class": "report-bike-select pc-trans-district"})
+_PC_ACC_CAUSE_WIDGET = forms.Textarea(attrs={"rows": 3, "class": "pc-trans-comments"})
+_PC_ACC_STATUS_WIDGET = forms.Select(attrs={"class": "report-bike-select pc-trans-district"})
+
+
+class PCAccidentDetailForm(forms.ModelForm):
+    class Meta:
+        model = PCAccidentDetail
+        fields = ["rider", "bike", "accident_cause", "bike_status", "rider_injury_status"]
+        widgets = {
+            "rider": _PC_ACC_RIDER_BIKE_WIDGET,
+            "bike": _PC_ACC_RIDER_BIKE_WIDGET,
+            "accident_cause": _PC_ACC_CAUSE_WIDGET,
+            "bike_status": _PC_ACC_STATUS_WIDGET,
+            "rider_injury_status": _PC_ACC_STATUS_WIDGET,
+        }
+        labels = {
+            "accident_cause": "Cause of accident",
+            "bike_status": "Status of bike",
+            "rider_injury_status": "Status of rider",
+        }
+
+    def __init__(self, *args, pc_user=None, **kwargs):
+        self._pc_user = pc_user
+        super().__init__(*args, **kwargs)
+        r_qs = get_riders_queryset(pc_user).order_by(
+            "district__province__name", "district__name", "user__last_name", "user__first_name"
+        )
+        self.fields["rider"].queryset = r_qs
+        self.fields["rider"].required = False
+        self.fields["rider"].empty_label = "Select rider…"
+        if not r_qs.exists():
+            self.fields["rider"].empty_label = "No riders in your scope"
+        b_qs = get_bikes_queryset(pc_user).order_by("code")
+        self.fields["bike"].queryset = b_qs
+        self.fields["bike"].required = False
+        self.fields["bike"].empty_label = "Select bike…"
+        if not b_qs.exists():
+            self.fields["bike"].empty_label = "No bikes in your scope"
+        if "DELETE" in self.fields:
+            self.fields["DELETE"].label = "Remove"
+            self.fields["DELETE"].widget.attrs.setdefault("class", "pc-acc-del")
+
+    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get("DELETE"):
+            return cleaned
+        rider = cleaned.get("rider")
+        bike = cleaned.get("bike")
+        cause = (cleaned.get("accident_cause") or "").strip()
+        if rider is None and bike is None and not cause:
+            return cleaned
+        if rider is None:
+            raise ValidationError({"rider": "Select a rider, or clear this row."})
+        if bike is None:
+            raise ValidationError({"bike": "Select a bike for this accident."})
+        if self._pc_user is not None:
+            if not get_riders_queryset(self._pc_user).filter(pk=rider.pk).exists():
+                raise ValidationError({"rider": "Rider not in your scope."})
+            if not get_bikes_queryset(self._pc_user).filter(pk=bike.pk).exists():
+                raise ValidationError({"bike": "Bike not in your scope."})
+        return cleaned
+
+    def _post_clean(self):
+        if not hasattr(self, "cleaned_data") or not self.cleaned_data:
+            return super()._post_clean()
+        if self.cleaned_data.get("DELETE"):
+            return super()._post_clean()
+        rider = self.cleaned_data.get("rider")
+        bike = self.cleaned_data.get("bike")
+        if rider is None and bike is None:
+            return
+        super()._post_clean()
+
+
+class PCAccidentDetailBaseFormSet(BaseModelFormSet):
+    def __init__(self, *args, pc_user=None, week_start=None, **kwargs):
+        self._pc_user = pc_user
+        self._week_start = week_start
+        super().__init__(*args, **kwargs)
+
+    def _construct_form(self, i, **kwargs):
+        kwargs["pc_user"] = self._pc_user
+        return super()._construct_form(i, **kwargs)
+
+    def save(self, commit=True):
+        instances = super().save(commit=False)
+        instances = [obj for obj in instances if obj.rider_id is not None and obj.bike_id is not None]
+        for obj in instances:
+            obj.week_start = self._week_start
+        if commit:
+            for obj in self.deleted_objects:
+                obj.delete()
+            for obj in instances:
+                obj.save()
+            self.save_m2m()
+        return instances
+
+
+PCAccidentDetailFormSet = modelformset_factory(
+    PCAccidentDetail,
+    form=PCAccidentDetailForm,
+    formset=PCAccidentDetailBaseFormSet,
+    extra=1,
+    can_delete=True,
+)
 
 
 class PCDistrictWeeklyTransportStatIncompleteForm(forms.ModelForm):

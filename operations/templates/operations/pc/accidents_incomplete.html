@@ -48,39 +48,82 @@
   </div>
 
   <p class="muted pc-trans-tab-hint" style="margin:0 0 0.75rem;font-size:0.88rem;" id="pc-trans-tab-hint">
-    <span data-pc-trans-hint="accidents"{% if active_tab != "accidents" %} hidden{% endif %}><strong>Accidents:</strong> district and number of rider accidents only.</span>
+    <span data-pc-trans-hint="accidents"{% if active_tab != "accidents" %} hidden{% endif %}><strong>Accidents:</strong> district totals below, plus optional per-accident rows (rider, bike, cause, bike and rider status).</span>
     <span data-pc-trans-hint="incomplete"{% if active_tab != "incomplete" %} hidden{% endif %}><strong>Incomplete trips:</strong> incomplete bike transport, non-IST specimen counts, and comments — rider accidents are entered on the Accidents tab.</span>
   </p>
 
   <div class="pc-trans-panel" data-pc-trans-panel="accidents" id="pc-trans-panel-accidents" role="tabpanel" aria-labelledby="pc-trans-tab-accidents"{% if active_tab != "accidents" %} hidden{% endif %}>
     <form method="post" action="{% url 'operations:pc_accidents_incomplete' %}?week={{ selected_week_start|date:'Y-m-d' }}" class="pc-trans-stats-form" id="pc-trans-acc-form">
       {% csrf_token %}
-      {{ acc_formset.management_form }}
-      {{ acc_formset.non_form_errors }}
-      <div style="overflow-x:auto;margin-top:0.5rem;">
-        <table class="data-table pc-trans-data-table pc-trans-data-table--accidents">
-          <thead>
-            <tr>
-              <th class="pc-trans-col pc-trans-col--district" scope="col">District</th>
-              <th class="pc-trans-col pc-trans-col--accidents" scope="col">Number of rider accidents</th>
-            </tr>
-          </thead>
-          <tbody data-pc-trans-tbody data-pc-trans-prefix="{{ acc_formset.prefix }}">
-            {% for form in acc_formset %}
-            <tr class="pc-trans-row" data-pc-trans-row>
-              <td class="pc-trans-col pc-trans-col--district">
-                {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
-                {{ form.district.errors }}{{ form.district }}
-              </td>
-              <td class="pc-trans-col pc-trans-col--accidents">{{ form.rider_accidents.errors }}{{ form.rider_accidents }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+      <div data-pc-trans-add-wrap>
+        {{ acc_formset.management_form }}
+        {{ acc_formset.non_form_errors }}
+        <h2 class="pc-trans-subheading" style="margin:0 0 0.5rem;font-size:1rem;font-weight:600;">District totals</h2>
+        <div style="overflow-x:auto;margin-top:0.5rem;">
+          <table class="data-table pc-trans-data-table pc-trans-data-table--accidents">
+            <thead>
+              <tr>
+                <th class="pc-trans-col pc-trans-col--district" scope="col">District</th>
+                <th class="pc-trans-col pc-trans-col--accidents" scope="col">Number of rider accidents</th>
+              </tr>
+            </thead>
+            <tbody data-pc-trans-tbody data-pc-trans-prefix="{{ acc_formset.prefix }}">
+              {% for form in acc_formset %}
+              <tr class="pc-trans-row" data-pc-trans-row>
+                <td class="pc-trans-col pc-trans-col--district">
+                  {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+                  {{ form.district.errors }}{{ form.district }}
+                </td>
+                <td class="pc-trans-col pc-trans-col--accidents">{{ form.rider_accidents.errors }}{{ form.rider_accidents }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <p style="margin-top:0.65rem;">
+          <button type="button" class="btn-dash btn-dash-secondary pc-trans-add-row" data-pc-trans-add-row>Add district row</button>
+        </p>
       </div>
-      <p style="margin-top:0.65rem;">
-        <button type="button" class="btn-dash btn-dash-secondary pc-trans-add-row" data-pc-trans-add-row>Add row</button>
-      </p>
+
+      <div data-pc-trans-add-wrap style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid #e2e8f0;">
+        {{ acc_detail_formset.management_form }}
+        {{ acc_detail_formset.non_form_errors }}
+        <h2 class="pc-trans-subheading" style="margin:0 0 0.5rem;font-size:1rem;font-weight:600;">Accident details</h2>
+        <p class="muted" style="margin:0 0 0.65rem;font-size:0.88rem;">One row per incident for this week. Use <strong>Remove</strong> to delete a saved row.</p>
+        <div style="overflow-x:auto;margin-top:0.5rem;">
+          <table class="data-table pc-trans-data-table pc-trans-data-table--accident-details">
+            <thead>
+              <tr>
+                <th scope="col">Rider</th>
+                <th scope="col">Bike</th>
+                <th scope="col">Cause of accident</th>
+                <th scope="col">Status of bike</th>
+                <th scope="col">Status of rider</th>
+                <th scope="col" class="pc-trans-col--narrow">Remove</th>
+              </tr>
+            </thead>
+            <tbody data-pc-trans-tbody data-pc-trans-prefix="{{ acc_detail_formset.prefix }}">
+              {% for form in acc_detail_formset %}
+              <tr class="pc-trans-row" data-pc-trans-row>
+                <td>
+                  {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+                  {{ form.rider.errors }}{{ form.rider }}
+                </td>
+                <td>{{ form.bike.errors }}{{ form.bike }}</td>
+                <td>{{ form.accident_cause.errors }}{{ form.accident_cause }}</td>
+                <td>{{ form.bike_status.errors }}{{ form.bike_status }}</td>
+                <td>{{ form.rider_injury_status.errors }}{{ form.rider_injury_status }}</td>
+                <td class="pc-trans-col--narrow">{{ form.DELETE.errors }}{{ form.DELETE }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <p style="margin-top:0.65rem;">
+          <button type="button" class="btn-dash btn-dash-secondary pc-trans-add-row" data-pc-trans-add-row>Add accident row</button>
+        </p>
+      </div>
+
       <p style="margin-top:0.65rem;">
         <button type="submit" name="pc_trans_save_scope" value="accidents" class="btn-dash btn-dash-primary">Save accidents</button>
       </p>

@@ -37,6 +37,26 @@
         <span class="app-sidebar__glyph" aria-hidden="true">R</span>
         <span class="app-sidebar__text">My reports</span>
       </a>
+      <a href="{% url 'operations:me_metrics' %}" class="app-sidebar__link" title="Program metrics overview">
+        <span class="app-sidebar__glyph" aria-hidden="true">K</span>
+        <span class="app-sidebar__text">M&amp;E overview</span>
+      </a>
+      <a href="{% url 'operations:me_metrics_riders' %}" class="app-sidebar__link" title="Rider weekly export">
+        <span class="app-sidebar__glyph" aria-hidden="true">B</span>
+        <span class="app-sidebar__text">M&amp;E riders</span>
+      </a>
+      <a href="{% url 'operations:me_metrics_drivers' %}" class="app-sidebar__link" title="Driver weekly export">
+        <span class="app-sidebar__glyph" aria-hidden="true">C</span>
+        <span class="app-sidebar__text">M&amp;E drivers</span>
+      </a>
+      <a href="{% url 'operations:me_metrics_referred_samples' %}" class="app-sidebar__link" title="Referred samples">
+        <span class="app-sidebar__glyph" aria-hidden="true">S</span>
+        <span class="app-sidebar__text">M&amp;E referred samples</span>
+      </a>
+      <a href="{% url 'operations:me_metrics_accidents_incomplete' %}" class="app-sidebar__link" title="Accidents and incomplete trips">
+        <span class="app-sidebar__glyph" aria-hidden="true">A</span>
+        <span class="app-sidebar__text">M&amp;E accidents &amp; incomplete</span>
+      </a>
       {% else %}
       <a href="{% url 'operations:rider_reports' %}" class="app-sidebar__link" title="My reports">
         <span class="app-sidebar__glyph" aria-hidden="true">R</span>

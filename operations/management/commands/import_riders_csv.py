@@ -88,14 +88,20 @@ class Command(BaseCommand):
             if not reader.fieldnames:
                 raise CommandError("CSV has no headers.")
             headers = {h.strip(): h for h in reader.fieldnames}
+            support_col_key = None
+            for cand in ("type of support", "Types of PEPFAR Support"):
+                if cand in headers:
+                    support_col_key = headers[cand]
+                    break
             required = [
                 "Name of Rider",
                 "Bike Registration Number",
                 "Province",
                 "District",
-                "Types of PEPFAR Support",
             ]
             missing = [r for r in required if r not in headers and f"{r} " not in headers]
+            if support_col_key is None:
+                missing.append("type of support")
             if missing:
                 raise CommandError(f"Missing required headers: {missing}")
 
@@ -108,7 +114,7 @@ class Command(BaseCommand):
                 bike_code = _norm_text(row.get(headers.get("Bike Registration Number", "Bike Registration Number"), "")).upper()
                 province_name = _canon_province(row.get(headers.get("Province", "Province "), ""))
                 district_name = _norm_text(row.get(headers.get("District", "District "), ""))
-                support_type = _canon_support(row.get(headers.get("Types of PEPFAR Support", "Types of PEPFAR Support"), ""))
+                support_type = _canon_support(row.get(support_col_key, ""))
                 rider_type = _norm_text(row.get(headers.get("Rider Type", "Rider Type"), "rider")).lower()
 
                 if not rider_name or not province_name or not district_name:

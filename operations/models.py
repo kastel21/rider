@@ -275,6 +275,18 @@ class RiderWeeklyReport(models.Model):
         blank=True,
         related_name="reports_reviewed",
     )
+    me_reviewed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When set, M&E has finalized review of this report and PCs may no longer edit it.",
+    )
+    me_reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reports_me_reviewed",
+    )
     pc_notes = models.TextField(blank=True)
     scheduled_visits = models.PositiveIntegerField(
         null=True,
@@ -681,6 +693,50 @@ class PCDistrictWeeklyTransportStat(models.Model):
 
     def __str__(self):
         return f"{self.week_start} / {self.district_id}"
+
+
+class PCAccidentDetail(models.Model):
+    """Per-incident accident line items entered by PC for a given reporting week."""
+
+    class BikeStatus(models.IntegerChoices):
+        WORKING = 1, "Working"
+        MINOR_DAMAGE = 2, "Minor damage"
+        WRITE_OFF = 3, "Write off"
+        MAJOR_DAMAGED = 4, "Major damaged"
+
+    class RiderInjuryStatus(models.IntegerChoices):
+        MINOR_INJURIES = 1, "Minor injuries"
+        MAJOR_INJURIES = 2, "Major injuries"
+        DEAD = 3, "Dead"
+
+    week_start = models.DateField(db_index=True)
+    rider = models.ForeignKey(
+        "RiderProfile",
+        on_delete=models.CASCADE,
+        related_name="pc_accident_details",
+    )
+    bike = models.ForeignKey(
+        Bike,
+        on_delete=models.CASCADE,
+        related_name="pc_accident_details",
+    )
+    accident_cause = models.TextField(blank=True)
+    bike_status = models.PositiveSmallIntegerField(
+        choices=BikeStatus.choices,
+        default=BikeStatus.WORKING,
+    )
+    rider_injury_status = models.PositiveSmallIntegerField(
+        choices=RiderInjuryStatus.choices,
+        default=RiderInjuryStatus.MINOR_INJURIES,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-id"]
+
+    def __str__(self):
+        return f"{self.week_start} rider={self.rider_id} bike={self.bike_id}"
 
 
 class RegisteredDevice(models.Model):

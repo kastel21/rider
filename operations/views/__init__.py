@@ -11,6 +11,7 @@ from .pc_report_views import (
 from .report_export_views import ReportExportView
 from .report_views import (
     ReportFacilitiesAjaxView,
+    ReportMeReviewView,
     ReportSubmitView,
     RiderRegisterDeviceView,
     RiderReportCreateView,
@@ -49,6 +50,14 @@ from .pc_management_views import (
 from .pwa_views import service_worker
 from .pc_transport_stats_views import PCDistrictWeeklyTransportStatView
 from .stub_views import NotRestoredView
+from .me_export_views import METableExportView
+from .me_views import (
+    MEAccidentsIncompleteView,
+    MEMetricsDriversView,
+    MEMetricsOverviewView,
+    MEMetricsReferredSamplesView,
+    MEMetricsRidersView,
+)
 
 __all__ = [
     "LoginView",
@@ -59,6 +68,7 @@ __all__ = [
     "RiderReportDetailView",
     "RiderReportEditView",
     "ReportSubmitView",
+    "ReportMeReviewView",
     "ReportFacilitiesAjaxView",
     "RiderRegisterDeviceView",
     "RiderSyncView",
@@ -98,4 +108,10 @@ __all__ = [
     "DriverUpdateView",
     "DriverDeactivateView",
     "PCDistrictWeeklyTransportStatView",
+    "MEMetricsOverviewView",
+    "MEMetricsRidersView",
+    "MEMetricsDriversView",
+    "MEMetricsReferredSamplesView",
+    "MEAccidentsIncompleteView",
+    "METableExportView",
 ]

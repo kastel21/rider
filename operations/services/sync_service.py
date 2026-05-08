@@ -5,6 +5,7 @@ from django.db import transaction
 from django.utils import timezone as dj_timezone
 from django.utils.dateparse import parse_date
 
+from ..permissions import can_edit_report_as_rider
 from ..models import (
     Bike,
     Car,
@@ -107,6 +108,14 @@ def _upsert_report(user, idempotency_key, payload):
             "ok": True,
             "skipped": True,
             "reason": "server_wins_approved",
+            "report_id": report.id,
+        }
+
+    if report.pk and not can_edit_report_as_rider(user, report):
+        return {
+            "ok": True,
+            "skipped": True,
+            "reason": "not_editable_status",
             "report_id": report.id,
         }
 

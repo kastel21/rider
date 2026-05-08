@@ -9,15 +9,25 @@ from django.views import View
 
 from ..forms import (
     PC_TRANS_FORM_PREFIX_ACCIDENTS,
+    PC_TRANS_FORM_PREFIX_ACCIDENT_DETAILS,
     PC_TRANS_FORM_PREFIX_INCOMPLETE,
     PC_TRANS_SAVE_ACCIDENTS,
     PC_TRANS_SAVE_INCOMPLETE,
+    PCAccidentDetailFormSet,
     PCDistrictWeeklyTransportStatAccidentsFormSet,
     PCDistrictWeeklyTransportStatIncompleteFormSet,
 )
-from ..models import PCDistrictWeeklyTransportStat
+from ..models import PCAccidentDetail, PCDistrictWeeklyTransportStat
 from ..permissions import require_pc
 from ..selectors import get_districts_queryset, week_range_label, week_start_from_request
+
+
+def _accident_details_qs(week_start, district_qs):
+    return (
+        PCAccidentDetail.objects.filter(week_start=week_start, rider__district__in=district_qs)
+        .select_related("rider__user", "bike")
+        .order_by("id")
+    )
 
 
 class PCDistrictWeeklyTransportStatView(LoginRequiredMixin, View):
@@ -60,6 +70,8 @@ class PCDistrictWeeklyTransportStatView(LoginRequiredMixin, View):
         if save_scope != PC_TRANS_SAVE_ACCIDENTS:
             messages.error(request, "Use “Save accidents” on the Accidents tab.")
             return redirect(f"{request.path}?week={week_start.isoformat()}&tab={PC_TRANS_SAVE_ACCIDENTS}")
+        district_qs = get_districts_queryset(request.user)
+        det_qs = _accident_details_qs(week_start, district_qs)
         acc_fs = PCDistrictWeeklyTransportStatAccidentsFormSet(
             request.POST,
             queryset=qs,
@@ -67,8 +79,16 @@ class PCDistrictWeeklyTransportStatView(LoginRequiredMixin, View):
             pc_user=request.user,
             week_start=week_start,
         )
-        if acc_fs.is_valid():
+        acc_det_fs = PCAccidentDetailFormSet(
+            request.POST,
+            queryset=det_qs,
+            prefix=PC_TRANS_FORM_PREFIX_ACCIDENT_DETAILS,
+            pc_user=request.user,
+            week_start=week_start,
+        )
+        if acc_fs.is_valid() and acc_det_fs.is_valid():
             acc_fs.save()
+            acc_det_fs.save()
             messages.success(request, "Saved (accidents).")
             return redirect(f"{request.path}?week={week_start.isoformat()}&tab={PC_TRANS_SAVE_ACCIDENTS}")
         inc_fs = PCDistrictWeeklyTransportStatIncompleteFormSet(
@@ -81,6 +101,7 @@ class PCDistrictWeeklyTransportStatView(LoginRequiredMixin, View):
             request,
             week_start=week_start,
             acc_formset=acc_fs,
+            acc_detail_formset=acc_det_fs,
             inc_formset=inc_fs,
             active_tab=PC_TRANS_SAVE_ACCIDENTS,
         )
@@ -101,9 +122,16 @@ class PCDistrictWeeklyTransportStatView(LoginRequiredMixin, View):
             inc_fs.save()
             messages.success(request, "Saved (incomplete trips).")
             return redirect(f"{request.path}?week={week_start.isoformat()}&tab={PC_TRANS_SAVE_INCOMPLETE}")
+        district_qs = get_districts_queryset(request.user)
         acc_fs = PCDistrictWeeklyTransportStatAccidentsFormSet(
             queryset=qs,
             prefix=PC_TRANS_FORM_PREFIX_ACCIDENTS,
+            pc_user=request.user,
+            week_start=week_start,
+        )
+        acc_det_fs = PCAccidentDetailFormSet(
+            queryset=_accident_details_qs(week_start, district_qs),
+            prefix=PC_TRANS_FORM_PREFIX_ACCIDENT_DETAILS,
             pc_user=request.user,
             week_start=week_start,
         )
@@ -111,6 +139,7 @@ class PCDistrictWeeklyTransportStatView(LoginRequiredMixin, View):
             request,
             week_start=week_start,
             acc_formset=acc_fs,
+            acc_detail_formset=acc_det_fs,
             inc_formset=inc_fs,
             active_tab=PC_TRANS_SAVE_INCOMPLETE,
         )
@@ -125,6 +154,7 @@ class PCDistrictWeeklyTransportStatView(LoginRequiredMixin, View):
         self,
         request,
         acc_formset=None,
+        acc_detail_formset=None,
         inc_formset=None,
         week_start=None,
         active_tab=None,
@@ -137,6 +167,13 @@ class PCDistrictWeeklyTransportStatView(LoginRequiredMixin, View):
             acc_formset = PCDistrictWeeklyTransportStatAccidentsFormSet(
                 queryset=qs,
                 prefix=PC_TRANS_FORM_PREFIX_ACCIDENTS,
+                pc_user=request.user,
+                week_start=week_start,
+            )
+        if acc_detail_formset is None:
+            acc_detail_formset = PCAccidentDetailFormSet(
+                queryset=_accident_details_qs(week_start, district_qs),
+                prefix=PC_TRANS_FORM_PREFIX_ACCIDENT_DETAILS,
                 pc_user=request.user,
                 week_start=week_start,
             )
@@ -154,6 +191,7 @@ class PCDistrictWeeklyTransportStatView(LoginRequiredMixin, View):
             self.template_name,
             {
                 "acc_formset": acc_formset,
+                "acc_detail_formset": acc_detail_formset,
                 "inc_formset": inc_formset,
                 "selected_week_start": week_start,
                 "week_range_label": week_range_label(week_start),

@@ -7,6 +7,7 @@ from .models import (
     Car,
     District,
     Facility,
+    PCAccidentDetail,
     PCDistrictWeeklyTransportStat,
     PCProfile,
     Province,
@@ -24,10 +25,28 @@ from .models import (
 class UserProfileInline(admin.StackedInline):
     model = UserProfile
     can_delete = False
+    max_num = 1
+    extra = 0
 
 
 class UserAdmin(BaseUserAdmin):
     inlines = (UserProfileInline,)
+
+    def save_formset(self, request, form, formset, change):
+        # ModelAdmin.save_formset only calls formset.save(), which never invokes
+        # InlineModelAdmin.save_model. post_save (signals.ensure_user_profile) may
+        # already have created UserProfile; formset.save() would INSERT again and
+        # violate the OneToOne unique key on user_id.
+        if formset.model is not UserProfile:
+            return super().save_formset(request, form, formset, change)
+        parent = form.instance
+        instances = formset.save(commit=False)
+        for obj in instances:
+            UserProfile.objects.update_or_create(
+                user=parent,
+                defaults={"role": obj.role},
+            )
+        formset.save_m2m()
 
 
 admin.site.unregister(User)
@@ -67,6 +86,24 @@ class CarAdmin(admin.ModelAdmin):
 @admin.register(PCProfile)
 class PCProfileAdmin(admin.ModelAdmin):
     filter_horizontal = ("provinces",)
+
+
+@admin.register(PCAccidentDetail)
+class PCAccidentDetailAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "week_start",
+        "rider",
+        "bike",
+        "bike_status",
+        "rider_injury_status",
+        "updated_at",
+    )
+    list_filter = ("week_start", "bike_status", "rider_injury_status")
+    list_select_related = ("rider__user", "bike")
+    raw_id_fields = ("rider", "bike")
+    search_fields = ("accident_cause", "rider__user__username", "bike__code")
+    ordering = ("-week_start", "-id")
 
 
 @admin.register(PCDistrictWeeklyTransportStat)

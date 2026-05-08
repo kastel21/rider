@@ -26,6 +26,7 @@
     </p>
     <p class="muted" style="margin:0.35rem 0 0;font-size:0.92rem;">
       {{ rider_profile_metrics.province }} · {{ rider_profile_metrics.district }}
+      · type of support {{ rider_profile_metrics.support_type }}
       {% if rider_profile_metrics.member_since %}
         · Member since {{ rider_profile_metrics.member_since|date:"M j, Y" }}
       {% endif %}

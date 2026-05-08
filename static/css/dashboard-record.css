@@ -1092,6 +1092,193 @@ body.dashboard-shell .msg-debug {
   font: inherit;
 }
 
+/* M&E tables: scroll panels + wide matrix (/me/metrics/*) */
+.dashboard-shell .me-table-scroll,
+.dashboard-shell .me-mande-scroll {
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+  max-height: min(72vh, 900px);
+  padding: 0.35rem;
+  border: 1px solid var(--dash-border-strong);
+  border-radius: 12px;
+  background: var(--dash-surface);
+  box-shadow:
+    0 1px 3px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  scrollbar-width: thin;
+  scrollbar-color: #94a3b8 #f1f5f9;
+}
+
+.dashboard-shell .me-table-scroll:focus-within,
+.dashboard-shell .me-mande-scroll:focus-within {
+  outline: 2px solid rgba(29, 78, 216, 0.35);
+  outline-offset: 2px;
+}
+
+.dashboard-shell .me-table-scroll::-webkit-scrollbar,
+.dashboard-shell .me-mande-scroll::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+
+.dashboard-shell .me-table-scroll::-webkit-scrollbar-track,
+.dashboard-shell .me-mande-scroll::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 8px;
+}
+
+.dashboard-shell .me-table-scroll::-webkit-scrollbar-thumb,
+.dashboard-shell .me-mande-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 8px;
+  border: 2px solid #f1f5f9;
+}
+
+.dashboard-shell .me-table-scroll::-webkit-scrollbar-thumb:hover,
+.dashboard-shell .me-mande-scroll::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Summary tables (overview) — horizontal scroll only, no vertical cap */
+.dashboard-shell .me-table-scroll--shallow {
+  max-height: none;
+}
+
+.dashboard-shell .me-mande-scroll > table.table.me-mande-matrix,
+.dashboard-shell .me-table-scroll > table.table {
+  border: none;
+  border-radius: 0;
+  overflow: visible;
+  box-shadow: none;
+  background: transparent;
+}
+
+.dashboard-shell .me-mande-matrix {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.8125rem;
+}
+
+.dashboard-shell .me-mande-matrix__th,
+.dashboard-shell .me-mande-matrix__td {
+  padding: 0.5rem 0.55rem;
+  vertical-align: top;
+  white-space: normal;
+  word-break: break-word;
+  min-width: 5.5rem;
+  max-width: 14rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.dashboard-shell .me-mande-matrix tbody tr:hover td {
+  background-color: #eff6ff !important;
+}
+
+.dashboard-shell .me-mande-matrix thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  font-weight: 650;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+  box-shadow: 0 1px 0 #cbd5e1;
+}
+
+.dashboard-shell .me-mande-matrix tbody td {
+  background-clip: padding-box;
+}
+
+.dashboard-shell .me-mande-matrix .me-mande-matrix__sticky--1 {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  min-width: 7.5rem;
+  max-width: 11rem;
+  box-shadow: 1px 0 0 #e2e8f0;
+}
+
+.dashboard-shell .me-mande-matrix .me-mande-matrix__sticky--2 {
+  position: sticky;
+  left: 7.5rem;
+  z-index: 3;
+  min-width: 7rem;
+  max-width: 11rem;
+  box-shadow: 1px 0 0 #e2e8f0;
+}
+
+.dashboard-shell .me-mande-matrix thead th.me-mande-matrix__sticky--1 {
+  z-index: 5;
+}
+
+.dashboard-shell .me-mande-matrix thead th.me-mande-matrix__sticky--2 {
+  z-index: 4;
+}
+
+.dashboard-shell .me-mande-matrix__section--basic,
+.dashboard-shell .me-mande-matrix__section--neutral {
+  background-color: #fff;
+}
+
+.dashboard-shell .me-mande-matrix thead .me-mande-matrix__section--basic,
+.dashboard-shell .me-mande-matrix thead .me-mande-matrix__section--neutral {
+  background-color: #f8fafc;
+}
+
+.dashboard-shell .me-mande-matrix__section--reach {
+  background-color: #f1f5f9;
+}
+
+.dashboard-shell .me-mande-matrix thead .me-mande-matrix__section--reach {
+  background-color: #e2e8f0;
+}
+
+.dashboard-shell .me-mande-matrix__section--service {
+  background-color: #fff7ed;
+}
+
+.dashboard-shell .me-mande-matrix thead .me-mande-matrix__section--service {
+  background-color: #ffedd5;
+}
+
+.dashboard-shell .me-mande-matrix__section--compare {
+  background-color: #e2e8f0;
+}
+
+.dashboard-shell .me-mande-matrix thead .me-mande-matrix__section--compare {
+  background-color: #cbd5e1;
+}
+
+.dashboard-shell .me-mande-matrix__section--outcome {
+  background-color: #ecfdf5;
+}
+
+.dashboard-shell .me-mande-matrix thead .me-mande-matrix__section--outcome {
+  background-color: #d1fae5;
+}
+
+.dashboard-shell .me-mande-matrix__section--household {
+  background-color: #fef9c3;
+}
+
+.dashboard-shell .me-mande-matrix thead .me-mande-matrix__section--household {
+  background-color: #fef08a;
+}
+
+/* M&E read-only / summary tables (Bootstrap handles stripes, borders, hover) */
+.dashboard-shell .me-table-scroll .me-readonly-table.table {
+  width: max-content;
+  min-width: 100%;
+  font-size: 0.875rem;
+}
+
+.dashboard-shell.me-metrics-page .card > h1,
+.dashboard-shell.me-metrics-page .card > h2.rider-home-section-title:first-child {
+  letter-spacing: -0.02em;
+}
+
 /* App sidebar layout: static/css/app-chrome.css (loaded last in base.html) */
 
 @media (max-width: 900px) {
@@ -1149,7 +1336,7 @@ body.dashboard-shell .msg-debug {
    * many older pages still use plain/inline-styled tables.
    * Convert non-specialized tables into horizontal-scroll blocks.
    */
-  .dashboard-shell .main-content table:not(.capture-metric-table):not(.rejection-data-table) {
+  .dashboard-shell .main-content table:not(.capture-metric-table):not(.rejection-data-table):not(.me-mande-matrix):not(.table) {
     display: block;
     width: 100%;
     overflow-x: auto;
@@ -1157,22 +1344,56 @@ body.dashboard-shell .msg-debug {
     white-space: nowrap;
   }
 
-  .dashboard-shell .main-content table:not(.capture-metric-table):not(.rejection-data-table) thead,
-  .dashboard-shell .main-content table:not(.capture-metric-table):not(.rejection-data-table) tbody,
-  .dashboard-shell .main-content table:not(.capture-metric-table):not(.rejection-data-table) tr {
+  .dashboard-shell .main-content table:not(.capture-metric-table):not(.rejection-data-table):not(.me-mande-matrix):not(.table) thead,
+  .dashboard-shell .main-content table:not(.capture-metric-table):not(.rejection-data-table):not(.me-mande-matrix):not(.table) tbody,
+  .dashboard-shell .main-content table:not(.capture-metric-table):not(.rejection-data-table):not(.me-mande-matrix):not(.table) tr {
     width: 100%;
   }
 
-  .dashboard-shell .main-content table:not(.capture-metric-table):not(.rejection-data-table) th,
-  .dashboard-shell .main-content table:not(.capture-metric-table):not(.rejection-data-table) td {
+  .dashboard-shell .main-content table:not(.capture-metric-table):not(.rejection-data-table):not(.me-mande-matrix):not(.table) th,
+  .dashboard-shell .main-content table:not(.capture-metric-table):not(.rejection-data-table):not(.me-mande-matrix):not(.table) td {
     white-space: nowrap;
   }
 
-  .dashboard-shell .main-content .data-table {
+  .dashboard-shell .main-content .data-table:not(.me-mande-matrix):not(.table) {
     display: block;
     width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+  }
+
+  /* Keep M&E scroll panels as real tables (avoid global table→block hacks) */
+  .dashboard-shell .main-content .me-table-scroll table.table,
+  .dashboard-shell .main-content .me-mande-scroll table.table {
+    display: table !important;
+    width: max-content;
+    min-width: 100%;
+    overflow: visible;
+    white-space: normal;
+  }
+
+  .dashboard-shell .main-content .me-table-scroll table.table thead,
+  .dashboard-shell .main-content .me-mande-scroll table.table thead {
+    display: table-header-group !important;
+  }
+
+  .dashboard-shell .main-content .me-table-scroll table.table tbody,
+  .dashboard-shell .main-content .me-mande-scroll table.table tbody {
+    display: table-row-group !important;
+  }
+
+  .dashboard-shell .main-content .me-table-scroll table.table tr,
+  .dashboard-shell .main-content .me-mande-scroll table.table tr {
+    display: table-row !important;
+    width: auto;
+  }
+
+  .dashboard-shell .main-content .me-table-scroll table.table th,
+  .dashboard-shell .main-content .me-table-scroll table.table td,
+  .dashboard-shell .main-content .me-mande-scroll table.table th,
+  .dashboard-shell .main-content .me-mande-scroll table.table td {
+    display: table-cell !important;
+    white-space: normal;
   }
 }
 

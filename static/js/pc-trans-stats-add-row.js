@@ -44,6 +44,9 @@
     tr.querySelectorAll("textarea").forEach(function (el) {
       el.value = "";
     });
+    tr.querySelectorAll('input[type="checkbox"][name$="-DELETE"]').forEach(function (el) {
+      el.checked = false;
+    });
   }
 
   function syncAddButton(btn, prefix) {
@@ -58,7 +61,8 @@
   function bindOneAddButton(btn) {
     var form = btn.closest("form");
     if (!form) return;
-    var tbody = form.querySelector("[data-pc-trans-tbody]");
+    var wrap = btn.closest("[data-pc-trans-add-wrap]");
+    var tbody = wrap ? wrap.querySelector("[data-pc-trans-tbody]") : form.querySelector("[data-pc-trans-tbody]");
     if (!tbody) return;
     var prefix = tbody.getAttribute("data-pc-trans-prefix");
     if (!prefix) return;

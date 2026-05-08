@@ -19,8 +19,10 @@ from django.views.generic.edit import CreateView, UpdateView
 from ..forms import RiderOperationalForm, RiderTripEntryFormSet, SampleRejectionFormSet
 from ..models import Facility, RiderTripEntry, RiderWeeklyReport, TripTransportKind, UserProfile
 from ..permissions import (
+    MERequiredMixin,
     can_edit_report_as_pc,
     can_edit_report_as_rider,
+    can_mark_me_review,
     can_view_report,
     is_rider_like,
 )
@@ -85,6 +87,7 @@ def _trip_formset_kwargs(user, *, for_pc: bool):
 def _pc_trip_formset_kwargs(user):
     kw = _trip_formset_kwargs(user, for_pc=True)
     kw["include_transport_kind"] = True
+    kw["pc_aggregate_fuel"] = True
     return kw
 
 
@@ -153,6 +156,7 @@ class RiderReportListView(LoginRequiredMixin, ListView):
                 qs.filter(week_start=week_start)
                 .select_related(
                     "rider",
+                    "rider__profile",
                     "bike",
                     "car",
                     "rider__rider_profile__district",
@@ -166,6 +170,14 @@ class RiderReportListView(LoginRequiredMixin, ListView):
                     "pk",
                 )
             )
+        elif role in (UserProfile.Role.ME, UserProfile.Role.ADMIN):
+            qs = qs.select_related(
+                "rider",
+                "rider__profile",
+                "rider__rider_profile__district",
+                "rider__rider_profile__district__province",
+                "rider__rider_profile__province",
+            ).order_by("-week_start", "-updated_at")
         return qs
 
     def get_context_data(self, **kwargs):
@@ -182,10 +194,28 @@ class RiderReportListView(LoginRequiredMixin, ListView):
             ctx["pc_prev_week"] = (week_start - timedelta(days=7)).isoformat()
             ctx["pc_next_week"] = (week_start + timedelta(days=7)).isoformat()
             user = self.request.user
-            ctx["pc_report_rows"] = [
+            rows = [
                 {"report": r, "can_edit": can_edit_report_as_pc(user, r)}
                 for r in self.object_list
             ]
+            rider_rows: list[dict] = []
+            driver_rows: list[dict] = []
+            for row in rows:
+                role = getattr(getattr(row["report"].rider, "profile", None), "role", None)
+                if role == UserProfile.Role.DRIVER:
+                    driver_rows.append(row)
+                else:
+                    rider_rows.append(row)
+            ctx["pc_rider_report_rows"] = rider_rows
+            ctx["pc_driver_report_rows"] = driver_rows
+            return ctx
+
+        if role in (UserProfile.Role.ME, UserProfile.Role.ADMIN):
+            st = RiderWeeklyReport.Status
+            base_qs = self.object_list
+            ctx["me_reports_drafts"] = base_qs.filter(status=st.DRAFT)
+            ctx["me_reports_finalized"] = base_qs.filter(status=st.APPROVED)
+            ctx["me_reports_with_pc"] = base_qs.exclude(status__in=[st.DRAFT, st.APPROVED])
             return ctx
 
         if not is_rider_like(self.request.user):
@@ -233,6 +263,8 @@ class RiderReportListView(LoginRequiredMixin, ListView):
             return ["operations/reports/pc_report_list.html"]
         if role in (UserProfile.Role.RIDER, UserProfile.Role.DRIVER):
             return ["operations/reports/rider_report_list.html"]
+        if role in (UserProfile.Role.ME, UserProfile.Role.ADMIN):
+            return ["operations/reports/me_report_list.html"]
         return ["operations/reports/report_list.html"]
 
 
@@ -481,6 +513,7 @@ class RiderReportDetailView(LoginRequiredMixin, DetailView):
                 "rider__profile",
                 "rider__rider_profile__district",
                 "rider__rider_profile__district__province",
+                "me_reviewed_by",
             )
             .prefetch_related(
                 "trip_entries__origin_facility",
@@ -503,6 +536,7 @@ class RiderReportDetailView(LoginRequiredMixin, DetailView):
         user = self.request.user
         ctx["rider_can_edit"] = can_edit_report_as_rider(user, report)
         ctx["pc_can_edit"] = can_edit_report_as_pc(user, report)
+        ctx["me_can_toggle_review"] = can_mark_me_review(user, report)
 
         week_start = report.week_start
         ctx["week_range_label"] = week_range_label(week_start)
@@ -525,6 +559,7 @@ class RiderReportDetailView(LoginRequiredMixin, DetailView):
             "name": rider.get_full_name() or rider.username,
             "district": loc["district_name"],
             "province": loc["province_name"],
+            "support_type": loc["pepfar_support_type"],
         }
 
         try:
@@ -785,6 +820,37 @@ class ReportSubmitView(LoginRequiredMixin, View):
             raise PermissionDenied
         report_service.submit_report(report, request.user)
         messages.success(request, "Report submitted.")
+        return redirect("operations:report_detail", pk=pk)
+
+
+class ReportMeReviewView(LoginRequiredMixin, MERequiredMixin, View):
+    """POST: mark or clear M&E review (locks PC editing when marked)."""
+
+    def post(self, request, pk):
+        report = get_object_or_404(RiderWeeklyReport, pk=pk)
+        if not can_mark_me_review(request.user, report):
+            from django.core.exceptions import PermissionDenied
+
+            raise PermissionDenied
+        action = (request.POST.get("action") or "").strip().lower()
+        if action == "clear":
+            report.me_reviewed_at = None
+            report.me_reviewed_by = None
+            report.save(update_fields=["me_reviewed_at", "me_reviewed_by", "updated_at"])
+            messages.success(
+                request,
+                "M&E review cleared. PCs may edit this report again when its status allows.",
+            )
+        elif action == "mark":
+            report.me_reviewed_at = timezone.now()
+            report.me_reviewed_by = request.user
+            report.save(update_fields=["me_reviewed_at", "me_reviewed_by", "updated_at"])
+            messages.success(
+                request,
+                "Marked as reviewed by M&E. PC edits are locked for this report.",
+            )
+        else:
+            messages.error(request, "Unknown action.")
         return redirect("operations:report_detail", pk=pk)
 
 

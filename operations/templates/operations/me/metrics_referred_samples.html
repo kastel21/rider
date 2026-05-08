@@ -1,0 +1,44 @@
+{% extends "operations/me/me_base.html" %}
+{% block body_class %}dashboard-shell me-metrics-page{% endblock %}
+{% block title %}Program metrics · Referred samples{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Referred samples (lab to lab)</h1>
+  <p class="muted" style="margin-top:0.35rem;">
+    PC-recorded sample referrals with <code class="muted">created_at</code> in the selected period
+    ({{ me_referred_samples.row_count }} row{{ me_referred_samples.row_count|pluralize }}).
+    Data from <code class="muted">ReferredSample</code>.
+  </p>
+
+  {% include "operations/me/_me_weeks_filter.html" %}
+
+  {% include "operations/me/_me_matrix_downloads.html" %}
+
+  <div class="me-table-scroll me-mande-scroll" style="margin-top:1rem;" tabindex="0" role="region" aria-label="Scrollable referred samples table">
+    <table class="table table-hover table-bordered table-sm me-mande-matrix align-middle" aria-label="Referred laboratory samples">
+      <thead>
+        <tr>
+          {% for col in me_referred_samples.columns %}
+          <th scope="col" class="me-mande-matrix__th me-mande-matrix__section--{{ col.section }}{% if forloop.counter0 == 0 %} me-mande-matrix__sticky me-mande-matrix__sticky--1{% elif forloop.counter0 == 1 %} me-mande-matrix__sticky me-mande-matrix__sticky--2{% endif %}">
+            {{ col.label|linebreaksbr }}
+          </th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in me_referred_samples.rows %}
+        <tr>
+          {% for cell in row %}
+          <td class="me-mande-matrix__td me-mande-matrix__section--{{ cell.section }}{% if forloop.counter0 == 0 %} me-mande-matrix__sticky me-mande-matrix__sticky--1{% elif forloop.counter0 == 1 %} me-mande-matrix__sticky me-mande-matrix__sticky--2{% endif %}">{{ cell.text }}</td>
+          {% endfor %}
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="{{ me_referred_samples.columns|length }}" class="muted">No referred samples recorded in this period.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

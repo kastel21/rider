@@ -114,10 +114,17 @@ elif _db_engine == "postgresql":
         }
     }
 else:
+    # Default SQLite path is under the project tree; on many hosts (e.g. PaaS) that path is not writable.
+    # Set DJANGO_SQLITE_PATH to an absolute path in a writable directory if you must use SQLite.
+    _sqlite_name = os.environ.get("DJANGO_SQLITE_PATH", "").strip()
+    if _sqlite_name:
+        _sqlite_path = Path(_sqlite_name).expanduser().resolve()
+    else:
+        _sqlite_path = DATA_DIR / "db.sqlite3"
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
-            "NAME": DATA_DIR / "db.sqlite3",
+            "NAME": str(_sqlite_path),
             "ATOMIC_REQUESTS": True,
         }
     }

@@ -11,6 +11,8 @@ from django.db import transaction
 
 from operations.models import Bike, Car, District, Facility, Province, RiderProfile, SupportType, UserProfile
 
+from .pk_retry import run_with_incrementing_pk
+
 User = get_user_model()
 
 
@@ -23,7 +25,7 @@ def apply_embedded_user_import(payload: dict) -> dict:
     if not isinstance(users, list):
         raise ValueError("users must be a list")
 
-    stats = {"users": 0, "profiles": 0, "rider_profiles": 0}
+    stats: dict = {"users": 0, "profiles": 0, "rider_profiles": 0, "pk_remaps": []}
 
     for row in users:
         if not isinstance(row, dict):
@@ -38,16 +40,24 @@ def apply_embedded_user_import(payload: dict) -> dict:
         if not password_hash:
             continue
 
-        user, _ = User.objects.update_or_create(
-            pk=int(uid),
-            defaults={
-                "username": username[:150],
-                "email": email[:254] if email else "",
-                "is_active": is_active,
-            },
-        )
-        user.password = password_hash
-        user.save(update_fields=["password"])
+        desired_pk = int(uid)
+
+        def _save_user(pk: int):
+            u, _ = User.objects.update_or_create(
+                pk=pk,
+                defaults={
+                    "username": username[:150],
+                    "email": email[:254] if email else "",
+                    "is_active": is_active,
+                },
+            )
+            u.password = password_hash
+            u.save(update_fields=["password"])
+            return u
+
+        user, used_pk = run_with_incrementing_pk(desired_pk, _save_user)
+        if used_pk != desired_pk:
+            stats["pk_remaps"].append({"from": desired_pk, "to": used_pk})
         stats["users"] += 1
 
         up = row.get("userprofile")

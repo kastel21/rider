@@ -52,15 +52,17 @@ def can_edit_report_as_rider(user, report: RiderWeeklyReport) -> bool:
         return False
     if report.rider_id != user.id:
         return False
-    # Editable until a PC starts review; rejected reports return to the rider for fixes.
+    # Draft or PC-rejected only: once submitted for PC review (submitted / under review /
+    # approved), the rider must wait for PC outcome before editing again.
     return report.status in (
         RiderWeeklyReport.Status.DRAFT,
-        RiderWeeklyReport.Status.SUBMITTED,
         RiderWeeklyReport.Status.REJECTED,
     )
 
 
 def can_edit_report_as_pc(user, report: RiderWeeklyReport) -> bool:
+    if report.me_reviewed_at is not None:
+        return False
     if user.is_authenticated and user.is_superuser:
         return report.status in (
             RiderWeeklyReport.Status.SUBMITTED,
@@ -78,6 +80,13 @@ def can_edit_report_as_pc(user, report: RiderWeeklyReport) -> bool:
     )
 
 
+def can_mark_me_review(user, report: RiderWeeklyReport) -> bool:
+    """M&E may record that national review is complete (locks PC edits for this report)."""
+    if not user.is_authenticated or not is_me(user):
+        return False
+    return can_view_report(user, report)
+
+
 def require_pc(user):
     if not is_pc(user) and not (user.is_authenticated and user.is_superuser):
         raise PermissionDenied
@@ -93,6 +102,13 @@ class PCRequiredMixin(UserPassesTestMixin):
         if user.is_superuser:
             return True
         return is_pc(user)
+
+
+class MERequiredMixin(UserPassesTestMixin):
+    """Monitoring & Evaluation role only (national program metrics)."""
+
+    def test_func(self):
+        return is_me(self.request.user)
 
 
 # docs/operations-compatible mixin naming.

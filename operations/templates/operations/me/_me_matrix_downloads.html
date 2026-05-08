@@ -1,0 +1,8 @@
+{% comment %}Expects export_csv_href and export_xlsx_href in context.{% endcomment %}
+<div class="d-flex flex-wrap align-items-center gap-2 my-2" role="region" aria-label="Download this table">
+  <span class="text-muted small mb-0">Download</span>
+  <div class="btn-group btn-group-sm" role="group" aria-label="Export format">
+    <a class="btn btn-outline-primary" href="{{ export_csv_href }}">CSV</a>
+    <a class="btn btn-outline-primary" href="{{ export_xlsx_href }}">Excel</a>
+  </div>
+</div>

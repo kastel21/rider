@@ -107,6 +107,7 @@
       </div>
     </div>
 
+    {% if not is_pc_edit %}
     <div class="trip-subsection">
       <div class="trip-subsection-title">Fuel &amp; distance</div>
       <div class="fuel-strip">
@@ -128,6 +129,7 @@
         <p class="fuel-strip-live-error" data-fuel-live-msg hidden aria-live="polite"></p>
       </div>
     </div>
+    {% endif %}
   </div>
   {% endfor %}
 </div>

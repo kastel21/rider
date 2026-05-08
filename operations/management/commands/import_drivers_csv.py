@@ -1,9 +1,9 @@
 """
 Import drivers from drivers.csv — same pattern as import_riders_csv:
-Province, User + UserProfile(role driver), RiderProfile (province + vehicle as Car).
+Province (+ optional District), User + UserProfile(role driver), RiderProfile
+(province + district + vehicle as Car).
 
-Drivers have no district in the CSV; RiderProfile.district and Car.district stay unset unless
-you later assign them in admin.
+If District is provided in CSV, it is assigned to both RiderProfile and Car.
 """
 import csv
 from pathlib import Path
@@ -14,7 +14,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.utils.text import slugify
 
-from operations.models import Car, Province, RiderProfile, UserProfile
+from operations.models import Car, District, Province, RiderProfile, UserProfile
 
 DEFAULT_PASSWORD = "Test123?"
 
@@ -57,7 +57,8 @@ def _alloc_username(base, exclude_pk=None):
 
 class Command(BaseCommand):
     help = (
-        "Import drivers from drivers.csv (Name of Driver, Vehicle Registration Number, Province). "
+        "Import drivers from drivers.csv "
+        "(Name of Driver, Vehicle Registration Number, Province, optional District). "
         f"Default password: {DEFAULT_PASSWORD!r}."
     )
 
@@ -100,6 +101,8 @@ class Command(BaseCommand):
                     row.get(headers["Vehicle Registration Number"], "")
                 ).upper()
                 province_name = _canon_province(row.get(headers["Province"], ""))
+                district_header = headers.get("District") or headers.get("District ")
+                district_name = _norm_text(row.get(district_header, "")) if district_header else ""
 
                 if not driver_name or not province_name or not vehicle_code:
                     skipped += 1
@@ -110,10 +113,20 @@ class Command(BaseCommand):
                 with transaction.atomic():
                     province, _ = Province.objects.get_or_create(name=province_name)
 
+                    district = None
+                    if district_name:
+                        district, _ = District.objects.get_or_create(
+                            province=province,
+                            name=district_name,
+                        )
+
                     car, _ = Car.objects.get_or_create(
                         code=vehicle_code,
-                        defaults={"district": None},
+                        defaults={"district": district},
                     )
+                    if district and car.district_id != district.id:
+                        car.district = district
+                        car.save(update_fields=["district"])
 
                     username_base = _username_base(driver_name)
                     user = User.objects.filter(username=username_base).first()
@@ -149,7 +162,7 @@ class Command(BaseCommand):
 
                         rprof, _ = RiderProfile.objects.get_or_create(user=user)
                         rprof.province = province
-                        rprof.district = None
+                        rprof.district = district
                         rprof.car = car
                         rprof.bike = None
                         rprof.support_type = ""

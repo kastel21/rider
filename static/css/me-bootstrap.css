@@ -1,0 +1,104 @@
+/* M&E pages: load after Bootstrap. Tweaks dashboard + Bootstrap table coexistence. */
+
+/*
+ * Flex sidebar layout: `main` is a flex item with default `min-width: auto`, so wide
+ * matrix tables can force the whole column (and window) to scroll. Shrink-wrap the chain
+ * so overflow stays inside `.me-table-scroll` / `.me-mande-scroll`.
+ */
+body.dashboard-shell.me-metrics-page .app-main-column > main.main-content {
+  min-width: 0;
+  width: 100%;
+}
+
+body.dashboard-shell.me-metrics-page .main-content > .card {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/*
+ * Bootstrap sets `.table { width: 100% }` after dashboard-record.css, which collapses
+ * wide M&E tables and removes horizontal scroll. Re-assert scroll wrappers + intrinsic widths here.
+ */
+body.dashboard-shell.me-metrics-page .me-table-scroll,
+body.dashboard-shell.me-metrics-page .me-mande-scroll {
+  overflow-x: auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+  min-width: 0; /* flex/grid: allow panel to shrink so overflow-x can engage */
+  max-height: min(72vh, 900px);
+  padding: 0.35rem;
+  border: 1px solid var(--dash-border-strong, #cbd5e1);
+  border-radius: 12px;
+  background: var(--dash-surface, #fff);
+  box-shadow:
+    0 1px 3px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  scrollbar-width: thin;
+  scrollbar-color: #94a3b8 #f1f5f9;
+}
+
+body.dashboard-shell.me-metrics-page .me-table-scroll--shallow {
+  max-height: none;
+}
+
+/* Win over Bootstrap `.table { width: 100% }` (later + many utility classes on the same element). */
+body.me-metrics-page .me-mande-scroll > table.table.me-mande-matrix {
+  width: max-content !important;
+  min-width: 100%;
+  table-layout: auto;
+}
+
+body.me-metrics-page .me-table-scroll > table.table.me-readonly-table {
+  width: max-content !important;
+  min-width: 100%;
+}
+
+/* Let columns grow past dashboard-record’s 14rem cap so wide matrices actually scroll horizontally. */
+body.me-metrics-page .me-mande-matrix .me-mande-matrix__th,
+body.me-metrics-page .me-mande-matrix .me-mande-matrix__td {
+  max-width: none;
+}
+
+body.me-metrics-page .me-table-scroll .table,
+body.me-metrics-page .me-mande-scroll .table {
+  margin-bottom: 0;
+}
+
+/* Matrix: keep section-tinted headers over Bootstrap defaults */
+body.me-metrics-page .me-mande-matrix.table thead .me-mande-matrix__section--basic,
+body.me-metrics-page .me-mande-matrix.table thead .me-mande-matrix__section--neutral {
+  background-color: #f8fafc !important;
+}
+
+body.me-metrics-page .me-mande-matrix.table thead .me-mande-matrix__section--reach {
+  background-color: #e2e8f0 !important;
+}
+
+body.me-metrics-page .me-mande-matrix.table thead .me-mande-matrix__section--service {
+  background-color: #ffedd5 !important;
+}
+
+body.me-metrics-page .me-mande-matrix.table thead .me-mande-matrix__section--compare {
+  background-color: #cbd5e1 !important;
+}
+
+body.me-metrics-page .me-mande-matrix.table thead .me-mande-matrix__section--outcome {
+  background-color: #d1fae5 !important;
+}
+
+body.me-metrics-page .me-mande-matrix.table thead .me-mande-matrix__section--household {
+  background-color: #fef08a !important;
+}
+
+body.me-metrics-page .me-mande-matrix.table thead th {
+  box-shadow: 0 1px 0 #94a3b8;
+}
+
+/* Read-only summary: sticky header above Bootstrap row backgrounds */
+body.me-metrics-page .me-table-scroll .me-readonly-table.table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%) !important;
+}

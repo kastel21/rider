@@ -6,6 +6,7 @@
   <p class="muted" style="margin:0.25rem 0 0;">
     <strong>{{ report_subject.name }}</strong>
     · {{ report_subject.province }} · {{ report_subject.district }}
+    · type of support {{ report_subject.support_type }}
   </p>
   <p class="muted" style="margin:0.35rem 0 0;font-size:0.92rem;">
     Week: <strong>{{ week_range_label }}</strong>
@@ -13,6 +14,13 @@
       · Submitted {{ report.submitted_at|date:"Y-m-d H:i" }}
     {% endif %}
   </p>
+  {% if report.me_reviewed_at %}
+  <p class="muted" style="margin:0.5rem 0 0;font-size:0.92rem;">
+    M&amp;E reviewed {{ report.me_reviewed_at|date:"Y-m-d H:i" }}{% if report.me_reviewed_by %}
+      ({{ report.me_reviewed_by.get_full_name|default:report.me_reviewed_by.username }}){% endif %}.
+    PCs may not edit this report.
+  </p>
+  {% endif %}
 
   {% if week_metrics %}
   <div class="rider-home-metrics" style="margin-top:1rem;">
@@ -115,6 +123,29 @@
       {% endfor %}
     </tbody>
   </table>
+
+  {% if me_can_toggle_review %}
+  <div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--dash-border, #e2e8f0);">
+    <h2 style="margin:0 0 0.5rem;font-size:1.05rem;">M&amp;E review</h2>
+    {% if report.me_reviewed_at %}
+    <p class="muted" style="margin:0 0 0.75rem;font-size:0.92rem;">
+      PCs are locked from editing while this flag is set. Clear only if you need to allow PC corrections again.
+    </p>
+    <form method="post" action="{% url 'operations:report_me_review' report.pk %}">
+      {% csrf_token %}
+      <button type="submit" name="action" value="clear" class="btn-dash btn-dash-secondary">Clear M&amp;E review</button>
+    </form>
+    {% else %}
+    <p class="muted" style="margin:0 0 0.75rem;font-size:0.92rem;">
+      After national M&amp;E validation, mark this report so PCs can no longer change it.
+    </p>
+    <form method="post" action="{% url 'operations:report_me_review' report.pk %}">
+      {% csrf_token %}
+      <button type="submit" name="action" value="mark" class="btn-dash btn-dash-primary">Mark M&amp;E reviewed</button>
+    </form>
+    {% endif %}
+  </div>
+  {% endif %}
 
   <p style="margin-top:1rem;">
     <a href="{{ detail_back_url }}">Back to list</a>
