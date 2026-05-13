@@ -19,6 +19,7 @@ from .models import (
     RiderWeeklyReport,
     SampleRejection,
     UserProfile,
+    WeeklyRecordReviewed,
 )
 
 
@@ -189,6 +190,13 @@ class ReportAuditLogAdmin(admin.ModelAdmin):
 @admin.register(ReportEditSnapshot)
 class ReportEditSnapshotAdmin(admin.ModelAdmin):
     list_display = ("report", "editor", "summary", "created_at")
+
+
+@admin.register(WeeklyRecordReviewed)
+class WeeklyRecordReviewedAdmin(admin.ModelAdmin):
+    list_display = ("id", "rider", "week_start", "source_report", "reviewed_by", "reviewed_at")
+    list_filter = ("week_start",)
+    list_select_related = ("rider", "source_report", "reviewed_by")
 
 
 @admin.register(RegisteredDevice)

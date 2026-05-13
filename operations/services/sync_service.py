@@ -91,8 +91,6 @@ def _upsert_report(user, idempotency_key, payload):
     report = None
     if client_uuid:
         report = qs.filter(client_uuid=client_uuid).first()
-    if report is None:
-        report = qs.filter(week_start=week_start).first()
 
     if report is None:
         report = RiderWeeklyReport(

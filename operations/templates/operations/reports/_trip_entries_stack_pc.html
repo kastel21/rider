@@ -1,5 +1,6 @@
 {% comment %}
-  Inline stack of trip entry cards. Expects: trip_formset, optional is_pc_edit.
+  PC-only inline stack of trip entry cards (no per-row fuel fields).
+  Expects: trip_formset, optional is_pc_edit.
 {% endcomment %}
 {{ trip_formset.management_form }}
 <div class="trip-entries-stack">
@@ -106,38 +107,6 @@
         </table>
       </div>
     </div>
-
-    {% if not is_pc_edit %}
-    <div class="trip-subsection">
-      <div class="trip-subsection-title">Fuel &amp; distance</div>
-      <div class="fuel-strip">
-        {% for field in rform.visible_fields %}
-          {% if field.name == "fuel_allocated" %}
-          <div class="field">
-            <label for="{{ field.id_for_label }}"><strong>{{ field.label }}</strong></label><br>
-            {{ field.errors }}
-            {{ field }}
-          </div>
-          {% endif %}
-          {% if field.name == "fuel_used" %}
-          <div class="field">
-            <label for="{{ field.id_for_label }}"><strong>{{ field.label }}</strong></label><br>
-            {{ field.errors }}
-            {{ field }}
-          </div>
-          {% endif %}
-          {% if field.name == "distance_travelled" %}
-          <div class="field">
-            <label for="{{ field.id_for_label }}"><strong>{{ field.label }}</strong></label><br>
-            {{ field.errors }}
-            {{ field }}
-          </div>
-          {% endif %}
-        {% endfor %}
-        <p class="fuel-strip-live-error" data-fuel-live-msg hidden aria-live="polite"></p>
-      </div>
-    </div>
-    {% endif %}
   </div>
   {% endfor %}
 </div>

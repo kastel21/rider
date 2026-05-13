@@ -62,7 +62,7 @@
   {% endif %}
 
   <h2 class="rider-home-section-title" style="margin-top:1.5rem;">Jump to week</h2>
-  <p class="muted" style="margin:0 0 0.5rem;font-size:0.92rem;">Pick any day in the week you want to view; the report shown is for that week (Monday–Sunday).</p>
+  <p class="muted" style="margin:0 0 0.5rem;font-size:0.92rem;">Pick any day in the week you want to view; all reports shown are for that week (Monday–Sunday).</p>
   <form method="get" action="{% url 'operations:rider_reports' %}" class="report-week-filter report-week-picker" id="rider-week-form">
     <div class="report-week-picker__inner">
       <label for="id-report-week" class="report-week-picker__label">
@@ -95,8 +95,8 @@
   {% if week_metrics %}
   <div class="rider-home-metrics" style="margin-top:1rem;">
     <div class="rider-home-metric-card">
-      <span class="rider-home-metric-label">Status</span>
-      <strong class="rider-home-metric-value">{{ week_metrics.status_display }}</strong>
+      <span class="rider-home-metric-label">Reports</span>
+      <strong class="rider-home-metric-value">{{ week_metrics.report_count }}</strong>
     </div>
     <div class="rider-home-metric-card">
       <span class="rider-home-metric-label">Samples collected</span>
@@ -117,7 +117,7 @@
   </div>
   {% endif %}
 
-  <h2 class="rider-home-section-title" style="margin-top:1.5rem;">Report for this week</h2>
+  <h2 class="rider-home-section-title" style="margin-top:1.5rem;">Reports for this week</h2>
   <div style="overflow-x:auto;">
     <table class="data-table responsive-stack-table">
       <thead>
@@ -132,26 +132,30 @@
         </tr>
       </thead>
       <tbody>
-        {% if week_report %}
-        <tr>
-          <td data-label="Week starting">{{ week_report.week_start|date:"Y-m-d" }}</td>
-          <td data-label="Status">{{ week_report.get_status_display }}</td>
-          <td data-label="Samples">{{ week_report.samples_collected }}</td>
-          <td data-label="Trips">{{ week_metrics.trip_count }}</td>
-          <td data-label="Submitted">{% if week_report.submitted_at %}{{ week_report.submitted_at|date:"Y-m-d H:i" }}{% else %}—{% endif %}</td>
-          <td data-label="Updated">{{ week_report.updated_at|date:"Y-m-d H:i" }}</td>
-          <td data-label="Actions">
-            <a href="{% url 'operations:report_detail' week_report.pk %}">View</a>
-            {% if week_report_can_edit %}
-            <a href="{% url 'operations:report_edit' week_report.pk %}">Edit</a>
-            {% else %}
-            <span class="muted" title="Read-only after review">Read-only</span>
-            {% endif %}
-          </td>
-        </tr>
+        {% if week_report_rows %}
+        {% for row in week_report_rows %}
+          {% with week_report=row.report %}
+          <tr>
+            <td data-label="Week starting">{{ week_report.week_start|date:"Y-m-d" }}</td>
+            <td data-label="Status">{{ week_report.get_status_display }}</td>
+            <td data-label="Samples">{{ week_report.samples_collected }}</td>
+            <td data-label="Trips">{{ row.trip_count }}</td>
+            <td data-label="Submitted">{% if week_report.submitted_at %}{{ week_report.submitted_at|date:"Y-m-d H:i" }}{% else %}—{% endif %}</td>
+            <td data-label="Updated">{{ week_report.updated_at|date:"Y-m-d H:i" }}</td>
+            <td data-label="Actions">
+              <a href="{% url 'operations:report_detail' week_report.pk %}">View</a>
+              {% if row.can_edit %}
+              <a href="{% url 'operations:report_edit' week_report.pk %}">Edit</a>
+              {% else %}
+              <span class="muted" title="Read-only after review">Read-only</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endwith %}
+        {% endfor %}
         {% else %}
         <tr>
-          <td colspan="7">No report for this week yet. <a href="{% url 'operations:report_create' %}">Create report</a></td>
+          <td colspan="7">No reports for this week yet. <a href="{% url 'operations:report_create' %}">Create report</a></td>
         </tr>
         {% endif %}
       </tbody>

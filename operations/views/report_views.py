@@ -87,7 +87,9 @@ def _trip_formset_kwargs(user, *, for_pc: bool):
 def _pc_trip_formset_kwargs(user):
     kw = _trip_formset_kwargs(user, for_pc=True)
     kw["include_transport_kind"] = True
-    kw["pc_aggregate_fuel"] = True
+    # Keep per-row fuel fields on the form for compatibility with validation/error
+    # plumbing, while PC UI continues to use week-level aggregate inputs.
+    kw["pc_aggregate_fuel"] = False
     return kw
 
 
@@ -194,13 +196,58 @@ class RiderReportListView(LoginRequiredMixin, ListView):
             ctx["pc_prev_week"] = (week_start - timedelta(days=7)).isoformat()
             ctx["pc_next_week"] = (week_start + timedelta(days=7)).isoformat()
             user = self.request.user
-            rows = [
-                {"report": r, "can_edit": can_edit_report_as_pc(user, r)}
-                for r in self.object_list
-            ]
+            rows = []
+            for report in self.object_list:
+                rows.append(
+                    {
+                        "report": report,
+                        "can_edit": can_edit_report_as_pc(user, report),
+                    }
+                )
+            grouped: dict[int, list[dict]] = {}
+            for row in rows:
+                grouped.setdefault(row["report"].rider_id, []).append(row)
+
+            aggregated_rows: list[dict] = []
+            for rider_id, rider_rows in grouped.items():
+                # Prefer the most recently updated report as the representative row.
+                sorted_rows = sorted(
+                    rider_rows,
+                    key=lambda rr: (rr["report"].updated_at, rr["report"].id),
+                    reverse=True,
+                )
+                latest = sorted_rows[0]
+                edit_candidate = next((rr for rr in sorted_rows if rr["can_edit"]), None)
+                status_values = {rr["report"].status for rr in sorted_rows}
+                aggregated_rows.append(
+                    {
+                        "report": latest["report"],
+                        "view_report": latest["report"],
+                        "edit_report": edit_candidate["report"] if edit_candidate else latest["report"],
+                        "can_edit": bool(edit_candidate),
+                        "status_display": (
+                            latest["report"].get_status_display()
+                            if len(status_values) == 1
+                            else "Mixed"
+                        ),
+                        "samples_total": sum(
+                            (rr["report"].samples_collected or 0) for rr in sorted_rows
+                        ),
+                        "trip_total": sum((rr["report"].week_trip_count or 0) for rr in sorted_rows),
+                        "submitted_at": max(
+                            (
+                                rr["report"].submitted_at
+                                for rr in sorted_rows
+                                if rr["report"].submitted_at is not None
+                            ),
+                            default=None,
+                        ),
+                    }
+                )
+
             rider_rows: list[dict] = []
             driver_rows: list[dict] = []
-            for row in rows:
+            for row in aggregated_rows:
                 role = getattr(getattr(row["report"].rider, "profile", None), "role", None)
                 if role == UserProfile.Role.DRIVER:
                     driver_rows.append(row)
@@ -222,36 +269,57 @@ class RiderReportListView(LoginRequiredMixin, ListView):
             return ctx
         week_start = week_start_from_request(self.request)
         qs = get_reports_queryset(self.request.user)
-        week_report = (
+        week_reports = (
             qs.filter(week_start=week_start)
             .select_related("bike", "car")
             .prefetch_related("trip_entries")
-            .first()
+            .order_by("-updated_at", "-id")
         )
         ctx["week_start_monday"] = week_start
         ctx["selected_week_start"] = week_start
         ctx["week_range_label"] = week_range_label(week_start)
-        ctx["week_report"] = week_report
+        ctx["week_reports"] = week_reports
+        ctx["week_report_rows"] = []
         ctx["rider_profile_metrics"] = rider_home_profile_metrics(self.request.user)
         ctx["rider_trend_chart_data"] = rider_home_weekly_trends(self.request.user, num_weeks=12)
-        if week_report:
-            trips = list(week_report.trip_entries.all())
-            total_distance = sum(
-                (t.distance_travelled if t.distance_travelled is not None else Decimal("0") for t in trips),
-                Decimal("0"),
-            )
-            total_results = sum((t.results_total for t in trips), 0)
+        if week_reports:
+            total_samples = 0
+            total_trips = 0
+            total_distance = Decimal("0")
+            total_results = 0
+            week_report_rows = []
+            for week_report in week_reports:
+                trips = list(week_report.trip_entries.all())
+                trip_count = len(trips)
+                total_samples += week_report.samples_collected or 0
+                total_trips += trip_count
+                total_distance += sum(
+                    (
+                        t.distance_travelled
+                        if t.distance_travelled is not None
+                        else Decimal("0")
+                        for t in trips
+                    ),
+                    Decimal("0"),
+                )
+                total_results += sum((t.results_total for t in trips), 0)
+                week_report_rows.append(
+                    {
+                        "report": week_report,
+                        "trip_count": trip_count,
+                        "can_edit": can_edit_report_as_rider(self.request.user, week_report),
+                    }
+                )
+            ctx["week_report_rows"] = week_report_rows
             ctx["week_metrics"] = {
-                "status_display": week_report.get_status_display(),
-                "samples_collected": week_report.samples_collected,
-                "trip_count": len(trips),
+                "report_count": len(week_reports),
+                "samples_collected": total_samples,
+                "trip_count": total_trips,
                 "total_distance": total_distance,
                 "total_results": total_results,
             }
-            ctx["week_report_can_edit"] = can_edit_report_as_rider(self.request.user, week_report)
         else:
             ctx["week_metrics"] = None
-            ctx["week_report_can_edit"] = False
         return ctx
 
     def get_template_names(self):
@@ -369,32 +437,14 @@ class RiderReportCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView)
             role = None
 
         week_start = _monday_of_current_week()
-        existing = RiderWeeklyReport.objects.filter(
-            rider=self.request.user,
-            week_start=week_start,
-        ).first()
-        if existing and not can_edit_report_as_rider(self.request.user, existing):
-            messages.info(
-                self.request,
-                "You already have a report for this week; it cannot be edited here.",
-            )
-            return redirect("operations:report_detail", pk=existing.pk)
 
         if role == UserProfile.Role.DRIVER:
             dk = _driver_trip_formset_kwargs(self.request.user)
-            if existing:
-                relay_qs = existing.trip_entries.filter(
-                    transport_kind=TripTransportKind.RELAYED
-                )
-                first_qs = existing.trip_entries.filter(
-                    transport_kind=TripTransportKind.FIRST_TRANSPORT
-                )
-            else:
-                relay_qs = RiderTripEntry.objects.none()
-                first_qs = RiderTripEntry.objects.none()
+            relay_qs = RiderTripEntry.objects.none()
+            first_qs = RiderTripEntry.objects.none()
             trip_relay = RiderTripEntryFormSet(
                 self.request.POST,
-                instance=existing if existing else None,
+                instance=None,
                 prefix="trips_relay",
                 queryset=relay_qs,
                 fixed_transport_kind=TripTransportKind.RELAYED,
@@ -402,7 +452,7 @@ class RiderReportCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView)
             )
             trip_first = RiderTripEntryFormSet(
                 self.request.POST,
-                instance=existing if existing else None,
+                instance=None,
                 prefix="trips_first",
                 queryset=first_qs,
                 fixed_transport_kind=TripTransportKind.FIRST_TRANSPORT,
@@ -419,15 +469,10 @@ class RiderReportCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView)
         else:
             kw = _trip_formset_kwargs(self.request.user, for_pc=False)
             trip_fs_kwargs = dict(prefix="trips", **kw)
-            if existing:
-                trip_fs_kwargs["queryset"] = existing.trip_entries.filter(
-                    transport_kind=TripTransportKind.LEGACY
-                )
-            else:
-                trip_fs_kwargs["queryset"] = RiderTripEntry.objects.none()
+            trip_fs_kwargs["queryset"] = RiderTripEntry.objects.none()
             trip_formset = RiderTripEntryFormSet(
                 self.request.POST,
-                instance=existing if existing else None,
+                instance=None,
                 **trip_fs_kwargs,
             )
             if not trip_formset.is_valid():
@@ -435,11 +480,8 @@ class RiderReportCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView)
                     self.get_context_data(form=form, trip_formset=trip_formset)
                 )
         rider_profile = getattr(self.request.user, "rider_profile", None)
-        if existing:
-            form.instance = existing
-        else:
-            form.instance.rider = self.request.user
-            form.instance.week_start = week_start
+        form.instance.rider = self.request.user
+        form.instance.week_start = week_start
         if rider_profile and rider_profile.district_id:
             form.instance.title = f"{rider_profile.district.province.name} / {rider_profile.district.name}"
         cu = (self.request.POST.get("client_uuid") or "").strip()
@@ -697,11 +739,24 @@ class RiderReportEditView(LoginRequiredMixin, UpdateView):
 
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
+        try:
+            role = self.request.user.profile.role
+        except UserProfile.DoesNotExist:
+            role = None
+        if role in (UserProfile.Role.PC, UserProfile.Role.ADMIN):
+            return obj
         if not can_edit_report_as_rider(self.request.user, obj):
             from django.core.exceptions import PermissionDenied
 
             raise PermissionDenied
         return obj
+
+    def dispatch(self, request, *args, **kwargs):
+        profile = getattr(request.user, "profile", None)
+        role = getattr(profile, "role", None)
+        if role in (UserProfile.Role.PC, UserProfile.Role.ADMIN):
+            return redirect("operations:pc_report_edit", pk=kwargs.get("pk"))
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse("operations:report_detail", kwargs={"pk": self.object.pk})

@@ -587,6 +587,16 @@ RiderTripEntryFormSet = inlineformset_factory(
     can_delete=True,
 )
 
+# PC review/edit: no blank trailing row (riders use extra=1 to add trips).
+RiderTripEntryPCFormSet = inlineformset_factory(
+    RiderWeeklyReport,
+    RiderTripEntry,
+    form=RiderTripEntryForm,
+    formset=RiderTripEntryInlineFormSet,
+    extra=0,
+    can_delete=True,
+)
+
 
 # --- PC master data (bikes, facilities, riders) ---
 

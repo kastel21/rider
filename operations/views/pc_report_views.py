@@ -7,11 +7,12 @@ from django.db import transaction
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
+from django.utils.dateparse import parse_date
 from django.views import View
 from django.views.generic import ListView
 from django.views.generic.edit import UpdateView
 
-from ..forms import PCReportForm, ReportReviewForm, RiderTripEntryFormSet, SampleRejectionFormSet
+from ..forms import PCReportForm, ReportReviewForm, RiderTripEntryPCFormSet, SampleRejectionFormSet
 from ..models import ReportAuditLog, RiderTripEntry, RiderWeeklyReport
 from ..permissions import can_edit_report_as_pc, require_pc
 from ..selectors import (
@@ -19,7 +20,7 @@ from ..selectors import (
     report_audit_logs_for_user,
     reports_for_rider_week_in_scope,
 )
-from ..services import report_edit_service, report_service
+from ..services import report_edit_service, report_service, weekly_review_service
 from .report_views import (
     _pc_trip_formset_kwargs,
     _report_form_ajax_context,
@@ -92,6 +93,35 @@ def _apply_pc_week_fuel_distance_rollup(
         )
 
 
+def _bulk_pc_week_fuel_totals_key(report_id: int, field: str) -> str:
+    return f"pc_{field}_total_{report_id}"
+
+
+def _bulk_pc_fuel_week_totals_from_post(post, report_id: int) -> dict:
+    return {
+        "allocated": (post.get(_bulk_pc_week_fuel_totals_key(report_id, "fuel_allocated")) or "0").strip(),
+        "used": (post.get(_bulk_pc_week_fuel_totals_key(report_id, "fuel_used")) or "0").strip(),
+        "distance": (post.get(_bulk_pc_week_fuel_totals_key(report_id, "distance_travelled")) or "0").strip(),
+    }
+
+
+def _bulk_parse_pc_fuel_week_post(post, report_id: int) -> tuple[Decimal, Decimal, Decimal]:
+    def one(key: str) -> Decimal:
+        raw = (post.get(key) or "").strip().replace(",", ".")
+        if not raw:
+            return Decimal("0")
+        try:
+            return Decimal(raw)
+        except InvalidOperation as e:
+            raise ValueError("Enter a valid number for week fuel or distance totals.") from e
+
+    return (
+        one(_bulk_pc_week_fuel_totals_key(report_id, "fuel_allocated")),
+        one(_bulk_pc_week_fuel_totals_key(report_id, "fuel_used")),
+        one(_bulk_pc_week_fuel_totals_key(report_id, "distance_travelled")),
+    )
+
+
 class PCReportEditView(LoginRequiredMixin, UpdateView):
     model = RiderWeeklyReport
     form_class = PCReportForm
@@ -139,7 +169,7 @@ class PCReportEditView(LoginRequiredMixin, UpdateView):
         trip_qs = self.object.trip_entries.all().order_by("sequence", "pk")
         if "trip_formset" not in ctx:
             if self.request.method == "POST":
-                ctx["trip_formset"] = RiderTripEntryFormSet(
+                ctx["trip_formset"] = RiderTripEntryPCFormSet(
                     self.request.POST,
                     instance=self.object,
                     prefix="trips",
@@ -147,7 +177,7 @@ class PCReportEditView(LoginRequiredMixin, UpdateView):
                     **kw,
                 )
             else:
-                ctx["trip_formset"] = RiderTripEntryFormSet(
+                ctx["trip_formset"] = RiderTripEntryPCFormSet(
                     instance=self.object,
                     prefix="trips",
                     queryset=trip_qs,
@@ -164,7 +194,33 @@ class PCReportEditView(LoginRequiredMixin, UpdateView):
                 )
         report = self.object
         ctx.update(_week_saved_table_context(report, report.rider, report.week_start))
-        ctx["pc_visit_count"] = report.trip_entries.count()
+        rider_week_reports = (
+            get_reports_queryset(self.request.user)
+            .filter(rider=report.rider, week_start=report.week_start)
+            .select_related("rider", "rider__profile")
+            .order_by("created_at", "pk")
+        )
+        ctx["rider_week_reports"] = [
+            {
+                "report": r,
+                "can_edit": can_edit_report_as_pc(self.request.user, r),
+            }
+            for r in rider_week_reports
+        ]
+        submitted_statuses = (
+            RiderWeeklyReport.Status.SUBMITTED,
+            RiderWeeklyReport.Status.UNDER_REVIEW,
+            RiderWeeklyReport.Status.APPROVED,
+            RiderWeeklyReport.Status.REJECTED,
+        )
+        submitted_week_reports = RiderWeeklyReport.objects.filter(
+            rider=report.rider,
+            week_start=report.week_start,
+            status__in=submitted_statuses,
+        ).values_list("pk", flat=True)
+        ctx["pc_visit_count"] = RiderTripEntry.objects.filter(
+            report_id__in=submitted_week_reports
+        ).count()
         if ctx.get("is_pc_edit"):
             if pc_fuel_post_override is not None:
                 ctx["pc_fuel_week_totals"] = _pc_fuel_week_totals_from_post(pc_fuel_post_override)
@@ -174,8 +230,9 @@ class PCReportEditView(LoginRequiredMixin, UpdateView):
         return ctx
 
     def form_valid(self, form):
+        action = (self.request.POST.get("action") or "save").strip().lower()
         kw = _pc_trip_formset_kwargs(self.request.user)
-        trip_formset = RiderTripEntryFormSet(
+        trip_formset = RiderTripEntryPCFormSet(
             self.request.POST,
             instance=self.object,
             prefix="trips",
@@ -212,41 +269,43 @@ class PCReportEditView(LoginRequiredMixin, UpdateView):
                     ],
                 )
             )
+        rejection_formset = SampleRejectionFormSet(
+            self.request.POST, instance=self.object, prefix="rejections"
+        )
+        if not rejection_formset.is_valid():
+            return self.render_to_response(
+                self.get_context_data(
+                    form=form,
+                    trip_formset=trip_formset,
+                    rejection_formset=rejection_formset,
+                    pc_fuel_post_override=self.request.POST,
+                )
+            )
         track = ["pc_notes", "scheduled_visits"]
         before = {k: getattr(self.object, k) for k in track}
-        try:
-            with transaction.atomic():
-                self.object = form.save()
-                trip_formset.instance = self.object
-                trip_formset.save()
-                _resequence_trip_entries(self.object)
-                _apply_pc_week_fuel_distance_rollup(
-                    self.object, fuel_alloc, fuel_used, distance_km
+        with transaction.atomic():
+            self.object = form.save()
+            trip_formset.instance = self.object
+            trip_formset.save()
+            _resequence_trip_entries(self.object)
+            _apply_pc_week_fuel_distance_rollup(
+                self.object, fuel_alloc, fuel_used, distance_km
+            )
+            _rollup_totals(self.object)
+            rejection_formset.instance = self.object
+            rejection_formset.save()
+            self.object.refresh_from_db()
+            report_service.complete_review(
+                self.object,
+                self.request.user,
+                approved=True,
+                pc_notes=self.object.pc_notes or "",
+            )
+            if action == "review":
+                weekly_review_service.create_weekly_review_record(
+                    source_report=self.object,
+                    reviewer=self.request.user,
                 )
-                _rollup_totals(self.object)
-                rejection_formset = SampleRejectionFormSet(
-                    self.request.POST, instance=self.object, prefix="rejections"
-                )
-                if not rejection_formset.is_valid():
-                    transaction.set_rollback(True)
-                    return self.render_to_response(
-                        self.get_context_data(
-                            form=form,
-                            trip_formset=trip_formset,
-                            rejection_formset=rejection_formset,
-                            pc_fuel_post_override=self.request.POST,
-                        )
-                    )
-                rejection_formset.save()
-                self.object.refresh_from_db()
-                report_service.complete_review(
-                    self.object,
-                    self.request.user,
-                    approved=True,
-                    pc_notes=self.object.pc_notes or "",
-                )
-        except Exception:
-            raise
         after = {k: getattr(self.object, k) for k in track}
         changed = [k for k in track if before.get(k) != after.get(k)]
         report_edit_service.record_pc_edit(
@@ -255,12 +314,267 @@ class PCReportEditView(LoginRequiredMixin, UpdateView):
             summary=f"PC edit: {', '.join(changed) or 'save'}",
             diff_data={"before": before, "after": after},
         )
-        messages.success(self.request, "Report saved and marked reviewed (approved).")
-        return redirect(self.get_success_url())
+        if action == "review":
+            messages.success(self.request, "Review recorded and snapshot saved.")
+        else:
+            messages.success(self.request, "Record saved.")
+        return redirect("operations:pc_reports")
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        action = (request.POST.get("action") or "save").strip().lower()
+        if action == "review":
+            track = ["pc_notes", "scheduled_visits"]
+            before = {k: getattr(self.object, k) for k in track}
+
+            self.object.pc_notes = request.POST.get("pc_notes", "")
+            raw_scheduled = (request.POST.get("scheduled_visits") or "").strip()
+            if raw_scheduled == "":
+                self.object.scheduled_visits = None
+            else:
+                try:
+                    self.object.scheduled_visits = int(raw_scheduled)
+                except (TypeError, ValueError):
+                    # For review action we do not block on invalid user input.
+                    pass
+            self.object.save(update_fields=["pc_notes", "scheduled_visits", "updated_at"])
+
+            report_service.complete_review(
+                self.object,
+                request.user,
+                approved=True,
+                pc_notes=self.object.pc_notes or "",
+            )
+            weekly_review_service.create_weekly_review_record(
+                source_report=self.object,
+                reviewer=request.user,
+            )
+            self.object.refresh_from_db()
+            after = {k: getattr(self.object, k) for k in track}
+            changed = [k for k in track if before.get(k) != after.get(k)]
+            report_edit_service.record_pc_edit(
+                self.object,
+                request.user,
+                summary=f"PC review: {', '.join(changed) or 'review'}",
+                diff_data={"before": before, "after": after},
+            )
+            messages.success(request, "Review recorded and snapshot saved.")
+            return redirect("operations:pc_reports")
+        return super().post(request, *args, **kwargs)
 
     def get_success_url(self):
         w = self.object.week_start.isoformat()
         return f"{reverse('operations:pc_reports')}?{urlencode({'week': w})}"
+
+
+class PCBulkWeekEditView(LoginRequiredMixin, View):
+    template_name = "operations/reports/pc_report_bulk_edit.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        require_pc(request.user)
+        return super().dispatch(request, *args, **kwargs)
+
+    def _week_start(self):
+        week_str = self.kwargs["week_str"]
+        week_start = parse_date(week_str)
+        if week_start is None:
+            from django.http import Http404
+
+            raise Http404("Invalid week value")
+        return week_start
+
+    def _reports(self):
+        return list(
+            reports_for_rider_week_in_scope(
+                self.request.user, self.kwargs["rider_id"], self.kwargs["week_str"]
+            )
+            .select_related("rider", "rider__profile", "bike", "car")
+            .prefetch_related("trip_entries", "sample_rejections")
+            .order_by("created_at", "pk")
+        )
+
+    def _build_bundle(self, report, *, post_data=None):
+        form_prefix = f"report_{report.pk}"
+        trip_prefix = f"trips_{report.pk}"
+        rej_prefix = f"rejections_{report.pk}"
+        kw = _pc_trip_formset_kwargs(self.request.user)
+        trip_qs = report.trip_entries.all().order_by("sequence", "pk")
+        if post_data is not None:
+            form = PCReportForm(post_data, instance=report, prefix=form_prefix)
+            trip_formset = RiderTripEntryPCFormSet(
+                post_data,
+                instance=report,
+                prefix=trip_prefix,
+                queryset=trip_qs,
+                **kw,
+            )
+            rejection_formset = SampleRejectionFormSet(
+                post_data, instance=report, prefix=rej_prefix
+            )
+            fuel_totals = _bulk_pc_fuel_week_totals_from_post(post_data, report.pk)
+        else:
+            form = PCReportForm(instance=report, prefix=form_prefix)
+            trip_formset = RiderTripEntryPCFormSet(
+                instance=report,
+                prefix=trip_prefix,
+                queryset=trip_qs,
+                **kw,
+            )
+            rejection_formset = SampleRejectionFormSet(instance=report, prefix=rej_prefix)
+            fuel_totals = _pc_fuel_week_totals_from_db(report)
+        return {
+            "report": report,
+            "can_edit": can_edit_report_as_pc(self.request.user, report),
+            "form": form,
+            "trip_formset": trip_formset,
+            "rejection_formset": rejection_formset,
+            "fuel_totals": fuel_totals,
+            "fuel_errors": [],
+        }
+
+    def _context(self, bundles):
+        first_report = bundles[0]["report"]
+        rider_user = first_report.rider
+        loc = _report_location_for_user(rider_user)
+        return {
+            "bundles": bundles,
+            "week_start": first_report.week_start,
+            "report_location": loc,
+            "demographics": {
+                "rider_name": rider_user.get_full_name() or rider_user.username,
+                "province": loc["province_name"],
+                "district": loc["district_name"],
+            },
+            "is_pc_edit": True,
+            "bulk_edit": True,
+            **_report_form_ajax_context(),
+        }
+
+    def get(self, request, *args, **kwargs):
+        reports = self._reports()
+        if not reports:
+            messages.error(request, "No reports found for this rider and week in your scope.")
+            return redirect("operations:pc_reports")
+        bundles = [self._build_bundle(r) for r in reports]
+        return self.render_to_response(self._context(bundles))
+
+    def render_to_response(self, context, **response_kwargs):
+        from django.shortcuts import render
+
+        return render(self.request, self.template_name, context, **response_kwargs)
+
+    def post(self, request, *args, **kwargs):
+        reports = self._reports()
+        if not reports:
+            messages.error(request, "No reports found for this rider and week in your scope.")
+            return redirect("operations:pc_reports")
+        action = (request.POST.get("action") or "save_all").strip().lower()
+        bundles = [self._build_bundle(r, post_data=request.POST) for r in reports]
+        editable_bundles = [b for b in bundles if b["can_edit"]]
+
+        if action == "review_all":
+            reviewed = 0
+            with transaction.atomic():
+                for bundle in editable_bundles:
+                    report = bundle["report"]
+                    form = bundle["form"]
+                    # Review-all is best-effort and does not block on validation.
+                    report.pc_notes = form.data.get(form.add_prefix("pc_notes"), report.pc_notes) or ""
+                    raw_scheduled = (form.data.get(form.add_prefix("scheduled_visits")) or "").strip()
+                    if raw_scheduled == "":
+                        report.scheduled_visits = None
+                    else:
+                        try:
+                            report.scheduled_visits = int(raw_scheduled)
+                        except (TypeError, ValueError):
+                            pass
+                    report.save(update_fields=["pc_notes", "scheduled_visits", "updated_at"])
+                    report_service.complete_review(
+                        report,
+                        request.user,
+                        approved=True,
+                        pc_notes=report.pc_notes or "",
+                    )
+                    weekly_review_service.create_weekly_review_record(
+                        source_report=report,
+                        reviewer=request.user,
+                    )
+                    report_edit_service.record_pc_edit(
+                        report,
+                        request.user,
+                        summary="PC bulk review",
+                        diff_data={"action": "bulk_review_all"},
+                    )
+                    reviewed += 1
+            messages.success(request, f"Reviewed {reviewed} record(s).")
+            week = self._week_start().isoformat()
+            return redirect(f"{reverse('operations:pc_reports')}?{urlencode({'week': week})}")
+
+        # save_all path: full validation before commit.
+        has_errors = False
+        parsed_fuel = {}
+        for bundle in editable_bundles:
+            form = bundle["form"]
+            trip_formset = bundle["trip_formset"]
+            rejection_formset = bundle["rejection_formset"]
+            if not form.is_valid():
+                has_errors = True
+            if not trip_formset.is_valid():
+                has_errors = True
+            if not rejection_formset.is_valid():
+                has_errors = True
+            try:
+                fuel_alloc, fuel_used, distance_km = _bulk_parse_pc_fuel_week_post(
+                    request.POST, bundle["report"].pk
+                )
+                if fuel_used > fuel_alloc:
+                    bundle["fuel_errors"].append(
+                        "Fuel used cannot exceed fuel allocated (week totals)."
+                    )
+                    has_errors = True
+                parsed_fuel[bundle["report"].pk] = (fuel_alloc, fuel_used, distance_km)
+            except ValueError as exc:
+                bundle["fuel_errors"].append(str(exc))
+                has_errors = True
+        if has_errors:
+            return self.render_to_response(self._context(bundles))
+
+        saved = 0
+        with transaction.atomic():
+            for bundle in editable_bundles:
+                report = bundle["report"]
+                form = bundle["form"]
+                trip_formset = bundle["trip_formset"]
+                rejection_formset = bundle["rejection_formset"]
+                before = {
+                    "pc_notes": report.pc_notes,
+                    "scheduled_visits": report.scheduled_visits,
+                }
+                report = form.save()
+                trip_formset.instance = report
+                trip_formset.save()
+                _resequence_trip_entries(report)
+                fuel_alloc, fuel_used, distance_km = parsed_fuel[report.pk]
+                _apply_pc_week_fuel_distance_rollup(report, fuel_alloc, fuel_used, distance_km)
+                _rollup_totals(report)
+                rejection_formset.instance = report
+                rejection_formset.save()
+                report.refresh_from_db()
+                after = {
+                    "pc_notes": report.pc_notes,
+                    "scheduled_visits": report.scheduled_visits,
+                }
+                changed = [k for k in before if before[k] != after[k]]
+                report_edit_service.record_pc_edit(
+                    report,
+                    request.user,
+                    summary=f"PC bulk save: {', '.join(changed) or 'save'}",
+                    diff_data={"before": before, "after": after},
+                )
+                saved += 1
+        messages.success(request, f"Saved {saved} record(s).")
+        week = self._week_start().isoformat()
+        return redirect(f"{reverse('operations:pc_reports')}?{urlencode({'week': week})}")
 
 
 class ReportEditHistoryView(LoginRequiredMixin, ListView):

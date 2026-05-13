@@ -321,12 +321,6 @@ class RiderWeeklyReport(models.Model):
 
     class Meta:
         ordering = ["-week_start", "-id"]
-        constraints = [
-            models.UniqueConstraint(
-                fields=["rider", "week_start"],
-                name="uniq_rider_week",
-            ),
-        ]
 
     def __str__(self):
         return f"Report {self.week_start} ({self.rider})"
@@ -653,6 +647,35 @@ class ReportEditSnapshot(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+
+
+class WeeklyRecordReviewed(models.Model):
+    """Weekly PC review snapshots persisted as a single aggregated record."""
+
+    rider = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="weekly_records_reviewed",
+    )
+    week_start = models.DateField(db_index=True)
+    source_report = models.ForeignKey(
+        RiderWeeklyReport,
+        on_delete=models.CASCADE,
+        related_name="weekly_review_records",
+    )
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="weekly_records_reviewed_by",
+    )
+    reviewed_at = models.DateTimeField(auto_now_add=True)
+    snapshot = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        db_table = "weekly_record_reviewed"
+        ordering = ["-reviewed_at", "-id"]
 
 
 class PCDistrictWeeklyTransportStat(models.Model):

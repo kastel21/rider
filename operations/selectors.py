@@ -28,11 +28,10 @@ def sunday_of_week(week_start_monday: date) -> date:
 def week_saved_trip_entries(*, report, rider, week_start_monday: date) -> QuerySet:
     """Persisted trip rows for the weekly report period (same Mon–Sun as week_start)."""
     if report is not None and getattr(report, "pk", None):
-        return (
-            report.trip_entries.select_related("origin_facility", "destination_facility").order_by(
-                "sequence", "id"
-            )
-        )
+        if rider is None:
+            rider = report.rider_id
+        if week_start_monday is None:
+            week_start_monday = report.week_start
     rider_id = getattr(rider, "pk", rider)
     return (
         RiderTripEntry.objects.filter(report__rider_id=rider_id, report__week_start=week_start_monday)

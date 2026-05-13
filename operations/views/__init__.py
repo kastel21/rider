@@ -1,5 +1,6 @@
 from .auth_views import LoginView, LogoutView, RoleRedirectView
 from .pc_report_views import (
+    PCBulkWeekEditView,
     PCReportEditView,
     ReportAuditLogListView,
     ReportEditHistoryView,
@@ -73,6 +74,7 @@ __all__ = [
     "RiderRegisterDeviceView",
     "RiderSyncView",
     "PCReportEditView",
+    "PCBulkWeekEditView",
     "ReportEditHistoryView",
     "ReportStartReviewView",
     "ReportReviewView",

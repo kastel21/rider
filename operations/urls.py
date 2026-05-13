@@ -37,6 +37,11 @@ urlpatterns = [
     path("reports/<int:pk>/edit/", views.RiderReportEditView.as_view(), name="report_edit"),
     path("reports/<int:pk>/submit/", views.ReportSubmitView.as_view(), name="report_submit"),
     path("pc/reports/", views.RiderReportListView.as_view(), name="pc_reports"),
+    path(
+        "pc/reports/rider/<int:rider_id>/week/<week_str>/edit/",
+        views.PCBulkWeekEditView.as_view(),
+        name="pc_reports_bulk_edit",
+    ),
     path("pc/reports/<int:pk>/edit/", views.PCReportEditView.as_view(), name="pc_report_edit"),
     path(
         "pc/reports/<int:pk>/edit-history/",

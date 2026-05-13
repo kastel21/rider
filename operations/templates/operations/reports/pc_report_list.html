@@ -69,14 +69,14 @@
               —
             {% endif %}
           </td>
-          <td data-label="Status">{{ r.get_status_display }}</td>
-          <td data-label="Samples">{{ r.samples_collected }}</td>
-          <td data-label="Trips">{{ r.week_trip_count }}</td>
-          <td data-label="Submitted">{% if r.submitted_at %}{{ r.submitted_at|date:"Y-m-d H:i" }}{% else %}—{% endif %}</td>
+          <td data-label="Status">{{ row.status_display }}</td>
+          <td data-label="Samples">{{ row.samples_total }}</td>
+          <td data-label="Trips">{{ row.trip_total }}</td>
+          <td data-label="Submitted">{% if row.submitted_at %}{{ row.submitted_at|date:"Y-m-d H:i" }}{% else %}—{% endif %}</td>
           <td data-label="Actions">
-            <a href="{% url 'operations:report_detail' r.pk %}">View</a>
+            <a href="{% url 'operations:report_detail' row.view_report.pk %}">View</a>
             {% if row.can_edit %}
-              | <a href="{% url 'operations:pc_report_edit' r.pk %}">Edit</a>
+              | <a href="{% url 'operations:pc_reports_bulk_edit' row.report.rider_id row.report.week_start|date:'Y-m-d' %}">Edit</a>
             {% endif %}
           </td>
         </tr>
@@ -124,14 +124,14 @@
               —
             {% endif %}
           </td>
-          <td data-label="Status">{{ r.get_status_display }}</td>
-          <td data-label="Samples">{{ r.samples_collected }}</td>
-          <td data-label="Trips">{{ r.week_trip_count }}</td>
-          <td data-label="Submitted">{% if r.submitted_at %}{{ r.submitted_at|date:"Y-m-d H:i" }}{% else %}—{% endif %}</td>
+          <td data-label="Status">{{ row.status_display }}</td>
+          <td data-label="Samples">{{ row.samples_total }}</td>
+          <td data-label="Trips">{{ row.trip_total }}</td>
+          <td data-label="Submitted">{% if row.submitted_at %}{{ row.submitted_at|date:"Y-m-d H:i" }}{% else %}—{% endif %}</td>
           <td data-label="Actions">
-            <a href="{% url 'operations:report_detail' r.pk %}">View</a>
+            <a href="{% url 'operations:report_detail' row.view_report.pk %}">View</a>
             {% if row.can_edit %}
-              | <a href="{% url 'operations:pc_report_edit' r.pk %}">Edit</a>
+              | <a href="{% url 'operations:pc_reports_bulk_edit' row.report.rider_id row.report.week_start|date:'Y-m-d' %}">Edit</a>
             {% endif %}
           </td>
         </tr>

@@ -65,6 +65,7 @@ def can_edit_report_as_pc(user, report: RiderWeeklyReport) -> bool:
         return False
     if user.is_authenticated and user.is_superuser:
         return report.status in (
+            RiderWeeklyReport.Status.DRAFT,
             RiderWeeklyReport.Status.SUBMITTED,
             RiderWeeklyReport.Status.UNDER_REVIEW,
             RiderWeeklyReport.Status.REJECTED,
@@ -74,6 +75,7 @@ def can_edit_report_as_pc(user, report: RiderWeeklyReport) -> bool:
     if _role(user) == UserProfile.Role.PC and not report_in_pc_scope(user, report):
         return False
     return report.status in (
+        RiderWeeklyReport.Status.DRAFT,
         RiderWeeklyReport.Status.SUBMITTED,
         RiderWeeklyReport.Status.UNDER_REVIEW,
         RiderWeeklyReport.Status.REJECTED,

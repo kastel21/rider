@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Bulk edit weekly reports{% endblock %}
+{% block content %}
+<form method="post" id="bulk-report-form" data-bulk-report-form {% if report_facilities_ajax_url %}data-facilities-url="{{ report_facilities_ajax_url }}"{% endif %}>
+  {% csrf_token %}
+  <div class="card">
+    <h1>Bulk edit weekly reports</h1>
+    <p class="muted">{{ demographics.rider_name }} · {{ demographics.district|default:"-" }} · {{ demographics.province|default:"-" }}</p>
+  </div>
+
+  {% for item in bundles %}
+  {% with report=item.report form=item.form trip_formset=item.trip_formset rejection_formset=item.rejection_formset %}
+  <div class="card" style="margin-top:1rem;">
+    <h2>Record #{{ report.pk }} — {{ report.get_status_display }}</h2>
+    <p class="muted">Submitted: {% if report.submitted_at %}{{ report.submitted_at|date:"Y-m-d H:i" }}{% else %}—{% endif %}</p>
+    {% if item.can_edit %}
+      {{ form.non_field_errors }}
+      {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+
+      <div class="dashboard-info-grid pc-visit-schedule-row" style="margin-top:0.75rem;">
+        <div class="dashboard-info-item field">
+          <label for="{{ form.scheduled_visits.id_for_label }}"><strong>{{ form.scheduled_visits.label }}</strong></label>
+          {{ form.scheduled_visits }}
+          {{ form.scheduled_visits.errors }}
+        </div>
+      </div>
+
+      <h3 style="margin-top:1rem;">Fuel &amp; distance (week totals)</h3>
+      {% if item.fuel_errors %}
+      <ul class="errorlist">{% for err in item.fuel_errors %}<li>{{ err }}</li>{% endfor %}</ul>
+      {% endif %}
+      <div class="fuel-strip fuel-strip--pc-week" data-pc-week-fuel>
+        <div class="field">
+          <label><strong>Fuel allocated (week)</strong></label><br>
+          <input type="text" name="pc_fuel_allocated_total_{{ report.pk }}" class="report-num-input" value="{{ item.fuel_totals.allocated }}" inputmode="decimal" autocomplete="off" data-pc-fuel-allocated>
+        </div>
+        <div class="field">
+          <label><strong>Fuel used (week)</strong></label><br>
+          <input type="text" name="pc_fuel_used_total_{{ report.pk }}" class="report-num-input" value="{{ item.fuel_totals.used }}" inputmode="decimal" autocomplete="off" data-pc-fuel-used>
+        </div>
+        <div class="field">
+          <label><strong>Distance travelled (week, km)</strong></label><br>
+          <input type="text" name="pc_distance_travelled_total_{{ report.pk }}" class="report-num-input" value="{{ item.fuel_totals.distance }}" inputmode="decimal" autocomplete="off" data-pc-distance-travelled>
+        </div>
+        <p class="fuel-strip-live-error" data-pc-fuel-live-msg hidden aria-live="polite"></p>
+      </div>
+
+      <h3 style="margin-top:1rem;">Trip entries</h3>
+      {% include "operations/reports/_trip_entries_stack_pc.html" with trip_formset=trip_formset is_pc_edit=True %}
+
+      <h3 style="margin-top:1rem;">Sample rejections</h3>
+      {{ rejection_formset.management_form }}
+      {{ rejection_formset.non_form_errors }}
+      <div class="rejection-table-wrap">
+        <table class="rejection-data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Type</th>
+              <th>Total</th>
+              <th>Too old</th>
+              <th>Info mismatch</th>
+              <th>Form missing</th>
+              <th>Sample missing</th>
+              <th>Other</th>
+              <th>Remove</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for rej_form in rejection_formset %}
+            <tr>
+              <td>{% for hidden in rej_form.hidden_fields %}{{ hidden }}{% endfor %}{{ forloop.counter }}</td>
+              <td>{{ rej_form.sample_type.errors }}{{ rej_form.sample_type }}</td>
+              <td>{{ rej_form.rejected_total.errors }}{{ rej_form.rejected_total }}</td>
+              <td>{{ rej_form.rejected_too_old.errors }}{{ rej_form.rejected_too_old }}</td>
+              <td>{{ rej_form.rejected_patient_info_mismatch.errors }}{{ rej_form.rejected_patient_info_mismatch }}</td>
+              <td>{{ rej_form.rejected_request_form_missing.errors }}{{ rej_form.rejected_request_form_missing }}</td>
+              <td>{{ rej_form.rejected_sample_missing.errors }}{{ rej_form.rejected_sample_missing }}</td>
+              <td>{{ rej_form.rejected_other.errors }}{{ rej_form.rejected_other }}</td>
+              <td>{% if rej_form.DELETE %}{{ rej_form.DELETE }}{% else %}—{% endif %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="field" style="margin-top:1rem;">
+        <label for="{{ form.pc_notes.id_for_label }}"><strong>{{ form.pc_notes.label }}</strong></label><br>
+        {{ form.pc_notes }}
+        {{ form.pc_notes.errors }}
+      </div>
+    {% else %}
+      <p class="muted">This record is no longer editable.</p>
+    {% endif %}
+  </div>
+  {% endwith %}
+  {% endfor %}
+
+  <div class="card" style="margin-top:1rem;">
+    <div class="record-form-actions">
+      <button type="submit" name="action" value="save_all" class="btn-dash btn-dash-primary">Save all</button>
+      <button type="submit" name="action" value="review_all" class="btn-dash btn-dash-submit">Review all</button>
+    </div>
+  </div>
+</form>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/report-trip-routing.js' %}" defer></script>
+<script src="{% static 'js/report-fuel-validation.js' %}" defer></script>
+{% endblock %}

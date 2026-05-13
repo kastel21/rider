@@ -17,7 +17,7 @@
   </p>
 </div>
 {% endif %}
-  <form method="post" action="{% if report %}{% url 'operations:report_edit' report.pk %}{% if request.GET.draft_cleared == '1' %}?draft_cleared=1{% endif %}{% endif %}" id="report-form" data-report-form data-week-start="{% if sync_week_start %}{{ sync_week_start }}{% elif report %}{{ report.week_start|date:'Y-m-d' }}{% endif %}"{% if report_facilities_ajax_url %} data-facilities-url="{{ report_facilities_ajax_url }}"{% endif %}>
+  <form method="post" action="{% if report %}{% if is_pc_edit %}{% url 'operations:pc_report_edit' report.pk %}{% else %}{% url 'operations:report_edit' report.pk %}{% if request.GET.draft_cleared == '1' %}?draft_cleared=1{% endif %}{% endif %}{% endif %}" id="report-form" data-report-form data-week-start="{% if sync_week_start %}{{ sync_week_start }}{% elif report %}{{ report.week_start|date:'Y-m-d' }}{% endif %}"{% if report_facilities_ajax_url %} data-facilities-url="{{ report_facilities_ajax_url }}"{% endif %}>
 {% if user_role == 'rider' or user_role == 'driver' %}
   <input type="hidden" name="client_uuid" id="id_client_uuid" value="{{ offline_client_uuid|default:'' }}">
 {% endif %}
@@ -92,6 +92,45 @@
         <strong>{% if report.reviewed_at %}{{ report.reviewed_at|date:"Y-m-d H:i" }}{% else %}—{% endif %}</strong>
       </div>
     </div>
+    {% if rider_week_reports %}
+    <h2 style="margin-top:1rem;">Weekly submissions (record by record)</h2>
+    <div style="overflow-x:auto;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Record</th>
+            <th>Status</th>
+            <th>Samples</th>
+            <th>Submitted</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in rider_week_reports %}
+          {% with rr=item.report %}
+          <tr>
+            <td>#{{ rr.pk }}</td>
+            <td>{{ rr.get_status_display }}</td>
+            <td>{{ rr.samples_collected }}</td>
+            <td>{% if rr.submitted_at %}{{ rr.submitted_at|date:"Y-m-d H:i" }}{% else %}—{% endif %}</td>
+            <td>
+              {% if rr.pk == report.pk %}
+                <strong>Current</strong>
+              {% else %}
+                {% if item.can_edit %}
+                  <a href="{% url 'operations:pc_report_edit' rr.pk %}">Edit</a>
+                {% else %}
+                  —
+                {% endif %}
+              {% endif %}
+            </td>
+          </tr>
+          {% endwith %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
     <div class="dashboard-info-grid pc-visit-schedule-row" style="margin-top:0.75rem;">
       <div class="dashboard-info-item">
         <span>Visits recorded this week</span>
@@ -136,15 +175,27 @@
       </div>
       <div class="driver-trip-tab-panels">
         <div class="driver-trip-tab-panel" role="tabpanel" id="driver-tab-panel-relay" aria-labelledby="driver-tab-btn-relay" data-driver-tab-panel="relay">
+          {% if is_pc_edit %}
+          {% include "operations/reports/_trip_entries_stack_pc.html" with trip_formset=trip_formset_relay is_pc_edit=is_pc_edit %}
+          {% else %}
           {% include "operations/reports/_trip_entries_stack.html" with trip_formset=trip_formset_relay is_pc_edit=is_pc_edit %}
+          {% endif %}
         </div>
         <div class="driver-trip-tab-panel" role="tabpanel" id="driver-tab-panel-first" aria-labelledby="driver-tab-btn-first" data-driver-tab-panel="first" hidden>
+          {% if is_pc_edit %}
+          {% include "operations/reports/_trip_entries_stack_pc.html" with trip_formset=trip_formset_first is_pc_edit=is_pc_edit %}
+          {% else %}
           {% include "operations/reports/_trip_entries_stack.html" with trip_formset=trip_formset_first is_pc_edit=is_pc_edit %}
+          {% endif %}
         </div>
       </div>
     </div>
     {% else %}
+      {% if is_pc_edit %}
+      {% include "operations/reports/_trip_entries_stack_pc.html" with trip_formset=trip_formset is_pc_edit=is_pc_edit %}
+      {% else %}
       {% include "operations/reports/_trip_entries_stack.html" with trip_formset=trip_formset is_pc_edit=is_pc_edit %}
+      {% endif %}
     {% endif %}
     {% endif %}
 
@@ -235,7 +286,8 @@
 {% endif %}
 <div class="card" style="margin-top:1rem;">
   <div class="record-form-actions">
-    <button type="submit" class="btn-dash btn-dash-primary">Save</button>
+    <button type="submit" name="action" value="save" class="btn-dash btn-dash-primary">Save</button>
+    <button type="submit" name="action" value="review" class="btn-dash btn-dash-submit">Review</button>
   </div>
 </div>
 {% endif %}
