@@ -20,6 +20,7 @@ from .report_views import (
     RiderReportEditView,
     RiderReportListView,
     RiderSyncView,
+    RiderWeekFuelView,
 )
 from .pc_management_views import (
     BikeCreateView,
@@ -59,6 +60,7 @@ from .me_views import (
     MEMetricsReferredSamplesView,
     MEMetricsRidersView,
 )
+from .weekly_report_views import WeeklyReportView
 
 __all__ = [
     "LoginView",
@@ -68,6 +70,7 @@ __all__ = [
     "RiderReportCreateView",
     "RiderReportDetailView",
     "RiderReportEditView",
+    "RiderWeekFuelView",
     "ReportSubmitView",
     "ReportMeReviewView",
     "ReportFacilitiesAjaxView",
@@ -116,4 +119,5 @@ __all__ = [
     "MEMetricsReferredSamplesView",
     "MEAccidentsIncompleteView",
     "METableExportView",
+    "WeeklyReportView",
 ]

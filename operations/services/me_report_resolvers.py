@@ -9,7 +9,7 @@ from typing import Any
 
 from django.contrib.auth import get_user_model
 
-from ..models import Bike, Car, RiderTripEntry, RiderWeeklyReport, TripVisitPurpose, UserProfile
+from ..models import Bike, Car, RiderTripEntry, RiderWeeklyReport, RiderWeekFuelSummary, TripVisitPurpose, UserProfile
 
 User = get_user_model()
 
@@ -98,7 +98,6 @@ def _trip_aggregate(report: RiderWeeklyReport) -> dict[str, Any]:
             agg["results_other_parts"].append(e.results_other_specify.strip())
         agg["fuel_allocated"] += e.fuel_allocated or Decimal("0")
         agg["fuel_used"] += e.fuel_used or Decimal("0")
-        agg["distance"] += e.distance_travelled or Decimal("0")
         specimens_total += e.specimens_total
         results_total += e.results_total
         if e.visit_purpose == TripVisitPurpose.ADHOC:
@@ -112,6 +111,16 @@ def _trip_aggregate(report: RiderWeeklyReport) -> dict[str, Any]:
     agg["results_other_joined"] = _dedupe_join(agg["results_other_parts"])
     del agg["specimens_other_parts"]
     del agg["results_other_parts"]
+
+    fw = (
+        RiderWeekFuelSummary.objects.filter(rider_id=report.rider_id, week_start=report.week_start)
+        .only("fuel_allocated", "fuel_used")
+        .first()
+    )
+    if fw is not None:
+        agg["fuel_allocated"] = fw.fuel_allocated or Decimal("0")
+        agg["fuel_used"] = fw.fuel_used or Decimal("0")
+    agg["distance"] = report.distance_travelled or Decimal("0")
 
     setattr(report, _TRIP_AGG_ATTR, agg)
     return agg
@@ -361,3 +370,212 @@ def resolve_cell(report: RiderWeeklyReport, source: str | None) -> str:
     if not fn:
         return ""
     return _str_or_empty(fn(report))
+
+
+def _trip_aggregate_many(
+    reports: list[RiderWeeklyReport],
+    *,
+    vehicle_scoped: bool = False,
+) -> dict[str, Any]:
+    """Sum trip rows across reports.
+
+    When ``vehicle_scoped`` is true (rider + bike grouping), fuel/distance are summed from
+    trip rows and report fields only — not the rider-week fuel summary.
+    """
+    agg: dict[str, Any] = {
+        "count": 0,
+        "vl_blood_plasma": 0,
+        "vl_dbs": 0,
+        "eid_blood": 0,
+        "eid_dbs": 0,
+        "sputum": 0,
+        "sputum_culture_dr": 0,
+        "hpv": 0,
+        "specimens_other_parts": [],
+        "results_vl_blood_plasma": 0,
+        "results_vl_dbs": 0,
+        "results_eid_blood": 0,
+        "results_eid_dbs": 0,
+        "results_sputum": 0,
+        "results_sputum_culture_dr": 0,
+        "results_hpv": 0,
+        "results_other_parts": [],
+        "fuel_allocated": Decimal("0"),
+        "fuel_used": Decimal("0"),
+        "distance": Decimal("0"),
+        "adhoc_row_count": 0,
+        "adhoc_specimens": 0,
+        "adhoc_results": 0,
+    }
+    for report in reports:
+        for e in report.trip_entries.all():
+            agg["vl_blood_plasma"] += e.vl_blood_plasma or 0
+            agg["vl_dbs"] += e.vl_dbs or 0
+            agg["eid_blood"] += e.eid_blood or 0
+            agg["eid_dbs"] += e.eid_dbs or 0
+            agg["sputum"] += e.sputum or 0
+            agg["sputum_culture_dr"] += e.sputum_culture_dr or 0
+            agg["hpv"] += e.hpv or 0
+            if (e.specimens_other_specify or "").strip():
+                agg["specimens_other_parts"].append(e.specimens_other_specify.strip())
+            agg["results_vl_blood_plasma"] += e.results_vl_blood_plasma or 0
+            agg["results_vl_dbs"] += e.results_vl_dbs or 0
+            agg["results_eid_blood"] += e.results_eid_blood or 0
+            agg["results_eid_dbs"] += e.results_eid_dbs or 0
+            agg["results_sputum"] += e.results_sputum or 0
+            agg["results_sputum_culture_dr"] += e.results_sputum_culture_dr or 0
+            agg["results_hpv"] += e.results_hpv or 0
+            if (e.results_other_specify or "").strip():
+                agg["results_other_parts"].append(e.results_other_specify.strip())
+            if e.visit_purpose == TripVisitPurpose.ADHOC:
+                agg["adhoc_row_count"] += 1
+                agg["adhoc_specimens"] += e.specimens_total
+                agg["adhoc_results"] += e.results_total
+            agg["count"] += 1
+
+    agg["specimens_other_joined"] = _dedupe_join(agg["specimens_other_parts"])
+    agg["results_other_joined"] = _dedupe_join(agg["results_other_parts"])
+
+    if vehicle_scoped:
+        for report in reports:
+            for e in report.trip_entries.all():
+                agg["fuel_allocated"] += e.fuel_allocated or Decimal("0")
+                agg["fuel_used"] += e.fuel_used or Decimal("0")
+                agg["distance"] += e.distance_travelled or Decimal("0")
+        report_dist = sum(
+            (r.distance_travelled or Decimal("0") for r in reports),
+            Decimal("0"),
+        )
+        if report_dist > agg["distance"]:
+            agg["distance"] = report_dist
+    else:
+        rider_id = reports[0].rider_id
+        week_start = reports[0].week_start
+        fw = (
+            RiderWeekFuelSummary.objects.filter(rider_id=rider_id, week_start=week_start)
+            .only("fuel_allocated", "fuel_used", "distance_travelled")
+            .first()
+        )
+        if fw is not None:
+            agg["fuel_allocated"] = fw.fuel_allocated or Decimal("0")
+            agg["fuel_used"] = fw.fuel_used or Decimal("0")
+            agg["distance"] = fw.distance_travelled or Decimal("0")
+        else:
+            dists = [r.distance_travelled for r in reports if r.distance_travelled is not None]
+            agg["distance"] = max(dists) if dists else Decimal("0")
+
+    return agg
+
+
+def _max_days_functional(reports: list[RiderWeeklyReport], *, bike: bool) -> str:
+    nums: list[int] = []
+    for r in reports:
+        raw = _days_bike_functional(r) if bike else _days_vehicle_functional(r)
+        if raw and str(raw).strip().isdigit():
+            nums.append(int(str(raw).strip()))
+    return str(max(nums)) if nums else ""
+
+
+def resolve_cell_group(
+    reports: list[RiderWeeklyReport],
+    source: str | None,
+    *,
+    vehicle_scoped: bool = False,
+) -> str:
+    """
+    One export cell for reports in the same rider + bike/vehicle + Monday week group.
+    Numeric trip counts and visits are summed. Fuel uses week summary when not vehicle-scoped.
+    """
+    if not source or not reports:
+        return ""
+
+    primary = max(reports, key=lambda r: r.id)
+    week_start = primary.week_start
+
+    if source in (
+        "rider.full_name",
+        "profile.role_lower",
+        "profile.role_display",
+        "profile.province_name",
+        "profile.district_name",
+        "profile.support_type_display",
+        "profile.facility_name",
+    ):
+        return resolve_cell(primary, source)
+
+    if source == "extra.relief_rider_name":
+        return _dedupe_join([_relief_rider_name(r) for r in reports])
+
+    if source == "report.bike_or_car":
+        return _bike_or_car(primary)
+
+    if source == "report.scheduled_visits":
+        return _str_or_empty(sum(int(r.scheduled_visits or 0) for r in reports))
+
+    if source == "report.days_bike_functional":
+        return _max_days_functional(reports, bike=True)
+
+    if source == "report.days_vehicle_functional":
+        return _max_days_functional(reports, bike=False)
+
+    if source == "report.average_datalogger_temperature":
+        temps = [
+            r.average_datalogger_temperature
+            for r in reports
+            if r.average_datalogger_temperature is not None
+        ]
+        if not temps:
+            return ""
+        return _str_or_empty(round(sum(temps) / len(temps)))
+
+    if source == "report.notes_full":
+        parts = [_comments(r) for r in reports]
+        return _dedupe_join([p for p in parts if p])[:_NOTES_MAX_LEN]
+
+    if source == "report.week_end_date_dmY":
+        from ..selectors import sunday_of_week
+
+        return sunday_of_week(week_start).strftime("%d/%m/%Y") if week_start else ""
+
+    if source == "report.iso_week_label":
+        if not week_start:
+            return ""
+        y, w, _ = week_start.isocalendar()
+        return f"{y}-W{w:02d}"
+
+    if source.startswith("vehicle."):
+        return resolve_cell(primary, source)
+
+    if source == "trip.dominant_transport_kind_label":
+        return resolve_cell(primary, source)
+
+    trip = _trip_aggregate_many(reports, vehicle_scoped=vehicle_scoped)
+    trip_sources = {
+        "trip.vl_blood_plasma": "vl_blood_plasma",
+        "trip.vl_dbs": "vl_dbs",
+        "trip.eid_blood": "eid_blood",
+        "trip.eid_dbs": "eid_dbs",
+        "trip.sputum": "sputum",
+        "trip.sputum_culture_dr": "sputum_culture_dr",
+        "trip.hpv": "hpv",
+        "trip.specimens_other_joined": "specimens_other_joined",
+        "trip.results_vl_blood_plasma": "results_vl_blood_plasma",
+        "trip.results_vl_dbs": "results_vl_dbs",
+        "trip.results_eid_blood": "results_eid_blood",
+        "trip.results_eid_dbs": "results_eid_dbs",
+        "trip.results_sputum": "results_sputum",
+        "trip.results_sputum_culture_dr": "results_sputum_culture_dr",
+        "trip.results_hpv": "results_hpv",
+        "trip.results_other_joined": "results_other_joined",
+        "trip.fuel_allocated_total": "fuel_allocated",
+        "trip.fuel_used_total": "fuel_used",
+        "trip.distance_total": "distance",
+        "trip.actual_visit_row_count": "count",
+        "trip.adhoc_visit_row_count": "adhoc_row_count",
+        "trip.adhoc_specimens_total": "adhoc_specimens",
+        "trip.adhoc_results_total": "adhoc_results",
+    }
+    if source in trip_sources:
+        return _str_or_empty(trip[trip_sources[source]])
+
+    return resolve_cell(primary, source)

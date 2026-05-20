@@ -16,6 +16,15 @@
     if (!el || typeof Chart === "undefined") {
       return;
     }
+    function destroyIf(canvas) {
+      if (!canvas || typeof Chart.getChart !== "function") {
+        return;
+      }
+      var existing = Chart.getChart(canvas);
+      if (existing) {
+        existing.destroy();
+      }
+    }
     var raw;
     try {
       raw = JSON.parse(el.textContent);
@@ -23,11 +32,12 @@
       return;
     }
     var labels = (raw.labels || []).map(shortWeekLabel);
-    var grid = { color: "rgba(148, 163, 184, 0.35)" };
+    var gridColor = "rgba(148, 163, 184, 0.35)";
     var font = { family: "system-ui, Segoe UI, Roboto, sans-serif" };
 
     var c1 = document.getElementById("rider-chart-samples-trips");
     if (c1 && raw.samples && raw.trips) {
+      destroyIf(c1);
       new Chart(c1, {
         type: "line",
         data: {
@@ -75,7 +85,7 @@
               position: "left",
               title: { display: true, text: "Samples", font: font },
               ticks: { font: font },
-              grid: { color: grid },
+              grid: { color: gridColor },
               beginAtZero: true,
             },
             y1: {
@@ -93,6 +103,7 @@
 
     var c2 = document.getElementById("rider-chart-distance");
     if (c2 && raw.distance_km) {
+      destroyIf(c2);
       new Chart(c2, {
         type: "bar",
         data: {
@@ -126,7 +137,7 @@
             y: {
               title: { display: true, text: "km", font: font },
               ticks: { font: font },
-              grid: { color: grid },
+              grid: { color: gridColor },
               beginAtZero: true,
             },
           },

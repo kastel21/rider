@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-globals */
-const CACHE = "ops-rider-v4";
+const CACHE = "ops-rider-v5";
 const PRECACHE = [
   "/static/css/standalone-shell.css",
   "/static/css/dashboard-record.css",
@@ -10,10 +10,10 @@ const PRECACHE = [
   "/static/js/report-fuel-validation.js",
   "/static/js/driver-trip-tabs.js",
   "/static/js/rejection-table.js",
-  "/static/js/rider-home-charts.js",
+  "/static/js/rider-home-charts.js?v=3",
   "/static/js/pc-accidents-incomplete-tabs.js",
   "/static/js/pc-trans-stats-add-row.js",
-  "/static/js/vendor/chart.umd.min.js",
+  "/static/js/vendor/chart.umd.min.js?v=4.4.1",
   "/static/manifest.json",
 ];
 

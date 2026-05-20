@@ -1,6 +1,6 @@
 import json
 import uuid
-from datetime import timedelta
+from datetime import date, timedelta
 from decimal import Decimal
 from urllib.parse import urlencode
 
@@ -9,7 +9,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import Count
 from django.db import transaction
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.urls import reverse
 from django.views import View
@@ -37,6 +37,14 @@ from ..selectors import (
     week_start_from_request,
 )
 from ..services import report_service
+from ..services.week_fuel_service import (
+    apply_week_fuel_distance_rollup,
+    parse_week_fuel_pc_post,
+    rider_week_fuel_totals_for_user_week,
+    upsert_rider_week_fuel_summary,
+    week_fuel_alloc_used_from_report,
+    week_fuel_totals_from_pc_post,
+)
 from ..services.trip_facilities import facilities_for_rider_endpoint
 from ..services.sync_service import apply_sync_batch, register_device
 
@@ -81,7 +89,7 @@ def _week_saved_table_context(report, rider, week_start_monday):
 def _trip_formset_kwargs(user, *, for_pc: bool):
     if for_pc:
         return {"user": user, "pc_province_ids": pc_province_ids(user)}
-    return {"user": user, "pc_province_ids": None}
+    return {"user": user, "pc_province_ids": None, "pc_aggregate_fuel": True}
 
 
 def _pc_trip_formset_kwargs(user):
@@ -104,6 +112,8 @@ def _report_form_ajax_context():
 def _driver_trip_formset_kwargs(user):
     kw = _trip_formset_kwargs(user, for_pc=False)
     kw["driver_dual_mode"] = True
+    # Drivers enter fuel per trip row (required numerics); riders use week-level fuel rollup.
+    kw["pc_aggregate_fuel"] = False
     return kw
 
 
@@ -222,8 +232,6 @@ class RiderReportListView(LoginRequiredMixin, ListView):
                 aggregated_rows.append(
                     {
                         "report": latest["report"],
-                        "view_report": latest["report"],
-                        "edit_report": edit_candidate["report"] if edit_candidate else latest["report"],
                         "can_edit": bool(edit_candidate),
                         "status_display": (
                             latest["report"].get_status_display()
@@ -293,14 +301,10 @@ class RiderReportListView(LoginRequiredMixin, ListView):
                 trip_count = len(trips)
                 total_samples += week_report.samples_collected or 0
                 total_trips += trip_count
-                total_distance += sum(
-                    (
-                        t.distance_travelled
-                        if t.distance_travelled is not None
-                        else Decimal("0")
-                        for t in trips
-                    ),
-                    Decimal("0"),
+                total_distance += (
+                    week_report.distance_travelled
+                    if week_report.distance_travelled is not None
+                    else Decimal("0")
                 )
                 total_results += sum((t.results_total for t in trips), 0)
                 week_report_rows.append(
@@ -479,6 +483,7 @@ class RiderReportCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView)
                 return self.render_to_response(
                     self.get_context_data(form=form, trip_formset=trip_formset)
                 )
+        fuel_snapshot = (Decimal("0"), Decimal("0"))
         rider_profile = getattr(self.request.user, "rider_profile", None)
         form.instance.rider = self.request.user
         form.instance.week_start = week_start
@@ -505,6 +510,7 @@ class RiderReportCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView)
                     trip_formset.instance = self.object
                     trip_formset.save()
                     _resequence_trip_entries(self.object)
+                apply_week_fuel_distance_rollup(self.object, *fuel_snapshot)
                 rejection_formset = SampleRejectionFormSet(
                     self.request.POST, instance=self.object, prefix="rejections"
                 )
@@ -583,9 +589,10 @@ class RiderReportDetailView(LoginRequiredMixin, DetailView):
         week_start = report.week_start
         ctx["week_range_label"] = week_range_label(week_start)
         trips = list(report.trip_entries.all())
-        total_distance = sum(
-            (t.distance_travelled if t.distance_travelled is not None else Decimal("0") for t in trips),
-            Decimal("0"),
+        total_distance = (
+            report.distance_travelled
+            if report.distance_travelled is not None
+            else Decimal("0")
         )
         total_results = sum((t.results_total for t in trips), 0)
         ctx["week_metrics"] = {
@@ -812,6 +819,7 @@ class RiderReportEditView(LoginRequiredMixin, UpdateView):
                 return self.render_to_response(
                     self.get_context_data(form=form, trip_formset=trip_formset)
                 )
+        fuel_alloc, fuel_used = week_fuel_alloc_used_from_report(self.object)
         rider_profile = getattr(self.request.user, "rider_profile", None)
         if rider_profile and rider_profile.district_id:
             form.instance.title = f"{rider_profile.district.province.name} / {rider_profile.district.name}"
@@ -834,6 +842,7 @@ class RiderReportEditView(LoginRequiredMixin, UpdateView):
                     trip_formset.instance = self.object
                     trip_formset.save()
                     _resequence_trip_entries(self.object)
+                apply_week_fuel_distance_rollup(self.object, fuel_alloc, fuel_used)
                 rejection_formset = SampleRejectionFormSet(
                     self.request.POST, instance=self.object, prefix="rejections"
                 )
@@ -907,6 +916,84 @@ class ReportMeReviewView(LoginRequiredMixin, MERequiredMixin, View):
         else:
             messages.error(request, "Unknown action.")
         return redirect("operations:report_detail", pk=pk)
+
+
+class RiderWeekFuelView(LoginRequiredMixin, UserPassesTestMixin, View):
+    """Rider/driver: week fuel totals per calendar week (not tied to report status)."""
+
+    template_name = "operations/reports/rider_week_fuel.html"
+
+    def test_func(self):
+        return is_rider_like(self.request.user)
+
+    def _week_start(self, request):
+        raw = (request.POST.get("week") or request.GET.get("week") or "").strip()
+        if not raw:
+            return _monday_of_current_week()
+        try:
+            d = date.fromisoformat(raw[:10])
+        except ValueError:
+            return _monday_of_current_week()
+        return d - timedelta(days=d.weekday())
+
+    def _context(self, request, *, fuel_errors=None, pc_fuel_post_override=None):
+        week_start = self._week_start(request)
+        qs = (
+            get_reports_queryset(request.user)
+            .filter(week_start=week_start)
+            .order_by("-updated_at", "-id")
+        )
+        reports = list(qs)
+        target = reports[0] if reports else None
+        if pc_fuel_post_override is not None:
+            totals = week_fuel_totals_from_pc_post(pc_fuel_post_override)
+        else:
+            totals = rider_week_fuel_totals_for_user_week(request.user.id, week_start)
+        return {
+            "week_start": week_start,
+            "week_range_label": week_range_label(week_start),
+            "report_location": _report_location_for_user(request.user),
+            "target_report": target,
+            "reports_for_week": reports,
+            "multiple_week_reports": len(reports) > 1,
+            "pc_fuel_week_totals": totals,
+            "can_edit_fuel": True,
+            "fuel_errors": list(fuel_errors or []),
+            "user_role": getattr(getattr(request.user, "profile", None), "role", None),
+        }
+
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name, self._context(request))
+
+    def post(self, request, *args, **kwargs):
+        week_start = self._week_start(request)
+        try:
+            fuel_alloc, fuel_used = parse_week_fuel_pc_post(request.POST)
+        except ValueError as exc:
+            return render(
+                request,
+                self.template_name,
+                self._context(
+                    request,
+                    fuel_errors=[str(exc)],
+                    pc_fuel_post_override=request.POST,
+                ),
+            )
+        if fuel_used > fuel_alloc:
+            return render(
+                request,
+                self.template_name,
+                self._context(
+                    request,
+                    fuel_errors=["Fuel used cannot exceed fuel allocated (week totals)."],
+                    pc_fuel_post_override=request.POST,
+                ),
+            )
+        upsert_rider_week_fuel_summary(
+            request.user.id, week_start, fuel_alloc, fuel_used
+        )
+        messages.success(request, "Fuel saved for this week.")
+        return redirect(f"{reverse('operations:rider_week_fuel')}?{urlencode({'week': week_start.isoformat()})}")
 
 
 class ReportFacilitiesAjaxView(LoginRequiredMixin, View):

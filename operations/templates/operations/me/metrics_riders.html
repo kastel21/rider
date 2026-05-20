@@ -5,7 +5,8 @@
 <div class="card">
   <h1>Rider weekly export</h1>
   <p class="muted" style="margin-top:0.35rem;">
-    National M&amp;E matrix: one row per <strong>rider</strong> weekly report in the selected period ({{ me_report.row_count }} row{{ me_report.row_count|pluralize }}).
+    National M&amp;E matrix: one row per <strong>rider per week</strong> in the selected period ({{ me_report.row_count }} row{{ me_report.row_count|pluralize }}).
+    Multiple reports for the same rider in the same week are <strong>combined</strong> (specimens, results, visits, and fuel summed).
     Layout: <code class="muted">operations/fixtures/mande_rider_report_reference.tsv</code>,
     <code class="muted">me_report_schema.py</code>.
   </p>

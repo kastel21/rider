@@ -107,33 +107,20 @@
       </div>
     </div>
 
-    {% if not is_pc_edit %}
+    {% if rform.has_trip_row_fuel_fields %}
     <div class="trip-subsection">
-      <div class="trip-subsection-title">Fuel &amp; distance</div>
+      <div class="trip-subsection-title">Fuel</div>
       <div class="fuel-strip">
-        {% for field in rform.visible_fields %}
-          {% if field.name == "fuel_allocated" %}
-          <div class="field">
-            <label for="{{ field.id_for_label }}"><strong>{{ field.label }}</strong></label><br>
-            {{ field.errors }}
-            {{ field }}
-          </div>
-          {% endif %}
-          {% if field.name == "fuel_used" %}
-          <div class="field">
-            <label for="{{ field.id_for_label }}"><strong>{{ field.label }}</strong></label><br>
-            {{ field.errors }}
-            {{ field }}
-          </div>
-          {% endif %}
-          {% if field.name == "distance_travelled" %}
-          <div class="field">
-            <label for="{{ field.id_for_label }}"><strong>{{ field.label }}</strong></label><br>
-            {{ field.errors }}
-            {{ field }}
-          </div>
-          {% endif %}
-        {% endfor %}
+        <div class="field">
+          <label for="{{ rform.fuel_allocated.id_for_label }}"><strong>{{ rform.fuel_allocated.label }}</strong></label><br>
+          {{ rform.fuel_allocated.errors }}
+          {{ rform.fuel_allocated }}
+        </div>
+        <div class="field">
+          <label for="{{ rform.fuel_used.id_for_label }}"><strong>{{ rform.fuel_used.label }}</strong></label><br>
+          {{ rform.fuel_used.errors }}
+          {{ rform.fuel_used }}
+        </div>
         <p class="fuel-strip-live-error" data-fuel-live-msg hidden aria-live="polite"></p>
       </div>
     </div>

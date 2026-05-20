@@ -1,10 +1,8 @@
-from decimal import Decimal, InvalidOperation
 from urllib.parse import urlencode
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
-from django.db.models import Sum
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils.dateparse import parse_date
@@ -21,6 +19,15 @@ from ..selectors import (
     reports_for_rider_week_in_scope,
 )
 from ..services import report_edit_service, report_service, weekly_review_service
+from ..services.week_fuel_service import (
+    apply_week_fuel_distance_rollup,
+    parse_week_fuel_bulk_post,
+    parse_week_fuel_pc_post,
+    upsert_rider_week_fuel_summary,
+    week_fuel_totals_for_report,
+    week_fuel_totals_from_bulk_post,
+    week_fuel_totals_from_pc_post,
+)
 from .report_views import (
     _pc_trip_formset_kwargs,
     _report_form_ajax_context,
@@ -29,97 +36,6 @@ from .report_views import (
     _rollup_totals,
     _week_saved_table_context,
 )
-
-
-def _pc_fuel_week_totals_from_db(report: RiderWeeklyReport) -> dict:
-    s = report.trip_entries.aggregate(
-        a=Sum("fuel_allocated"),
-        u=Sum("fuel_used"),
-        d=Sum("distance_travelled"),
-    )
-    return {
-        "allocated": str(s["a"] if s["a"] is not None else Decimal("0")),
-        "used": str(s["u"] if s["u"] is not None else Decimal("0")),
-        "distance": str(s["d"] if s["d"] is not None else Decimal("0")),
-    }
-
-
-def _pc_fuel_week_totals_from_post(post) -> dict:
-    return {
-        "allocated": (post.get("pc_fuel_allocated_total") or "0").strip(),
-        "used": (post.get("pc_fuel_used_total") or "0").strip(),
-        "distance": (post.get("pc_distance_travelled_total") or "0").strip(),
-    }
-
-
-def _parse_pc_fuel_week_post(post) -> tuple[Decimal, Decimal, Decimal]:
-    def one(key: str) -> Decimal:
-        raw = (post.get(key) or "").strip().replace(",", ".")
-        if not raw:
-            return Decimal("0")
-        try:
-            return Decimal(raw)
-        except InvalidOperation as e:
-            raise ValueError("Enter a valid number for week fuel or distance totals.") from e
-
-    return (
-        one("pc_fuel_allocated_total"),
-        one("pc_fuel_used_total"),
-        one("pc_distance_travelled_total"),
-    )
-
-
-def _apply_pc_week_fuel_distance_rollup(
-    report: RiderWeeklyReport,
-    fuel_allocated: Decimal,
-    fuel_used: Decimal,
-    distance: Decimal,
-) -> None:
-    qs = report.trip_entries.order_by("sequence", "pk")
-    first = qs.first()
-    if not first:
-        return
-    RiderTripEntry.objects.filter(pk=first.pk).update(
-        fuel_allocated=fuel_allocated,
-        fuel_used=fuel_used,
-        distance_travelled=distance,
-    )
-    rest_ids = list(qs.exclude(pk=first.pk).values_list("pk", flat=True))
-    if rest_ids:
-        RiderTripEntry.objects.filter(pk__in=rest_ids).update(
-            fuel_allocated=Decimal("0"),
-            fuel_used=Decimal("0"),
-            distance_travelled=Decimal("0"),
-        )
-
-
-def _bulk_pc_week_fuel_totals_key(report_id: int, field: str) -> str:
-    return f"pc_{field}_total_{report_id}"
-
-
-def _bulk_pc_fuel_week_totals_from_post(post, report_id: int) -> dict:
-    return {
-        "allocated": (post.get(_bulk_pc_week_fuel_totals_key(report_id, "fuel_allocated")) or "0").strip(),
-        "used": (post.get(_bulk_pc_week_fuel_totals_key(report_id, "fuel_used")) or "0").strip(),
-        "distance": (post.get(_bulk_pc_week_fuel_totals_key(report_id, "distance_travelled")) or "0").strip(),
-    }
-
-
-def _bulk_parse_pc_fuel_week_post(post, report_id: int) -> tuple[Decimal, Decimal, Decimal]:
-    def one(key: str) -> Decimal:
-        raw = (post.get(key) or "").strip().replace(",", ".")
-        if not raw:
-            return Decimal("0")
-        try:
-            return Decimal(raw)
-        except InvalidOperation as e:
-            raise ValueError("Enter a valid number for week fuel or distance totals.") from e
-
-    return (
-        one(_bulk_pc_week_fuel_totals_key(report_id, "fuel_allocated")),
-        one(_bulk_pc_week_fuel_totals_key(report_id, "fuel_used")),
-        one(_bulk_pc_week_fuel_totals_key(report_id, "distance_travelled")),
-    )
 
 
 class PCReportEditView(LoginRequiredMixin, UpdateView):
@@ -223,9 +139,9 @@ class PCReportEditView(LoginRequiredMixin, UpdateView):
         ).count()
         if ctx.get("is_pc_edit"):
             if pc_fuel_post_override is not None:
-                ctx["pc_fuel_week_totals"] = _pc_fuel_week_totals_from_post(pc_fuel_post_override)
+                ctx["pc_fuel_week_totals"] = week_fuel_totals_from_pc_post(pc_fuel_post_override)
             else:
-                ctx["pc_fuel_week_totals"] = _pc_fuel_week_totals_from_db(report)
+                ctx["pc_fuel_week_totals"] = week_fuel_totals_for_report(report)
             ctx["pc_fuel_aggregate_errors"] = list(pc_fuel_aggregate_errors or [])
         return ctx
 
@@ -248,7 +164,7 @@ class PCReportEditView(LoginRequiredMixin, UpdateView):
                 )
             )
         try:
-            fuel_alloc, fuel_used, distance_km = _parse_pc_fuel_week_post(self.request.POST)
+            fuel_alloc, fuel_used = parse_week_fuel_pc_post(self.request.POST)
         except ValueError as exc:
             return self.render_to_response(
                 self.get_context_data(
@@ -288,8 +204,11 @@ class PCReportEditView(LoginRequiredMixin, UpdateView):
             trip_formset.instance = self.object
             trip_formset.save()
             _resequence_trip_entries(self.object)
-            _apply_pc_week_fuel_distance_rollup(
-                self.object, fuel_alloc, fuel_used, distance_km
+            apply_week_fuel_distance_rollup(
+                self.object, fuel_alloc, fuel_used
+            )
+            upsert_rider_week_fuel_summary(
+                self.object.rider_id, self.object.week_start, fuel_alloc, fuel_used
             )
             _rollup_totals(self.object)
             rejection_formset.instance = self.object
@@ -411,7 +330,7 @@ class PCBulkWeekEditView(LoginRequiredMixin, View):
             rejection_formset = SampleRejectionFormSet(
                 post_data, instance=report, prefix=rej_prefix
             )
-            fuel_totals = _bulk_pc_fuel_week_totals_from_post(post_data, report.pk)
+            fuel_totals = week_fuel_totals_from_bulk_post(post_data, report.pk)
         else:
             form = PCReportForm(instance=report, prefix=form_prefix)
             trip_formset = RiderTripEntryPCFormSet(
@@ -421,7 +340,7 @@ class PCBulkWeekEditView(LoginRequiredMixin, View):
                 **kw,
             )
             rejection_formset = SampleRejectionFormSet(instance=report, prefix=rej_prefix)
-            fuel_totals = _pc_fuel_week_totals_from_db(report)
+            fuel_totals = week_fuel_totals_for_report(report)
         return {
             "report": report,
             "can_edit": can_edit_report_as_pc(self.request.user, report),
@@ -524,7 +443,7 @@ class PCBulkWeekEditView(LoginRequiredMixin, View):
             if not rejection_formset.is_valid():
                 has_errors = True
             try:
-                fuel_alloc, fuel_used, distance_km = _bulk_parse_pc_fuel_week_post(
+                fuel_alloc, fuel_used = parse_week_fuel_bulk_post(
                     request.POST, bundle["report"].pk
                 )
                 if fuel_used > fuel_alloc:
@@ -532,7 +451,7 @@ class PCBulkWeekEditView(LoginRequiredMixin, View):
                         "Fuel used cannot exceed fuel allocated (week totals)."
                     )
                     has_errors = True
-                parsed_fuel[bundle["report"].pk] = (fuel_alloc, fuel_used, distance_km)
+                parsed_fuel[bundle["report"].pk] = (fuel_alloc, fuel_used)
             except ValueError as exc:
                 bundle["fuel_errors"].append(str(exc))
                 has_errors = True
@@ -554,8 +473,11 @@ class PCBulkWeekEditView(LoginRequiredMixin, View):
                 trip_formset.instance = report
                 trip_formset.save()
                 _resequence_trip_entries(report)
-                fuel_alloc, fuel_used, distance_km = parsed_fuel[report.pk]
-                _apply_pc_week_fuel_distance_rollup(report, fuel_alloc, fuel_used, distance_km)
+                fuel_alloc, fuel_used = parsed_fuel[report.pk]
+                apply_week_fuel_distance_rollup(report, fuel_alloc, fuel_used)
+                upsert_rider_week_fuel_summary(
+                    report.rider_id, report.week_start, fuel_alloc, fuel_used
+                )
                 _rollup_totals(report)
                 rejection_formset.instance = report
                 rejection_formset.save()

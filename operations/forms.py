@@ -41,12 +41,26 @@ from .services.trip_facilities import (
 class RiderReportForm(forms.ModelForm):
     class Meta:
         model = RiderWeeklyReport
-        fields = ["bike", "car", "average_datalogger_temperature", "notes"]
+        fields = [
+            "bike",
+            "car",
+            "average_datalogger_temperature",
+            "distance_travelled",
+            "notes",
+        ]
         widgets = {
             "bike": forms.Select(attrs={"class": "report-bike-select"}),
             "car": forms.Select(attrs={"class": "report-bike-select"}),
             "average_datalogger_temperature": forms.NumberInput(
                 attrs={"class": "report-num-input", "step": "1", "inputmode": "numeric"}
+            ),
+            "distance_travelled": forms.NumberInput(
+                attrs={
+                    "class": "report-num-input",
+                    "step": "0.01",
+                    "min": "0",
+                    "inputmode": "decimal",
+                }
             ),
             "notes": forms.Textarea(attrs={"rows": 4}),
         }
@@ -54,6 +68,7 @@ class RiderReportForm(forms.ModelForm):
             "bike": "Bike registration number",
             "car": "Vehicle registration number",
             "average_datalogger_temperature": "Data logger average temperature",
+            "distance_travelled": "Distance travelled (week, km)",
         }
 
     def __init__(self, *args, rider_user=None, **kwargs):
@@ -90,15 +105,25 @@ class PCReportForm(forms.ModelForm):
         fields = [
             "pc_notes",
             "scheduled_visits",
+            "distance_travelled",
         ]
         widgets = {
             "pc_notes": forms.Textarea(attrs={"rows": 4}),
             "scheduled_visits": forms.NumberInput(
                 attrs={"class": "report-num-input", "min": "0"}
             ),
+            "distance_travelled": forms.NumberInput(
+                attrs={
+                    "class": "report-num-input",
+                    "step": "0.01",
+                    "min": "0",
+                    "inputmode": "decimal",
+                }
+            ),
         }
         labels = {
             "scheduled_visits": "Scheduled visits",
+            "distance_travelled": "Distance travelled (week, km)",
         }
 
     def __init__(self, *args, **kwargs):
@@ -173,7 +198,7 @@ _RESULT_FIELDS = (
     "results_sputum_culture_dr",
     "results_hpv",
 )
-_DECIMAL_TRIP_FIELDS = ("fuel_allocated", "fuel_used", "distance_travelled")
+_DECIMAL_TRIP_FIELDS = ("fuel_allocated", "fuel_used")
 
 
 def _row_has_substantive_trip_data(cleaned: dict) -> bool:
@@ -189,12 +214,9 @@ def _row_has_substantive_trip_data(cleaned: dict) -> bool:
         return True
     fa = cleaned.get("fuel_allocated")
     fu = cleaned.get("fuel_used")
-    dist = cleaned.get("distance_travelled")
     if fa is not None and fa != "" and Decimal(str(fa)) > 0:
         return True
     if fu is not None and fu != "" and Decimal(str(fu)) > 0:
-        return True
-    if dist is not None and dist != "" and Decimal(str(dist)) > 0:
         return True
     if cleaned.get("visit_purpose") or cleaned.get("route_kind"):
         return True
@@ -264,7 +286,6 @@ class RiderTripEntryForm(forms.ModelForm):
             "results_other_specify",
             "fuel_allocated",
             "fuel_used",
-            "distance_travelled",
         ]
         labels = {
             "specimens_other_specify": "others",
@@ -289,6 +310,10 @@ class RiderTripEntryForm(forms.ModelForm):
         self._pc_province_ids = pc_province_ids
         super().__init__(*args, **kwargs)
         if self._pc_aggregate_fuel:
+            # Per-row fuel is captured via week fuel + rollup; remove trip inputs.
+            # clean() still writes zeros into cleaned_data — temporarily drop those
+            # keys in _post_clean() so Django 6 construct_instance() never does
+            # form["fuel_allocated"] while the fields are absent.
             for name in _DECIMAL_TRIP_FIELDS:
                 self.fields.pop(name, None)
         if not self.include_transport_kind:
@@ -315,9 +340,29 @@ class RiderTripEntryForm(forms.ModelForm):
                 self.fields[name].widget.attrs.update(num_attrs)
                 self.fields[name].required = True
             for name in _DECIMAL_TRIP_FIELDS:
+                if name not in self.fields:
+                    continue
                 self.fields[name].widget.attrs.update(dec_attrs)
                 self.fields[name].required = True
         self._apply_facility_querysets()
+
+    def has_trip_row_fuel_fields(self) -> bool:
+        """True when trip rows show editable fuel (aggregate mode drops trip fields)."""
+        return "fuel_allocated" in self.fields
+
+    def _post_clean(self):
+        """Avoid Django 6 construct_instance() indexing removed aggregate-fuel fields."""
+        stash = {}
+        cd = getattr(self, "cleaned_data", None)
+        if getattr(self, "_pc_aggregate_fuel", False) and isinstance(cd, dict):
+            for k in _DECIMAL_TRIP_FIELDS:
+                if k in cd:
+                    stash[k] = cd.pop(k)
+        try:
+            super()._post_clean()
+        finally:
+            if stash and isinstance(getattr(self, "cleaned_data", None), dict):
+                self.cleaned_data.update(stash)
 
     def _clean_driver_required_numerics(self, cleaned: dict) -> None:
         for f in _SPECIMEN_FIELDS + _RESULT_FIELDS:
@@ -403,7 +448,6 @@ class RiderTripEntryForm(forms.ModelForm):
         if getattr(self, "_pc_aggregate_fuel", False):
             cleaned["fuel_allocated"] = Decimal("0")
             cleaned["fuel_used"] = Decimal("0")
-            cleaned["distance_travelled"] = Decimal("0")
             if getattr(self.instance, "pk", None) and self.instance.entry_date is not None:
                 cleaned["entry_date"] = self.instance.entry_date
             else:
@@ -470,11 +514,6 @@ class RiderTripEntryForm(forms.ModelForm):
             fuel_used = Decimal(str(fuel_used))
         cleaned["fuel_allocated"] = fuel_allocated
         cleaned["fuel_used"] = fuel_used
-        dist = cleaned.get("distance_travelled")
-        if dist is None or dist == "":
-            cleaned["distance_travelled"] = Decimal("0")
-        else:
-            cleaned["distance_travelled"] = Decimal(str(dist))
 
         if fuel_used > fuel_allocated:
             self.add_error("fuel_used", "Fuel used cannot exceed fuel allocated.")

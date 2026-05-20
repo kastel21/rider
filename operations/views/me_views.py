@@ -37,6 +37,13 @@ class MEMetricsOverviewView(LoginRequiredMixin, MERequiredMixin, TemplateView):
         weeks = parse_weeks_param(self.request.GET.get("weeks"))
         ctx["me_metrics"] = build_me_metrics(weeks=weeks)
         ctx["weeks_param"] = weeks
+        ctx.update(
+            me_matrix_export_hrefs(
+                name_csv="operations:me_metrics_overview_export_csv",
+                name_xlsx="operations:me_metrics_overview_export_xlsx",
+                weeks=weeks,
+            )
+        )
         return ctx
 
 

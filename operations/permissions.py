@@ -113,6 +113,22 @@ class MERequiredMixin(UserPassesTestMixin):
         return is_me(self.request.user)
 
 
+class ProgramReportingMixin(UserPassesTestMixin):
+    """M&E, PC, and Admin may download national reporting tables."""
+
+    def test_func(self):
+        user = self.request.user
+        if not user.is_authenticated:
+            return False
+        if user.is_superuser:
+            return True
+        return _role(user) in (
+            UserProfile.Role.ME,
+            UserProfile.Role.PC,
+            UserProfile.Role.ADMIN,
+        )
+
+
 # docs/operations-compatible mixin naming.
 class OperationsLoginRequiredMixin(LoginRequiredMixin):
     pass

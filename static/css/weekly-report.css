@@ -1,0 +1,103 @@
+/* Driver weekly report grid — horizontal scroll, sticky driver name column */
+.weekly-report-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-top: 0.5rem;
+}
+
+.weekly-report-table {
+  border-collapse: collapse;
+  font-size: 0.72rem;
+  min-width: 2200px;
+  background: #fff;
+}
+
+.weekly-report-table th,
+.weekly-report-table td {
+  border: 1px solid #cbd5e1;
+  padding: 0.3rem 0.4rem;
+  vertical-align: middle;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.weekly-report-table th.wr-sticky,
+.weekly-report-table td.wr-sticky {
+  text-align: left;
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: #f8fafc;
+  box-shadow: 1px 0 0 #cbd5e1;
+  max-width: 11rem;
+  white-space: normal;
+}
+
+.weekly-report-table thead th {
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.wr-section {
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.wr-sub th {
+  font-size: 0.68rem;
+  font-weight: 500;
+  vertical-align: bottom;
+  max-width: 6.5rem;
+  white-space: normal;
+}
+
+.wr-h-demo {
+  background: #e0e7ff;
+  color: #1e1b4b;
+}
+
+.wr-h-specimens {
+  background: #dbeafe;
+  color: #1e3a8a;
+}
+
+.wr-h-results {
+  background: #fef3c7;
+  color: #78350f;
+}
+
+.wr-h-functionality {
+  background: #d1fae5;
+  color: #064e3b;
+}
+
+.wr-h-snp {
+  background: #fee2e2;
+  color: #7f1d1d;
+}
+
+.wr-h-meta {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.wr-snp-cell {
+  text-align: center;
+}
+
+.weekly-report-table tbody tr:nth-child(even) td:not(.wr-sticky) {
+  background: #fafafa;
+}
+
+.weekly-report-table tbody tr:nth-child(even) td.wr-sticky {
+  background: #f1f5f9;
+}
+
+.weekly-report-table tbody tr:hover td {
+  background: #eff6ff;
+}
+
+.weekly-report-table tbody tr:hover td.wr-sticky {
+  background: #e0e7ff;
+}

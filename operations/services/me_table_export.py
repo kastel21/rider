@@ -176,3 +176,141 @@ def matrix_download_stem(table: dict[str, Any], *, prefix: str) -> str:
     ws = table["window_start"]
     we = table["window_end"]
     return f"{prefix}-{ws.isoformat()}_to_{sunday_of_week(we).isoformat()}"
+
+
+def week_download_stem(*, week_start, prefix: str) -> str:
+    end = sunday_of_week(week_start)
+    return f"{prefix}-{week_start.isoformat()}_to_{end.isoformat()}"
+
+
+def overview_download_stem(me_metrics: dict[str, Any]) -> str:
+    ws = me_metrics["window_start"]
+    we = me_metrics["window_end"]
+    return f"me-overview-{ws.isoformat()}_to_{sunday_of_week(we).isoformat()}"
+
+
+def _rows_from_dicts(rows: list[dict], *keys: str) -> list[list[str]]:
+    return [[str(r.get(k, "")) for k in keys] for r in rows]
+
+
+def build_me_overview_export_parts(me_metrics: dict[str, Any]) -> list[tuple[str, list[str], list[list[str]]]]:
+    """Named tables on the M&E overview page for zip / multi-sheet export."""
+    parts: list[tuple[str, list[str], list[list[str]]]] = []
+
+    parts.append(
+        (
+            "reports_by_status_all_time.csv",
+            ["Status", "Count"],
+            _rows_from_dicts(me_metrics["all_time"]["by_status"], "label", "count"),
+        )
+    )
+    prov_period_rows = _rows_from_dicts(me_metrics["province_window_top"], "name", "count")
+    if me_metrics.get("province_window_other_count"):
+        prov_period_rows.append(["All other provinces", str(me_metrics["province_window_other_count"])])
+    parts.append(("provinces_by_reports_period.csv", ["Province", "Reports"], prov_period_rows))
+
+    prov_all_rows = _rows_from_dicts(me_metrics["province_top"], "name", "count")
+    if me_metrics.get("province_other_count"):
+        prov_all_rows.append(["All other provinces", str(me_metrics["province_other_count"])])
+    parts.append(("provinces_by_reports_all_time.csv", ["Province", "Reports"], prov_all_rows))
+
+    rej = me_metrics.get("rejections_window") or {}
+    parts.append(
+        (
+            "rejections_by_reason_period.csv",
+            ["Reason", "Count"],
+            _rows_from_dicts(rej.get("reasons") or [], "label", "count"),
+        )
+    )
+    parts.append(
+        (
+            "rejections_by_sample_type_period.csv",
+            ["Sample type", "Rejected total"],
+            _rows_from_dicts(rej.get("by_sample_type") or [], "label", "count"),
+        )
+    )
+
+    ref = me_metrics.get("referred_window") or {}
+    parts.append(
+        (
+            "referrals_by_test_type_period.csv",
+            ["Test type", "Records", "Samples out"],
+            _rows_from_dicts(ref.get("by_test_type") or [], "label", "records", "samples"),
+        )
+    )
+
+    pc = me_metrics.get("pc_transport_window") or {}
+    parts.append(
+        (
+            "non_ist_transport_period.csv",
+            ["Channel", "Count"],
+            [
+                ["Ambulance", str(pc.get("specimens_ambulance", 0))],
+                ["Alternative IP transport", str(pc.get("specimens_alternative_ip_transport", 0))],
+                ["MOHCC arranged", str(pc.get("specimens_mohcc_arranged_transport", 0))],
+                ["Courier", str(pc.get("specimens_courier", 0))],
+                ["Other non-IST", str(pc.get("specimens_other_non_ist", 0))],
+            ],
+        )
+    )
+
+    delivery = me_metrics.get("delivery") or {}
+    parts.append(
+        (
+            "specimens_by_province_period.csv",
+            ["Province", "Specimens (trip rows)"],
+            _rows_from_dicts(delivery.get("province_top_specimens") or [], "name", "volume"),
+        )
+    )
+
+    chart = me_metrics.get("chart") or {}
+    labels = chart.get("labels") or []
+    trend_rows = []
+    reports = chart.get("reports") or []
+    samples = chart.get("samples") or []
+    for i, lab in enumerate(labels):
+        trend_rows.append(
+            [
+                str(lab),
+                str(reports[i] if i < len(reports) else 0),
+                str(samples[i] if i < len(samples) else 0),
+            ]
+        )
+    parts.append(
+        ("weekly_trend_period.csv", ["Week start", "Reports", "Samples"], trend_rows)
+    )
+
+    return parts
+
+
+def response_parts_zip_csv(*, parts: list[tuple[str, list[str], list[list[str]]]], download_stem: str) -> HttpResponse:
+    bio = BytesIO()
+    with zipfile.ZipFile(bio, "w", zipfile.ZIP_DEFLATED) as zf:
+        for name, hdr, body in parts:
+            zf.writestr(name, _csv_bytes(hdr, body), compress_type=zipfile.ZIP_DEFLATED)
+    resp = HttpResponse(bio.getvalue(), content_type="application/zip")
+    resp["Content-Disposition"] = f'attachment; filename="{filename_safe(download_stem)}.zip"'
+    return resp
+
+
+def response_parts_xlsx(
+    *,
+    parts: list[tuple[str, list[str], list[list[str]]]],
+    download_stem: str,
+) -> HttpResponse:
+    wb = Workbook()
+    wb.remove(wb.active)
+    for name, hdr, body in parts:
+        title = name.replace(".csv", "").replace("_", " ")[:31]
+        ws = wb.create_sheet(title=title or "Sheet")
+        ws.append(hdr)
+        for row in body:
+            ws.append(row)
+    bio = BytesIO()
+    wb.save(bio)
+    resp = HttpResponse(
+        bio.getvalue(),
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+    resp["Content-Disposition"] = f'attachment; filename="{filename_safe(download_stem)}.xlsx"'
+    return resp

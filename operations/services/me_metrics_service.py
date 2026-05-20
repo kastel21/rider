@@ -11,9 +11,10 @@ from django.utils import timezone
 
 from ..models import Province, RiderWeeklyReport, UserProfile
 from ..selectors import monday_of_local_today, sunday_of_week
+from .me_overview_analytics import extend_me_metrics_analytics
 
 
-def parse_weeks_param(raw: str | None, *, default: int = 12, max_weeks: int = 52) -> int:
+def parse_weeks_param(raw: str | None, *, default: int = 1, max_weeks: int = 52) -> int:
     if not raw or not str(raw).strip():
         return default
     try:
@@ -147,6 +148,15 @@ def build_me_metrics(*, weeks: int) -> dict[str, Any]:
     prov_win = _province_rows(window)
     prov_win_top, prov_win_other = _top_n_with_other(prov_win, 15)
 
+    analytics = extend_me_metrics_analytics(
+        start_monday=start_monday,
+        end_monday=end_monday,
+        labels=labels,
+        weeks=weeks,
+        window=window,
+        all_reports=base,
+    )
+
     return {
         "weeks": weeks,
         "window_start": start_monday,
@@ -185,6 +195,10 @@ def build_me_metrics(*, weeks: int) -> dict[str, Any]:
             "reports": report_counts,
             "samples": sample_counts,
             "weeks": weeks,
+            "fuel_allocated": analytics["chart_fuel_distance"]["fuel_allocated"],
+            "fuel_used": analytics["chart_fuel_distance"]["fuel_used"],
+            "distance": analytics["chart_fuel_distance"]["distance"],
         },
         "generated_at": timezone.now(),
+        **{k: v for k, v in analytics.items() if k != "chart_fuel_distance"},
     }

@@ -24,9 +24,14 @@
           {{ form.scheduled_visits }}
           {{ form.scheduled_visits.errors }}
         </div>
+        <div class="dashboard-info-item field">
+          <label for="{{ form.distance_travelled.id_for_label }}"><strong>{{ form.distance_travelled.label }}</strong></label>
+          {{ form.distance_travelled }}
+          {{ form.distance_travelled.errors }}
+        </div>
       </div>
 
-      <h3 style="margin-top:1rem;">Fuel &amp; distance (week totals)</h3>
+      <h3 style="margin-top:1rem;">Fuel (week totals)</h3>
       {% if item.fuel_errors %}
       <ul class="errorlist">{% for err in item.fuel_errors %}<li>{{ err }}</li>{% endfor %}</ul>
       {% endif %}
@@ -38,10 +43,6 @@
         <div class="field">
           <label><strong>Fuel used (week)</strong></label><br>
           <input type="text" name="pc_fuel_used_total_{{ report.pk }}" class="report-num-input" value="{{ item.fuel_totals.used }}" inputmode="decimal" autocomplete="off" data-pc-fuel-used>
-        </div>
-        <div class="field">
-          <label><strong>Distance travelled (week, km)</strong></label><br>
-          <input type="text" name="pc_distance_travelled_total_{{ report.pk }}" class="report-num-input" value="{{ item.fuel_totals.distance }}" inputmode="decimal" autocomplete="off" data-pc-distance-travelled>
         </div>
         <p class="fuel-strip-live-error" data-pc-fuel-live-msg hidden aria-live="polite"></p>
       </div>

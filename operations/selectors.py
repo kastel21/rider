@@ -143,10 +143,7 @@ def rider_home_weekly_trends(user, *, num_weeks: int = 12) -> dict:
             tr = list(r.trip_entries.all())
             samples.append(int(r.samples_collected or 0))
             trips.append(len(tr))
-            dist = sum(
-                (x.distance_travelled if x.distance_travelled is not None else Decimal("0") for x in tr),
-                Decimal("0"),
-            )
+            dist = r.distance_travelled if r.distance_travelled is not None else Decimal("0")
             distance_km.append(float(dist))
         else:
             samples.append(0)

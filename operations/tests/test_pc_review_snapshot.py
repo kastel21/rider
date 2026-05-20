@@ -19,7 +19,7 @@ from operations.services.weekly_review_service import build_weekly_review_snapsh
 
 
 class PCReviewSnapshotFlowTests(TestCase):
-    databases = {"default", "sqlite"}
+    databases = {"default"}
 
     def setUp(self):
         User = get_user_model()

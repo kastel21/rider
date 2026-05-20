@@ -50,9 +50,9 @@
       {% endif %}
     </div>
     {% if is_pc_edit %}
-    <h2 style="margin-top:1rem;">Fuel &amp; distance (week totals)</h2>
+    <h2 style="margin-top:1rem;">Fuel (week totals)</h2>
     <p class="muted" style="margin:0 0 0.65rem;font-size:0.9rem;max-width:42rem;">
-      Enter once for the whole week (sums of all trips). Values are stored on the <strong>first trip row</strong> by sequence; other rows use zero for these fields.
+      Enter once for the whole week (sums of all trips). Fuel values are stored on the <strong>first trip row</strong> by sequence; other rows use zero for fuel fields.
     </p>
     {% if pc_fuel_aggregate_errors %}
     <ul class="errorlist">
@@ -67,10 +67,6 @@
       <div class="field">
         <label for="pc_fuel_used_total"><strong>Fuel used (week)</strong></label><br>
         <input type="text" name="pc_fuel_used_total" id="pc_fuel_used_total" class="report-num-input" value="{{ pc_fuel_week_totals.used }}" inputmode="decimal" autocomplete="off">
-      </div>
-      <div class="field">
-        <label for="pc_distance_travelled_total"><strong>Distance travelled (week, km)</strong></label><br>
-        <input type="text" name="pc_distance_travelled_total" id="pc_distance_travelled_total" class="report-num-input" value="{{ pc_fuel_week_totals.distance }}" inputmode="decimal" autocomplete="off">
       </div>
       <p class="fuel-strip-live-error" data-pc-fuel-live-msg hidden aria-live="polite"></p>
     </div>
@@ -140,6 +136,11 @@
         <label for="{{ form.scheduled_visits.id_for_label }}"><strong>{{ form.scheduled_visits.label }}</strong></label>
         {{ form.scheduled_visits }}
         {{ form.scheduled_visits.errors }}
+      </div>
+      <div class="dashboard-info-item field">
+        <label for="{{ form.distance_travelled.id_for_label }}"><strong>{{ form.distance_travelled.label }}</strong></label>
+        {{ form.distance_travelled }}
+        {{ form.distance_travelled.errors }}
       </div>
     </div>
     {% endif %}
@@ -311,10 +312,6 @@
           <th>To</th>
           <th>Specimens</th>
           <th>Results</th>
-          {% if not is_pc_edit %}
-          <th>Fuel</th>
-          <th>Distance</th>
-          {% endif %}
         </tr>
       </thead>
       <tbody>
@@ -329,13 +326,9 @@
           <td>{{ row.destination_facility.name|default:"—" }}</td>
           <td>{{ row.specimens_total }}</td>
           <td>{{ row.results_total }}</td>
-          {% if not is_pc_edit %}
-          <td>{{ row.fuel_used }} / {{ row.fuel_allocated }}</td>
-          <td>{{ row.distance_travelled }}</td>
-          {% endif %}
         </tr>
         {% empty %}
-        <tr><td colspan="{% if is_pc_edit %}9{% else %}11{% endif %}">No trip rows saved for this week yet.</td></tr>
+        <tr><td colspan="9">No trip rows saved for this week yet.</td></tr>
         {% endfor %}
       </tbody>
     </table>
@@ -346,6 +339,8 @@
 {% block extra_js %}
 {% if trip_formset or trip_formset_relay %}
 <script src="{% static 'js/report-trip-routing.js' %}" defer></script>
+{% endif %}
+{% if is_pc_edit %}
 <script src="{% static 'js/report-fuel-validation.js' %}" defer></script>
 {% endif %}
 {% if driver_dual_tabs %}

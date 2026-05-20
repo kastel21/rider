@@ -91,6 +91,10 @@
     </div>
   </form>
   <p id="week-range-desc" class="muted" style="margin-top:0.65rem;">Showing: <strong>{{ week_range_label }}</strong></p>
+  <p class="muted" style="margin-top:0.5rem;font-size:0.92rem;">
+    <a href="{% url 'operations:rider_week_fuel' %}?week={{ selected_week_start|date:'Y-m-d' }}">Fuel (this week)</a>
+    — week totals (the same values PCs see on review).
+  </p>
 
   {% if week_metrics %}
   <div class="rider-home-metrics" style="margin-top:1rem;">
@@ -165,8 +169,8 @@
 </div>
 {% endblock %}
 {% block extra_js %}
-<script src="{% static 'js/vendor/chart.umd.min.js' %}"></script>
-<script defer src="{% static 'js/rider-home-charts.js' %}"></script>
+<script src="{% static 'js/vendor/chart.umd.min.js' %}?v=4.4.1"></script>
+<script defer src="{% static 'js/rider-home-charts.js' %}?v=3"></script>
 <script src="{% static 'js/offline-sync.js' %}" defer></script>
 <script>
   (function () {

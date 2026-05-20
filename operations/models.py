@@ -298,6 +298,12 @@ class RiderWeeklyReport(models.Model):
         blank=True,
         help_text="Average data logger temperature for this reporting week (whole number, e.g. °C).",
     )
+    distance_travelled = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+        help_text="Distance travelled this reporting week (km). Synced to the first trip row for exports.",
+    )
 
     bike = models.ForeignKey(
         Bike,
@@ -362,6 +368,31 @@ class RiderWeeklyReport(models.Model):
     @property
     def trip_entries_total_results(self) -> int:
         return sum((e.results_total for e in self.trip_entries.all()), 0)
+
+
+class RiderWeekFuelSummary(models.Model):
+    """One row per rider (or driver) per calendar week — week fuel totals independent of weekly reports."""
+
+    rider = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="week_fuel_summaries",
+    )
+    week_start = models.DateField(db_index=True)
+    fuel_allocated = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    fuel_used = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    distance_travelled = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["rider", "week_start"], name="uniq_rider_week_fuel_summary"),
+        ]
+        ordering = ["-week_start", "-id"]
+
+    def __str__(self):
+        return f"Week fuel {self.week_start} ({self.rider})"
 
 
 class SampleRejection(models.Model):

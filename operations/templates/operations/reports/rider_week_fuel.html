@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load static %}
+{% block body_class %}dashboard-shell rider-week-fuel-page{% endblock %}
+{% block title %}Fuel (week){% endblock %}
+{% block extra_head %}
+  {% if user_role == 'rider' or user_role == 'driver' %}
+  <link rel="manifest" href="{% static 'manifest.json' %}">
+  {% endif %}
+{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Fuel (week)</h1>
+  {% if report_location %}
+  <p class="muted">
+    {{ report_location.province_name }} · {{ report_location.district_name }}
+    · type of support {{ report_location.pepfar_support_type }}
+  </p>
+  {% endif %}
+  <p class="muted" style="margin:0.35rem 0 0;font-size:0.92rem;">
+    Week: <strong>{{ week_range_label }}</strong>
+    · <a href="{% url 'operations:rider_reports' %}?week={{ week_start|date:'Y-m-d' }}">Back to my reports</a>
+  </p>
+  <p class="muted" style="margin:0.75rem 0 0;font-size:0.9rem;max-width:42rem;">
+    One set of week totals for you for this calendar week. This is stored separately from your specimen weekly reports and can be updated anytime.
+  </p>
+  {% if reports_for_week %}
+  <p class="muted" style="margin:0.35rem 0 0;font-size:0.88rem;">
+    You have {{ reports_for_week|length }} weekly report record{{ reports_for_week|length|pluralize }} for this week (optional; fuel does not depend on them).
+  </p>
+  {% endif %}
+
+  <form method="post" action="{% url 'operations:rider_week_fuel' %}" id="report-form" style="margin-top:1.25rem;">
+    {% csrf_token %}
+    <input type="hidden" name="week" value="{{ week_start|date:'Y-m-d' }}">
+    {% if fuel_errors %}
+    <ul class="errorlist">
+      {% for err in fuel_errors %}<li>{{ err }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+    <h2 style="margin-top:0;">Week totals</h2>
+    <p class="muted" style="margin:0 0 0.65rem;font-size:0.9rem;max-width:42rem;">
+      Program coordinators see the same numbers when they review your week. If you also have trip rows saved, totals here take priority in reports and exports.
+    </p>
+    <div class="fuel-strip fuel-strip--pc-week" data-pc-week-fuel>
+      <div class="field">
+        <label for="pc_fuel_allocated_total"><strong>Fuel allocated (week)</strong></label><br>
+        <input type="text" name="pc_fuel_allocated_total" id="pc_fuel_allocated_total" class="report-num-input" value="{{ pc_fuel_week_totals.allocated }}" inputmode="decimal" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="pc_fuel_used_total"><strong>Fuel used (week)</strong></label><br>
+        <input type="text" name="pc_fuel_used_total" id="pc_fuel_used_total" class="report-num-input" value="{{ pc_fuel_week_totals.used }}" inputmode="decimal" autocomplete="off">
+      </div>
+      <p class="fuel-strip-live-error" data-pc-fuel-live-msg hidden aria-live="polite"></p>
+    </div>
+    <p style="margin-top:1rem;">
+      <button type="submit" class="btn-dash btn-dash-primary">Save</button>
+    </p>
+  </form>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/report-fuel-validation.js' %}" defer></script>
+{% if user_role == 'rider' or user_role == 'driver' %}
+<script src="{% static 'js/offline-sync.js' %}" defer></script>
+{% endif %}
+{% endblock %}

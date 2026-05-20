@@ -1209,11 +1209,24 @@ body.dashboard-shell .msg-debug {
   box-shadow: 1px 0 0 #e2e8f0;
 }
 
+.dashboard-shell .me-mande-matrix .me-mande-matrix__sticky--3 {
+  position: sticky;
+  left: 18rem;
+  z-index: 3;
+  min-width: 5.5rem;
+  max-width: 8rem;
+  box-shadow: 1px 0 0 #e2e8f0;
+}
+
 .dashboard-shell .me-mande-matrix thead th.me-mande-matrix__sticky--1 {
   z-index: 5;
 }
 
 .dashboard-shell .me-mande-matrix thead th.me-mande-matrix__sticky--2 {
+  z-index: 4;
+}
+
+.dashboard-shell .me-mande-matrix thead th.me-mande-matrix__sticky--3 {
   z-index: 4;
 }
 

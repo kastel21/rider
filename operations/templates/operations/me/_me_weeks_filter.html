@@ -1,7 +1,7 @@
 {% comment %}Expects: weeks_param, weeks_form_action (GET URL for this page).{% endcomment %}
 <h2 class="rider-home-section-title" style="margin-top:1.25rem;">Time window</h2>
 <p class="muted" style="margin:0 0 0.5rem;font-size:0.92rem;">
-  Tables use the last <strong>N</strong> Monday-based weeks, ending on the <strong>previous</strong> completed week (not the week still in progress).
+  By default, <strong>one</strong> week: the <strong>previous</strong> completed Monday–Sunday period. Increase <strong>N</strong> for a rolling sum over the last N such weeks.
 </p>
 <form method="get" action="{{ weeks_form_action }}" class="report-week-filter" style="display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
   <label for="id-weeks">Weeks</label>

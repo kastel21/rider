@@ -1,5 +1,7 @@
 from datetime import date
+from decimal import Decimal
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -15,8 +17,15 @@ from operations.models import (
 )
 
 
+def _operations_test_databases():
+    names = {"default"}
+    if "sqlite" in settings.DATABASES:
+        names.add("sqlite")
+    return names
+
+
 class PCBulkEditViewTests(TestCase):
-    databases = {"default", "sqlite"}
+    databases = _operations_test_databases()
 
     def setUp(self):
         User = get_user_model()
@@ -62,7 +71,7 @@ class PCBulkEditViewTests(TestCase):
             payload[f"report_{rid}-scheduled_visits"] = "3"
             payload[f"pc_fuel_allocated_total_{rid}"] = "10"
             payload[f"pc_fuel_used_total_{rid}"] = "5"
-            payload[f"pc_distance_travelled_total_{rid}"] = "20"
+            payload[f"report_{rid}-distance_travelled"] = "20"
 
             # PC formset uses extra=0; these reports have no trip rows yet.
             payload[f"trips_{rid}-TOTAL_FORMS"] = "0"
@@ -93,7 +102,12 @@ class PCBulkEditViewTests(TestCase):
 
     def test_bulk_save_all_updates_each_report(self):
         self.client.force_login(self.pc_user)
-        response = self.client.post(self.url, data=self._save_payload(), follow=True)
+        self.client.get(self.url)
+        payload = self._save_payload()
+        token = self.client.cookies.get("csrftoken")
+        if token:
+            payload["csrfmiddlewaretoken"] = token.value
+        response = self.client.post(self.url, data=payload, follow=True)
         self.assertEqual(response.status_code, 200)
         self.report_one.refresh_from_db()
         self.report_two.refresh_from_db()
@@ -101,6 +115,8 @@ class PCBulkEditViewTests(TestCase):
         self.assertEqual(self.report_two.pc_notes, f"note-{self.report_two.pk}")
         self.assertEqual(self.report_one.scheduled_visits, 3)
         self.assertEqual(self.report_two.scheduled_visits, 3)
+        self.assertEqual(self.report_one.distance_travelled, Decimal("20"))
+        self.assertEqual(self.report_two.distance_travelled, Decimal("20"))
 
     def test_bulk_review_all_approves_and_snapshots_each(self):
         self.client.force_login(self.pc_user)
