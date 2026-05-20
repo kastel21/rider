@@ -83,6 +83,18 @@ def _get_device_for_sync(rider, device_id):
     return device, None
 
 
+# --- Health (connectivity probe) ---
+
+
+class RiderHealthView(APIView):
+    """GET /api/rider/health/ — lightweight probe for offline-sync reachability."""
+
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        return Response({"ok": True}, status=status.HTTP_200_OK)
+
+
 # --- Login (JWT) ---
 
 

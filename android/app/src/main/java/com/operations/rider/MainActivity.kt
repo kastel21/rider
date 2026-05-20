@@ -2,6 +2,10 @@ package com.operations.rider
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.os.Bundle
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
@@ -10,8 +14,12 @@ import androidx.appcompat.app.AppCompatActivity
 
 /**
  * Main WebView shell after local session login. Loads app root; Django redirects by role.
+ * Triggers OpsOffline.syncNow() when network becomes available (JWT uplink queue).
  */
 class MainActivity : AppCompatActivity() {
+
+    private var webView: WebView? = null
+    private var networkCallback: ConnectivityManager.NetworkCallback? = null
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,6 +39,7 @@ class MainActivity : AppCompatActivity() {
         OpsEmbeddedServer.ensureStarted(applicationContext)
 
         val wv = WebView(this)
+        webView = wv
         wv.settings.javaScriptEnabled = true
         wv.settings.domStorageEnabled = true
         wv.webViewClient = object : WebViewClient() {
@@ -58,5 +67,45 @@ class MainActivity : AppCompatActivity() {
         }
         setContentView(wv)
         wv.loadUrl("http://127.0.0.1:${OpsEmbeddedServer.PORT}/")
+        registerNetworkSyncCallback()
+    }
+
+    private fun registerNetworkSyncCallback() {
+        val cm = getSystemService(CONNECTIVITY_SERVICE) as? ConnectivityManager ?: return
+        val request = NetworkRequest.Builder()
+            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            .build()
+        val callback = object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) {
+                runOnUiThread { triggerJsSync() }
+            }
+        }
+        networkCallback = callback
+        try {
+            cm.registerNetworkCallback(request, callback)
+        } catch (_: Exception) {
+            networkCallback = null
+        }
+    }
+
+    private fun triggerJsSync() {
+        webView?.evaluateJavascript(
+            "(function(){if(window.OpsOffline&&OpsOffline.syncNow){OpsOffline.syncNow();}})();",
+            null,
+        )
+    }
+
+    override fun onDestroy() {
+        networkCallback?.let { cb ->
+            try {
+                val cm = getSystemService(CONNECTIVITY_SERVICE) as? ConnectivityManager
+                cm?.unregisterNetworkCallback(cb)
+            } catch (_: Exception) {
+            }
+        }
+        networkCallback = null
+        webView?.destroy()
+        webView = null
+        super.onDestroy()
     }
 }

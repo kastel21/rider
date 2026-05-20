@@ -47,6 +47,16 @@ from ..services.week_fuel_service import (
 )
 from ..services.trip_facilities import facilities_for_rider_endpoint
 from ..services.sync_service import apply_sync_batch, register_device
+from ..services.sync_payload import report_sync_envelope
+
+
+def _jwt_remote_sync_enabled():
+    from django.conf import settings
+
+    return (
+        getattr(settings, "OPS_SYNC_MODE", "").strip() == "jwt"
+        and bool(getattr(settings, "OPS_REMOTE_API_BASE", "").strip())
+    )
 
 
 def _report_location_for_user(user):
@@ -534,13 +544,19 @@ class RiderReportCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView)
         if is_submit:
             report_service.submit_report(self.object, self.request.user)
             messages.success(self.request, "Report saved and submitted.")
+            if _jwt_remote_sync_enabled():
+                url = reverse("operations:rider_reports")
+                return redirect(f"{url}?remote_sync_report={self.object.pk}")
             return redirect("operations:role_redirect")
         messages.success(
             self.request,
             "Draft saved. Saved trips appear in the table below; add more if needed.",
         )
         edit_url = reverse("operations:report_edit", kwargs={"pk": self.object.pk})
-        return redirect(f"{edit_url}?draft_cleared=1")
+        qs = "draft_cleared=1"
+        if _jwt_remote_sync_enabled():
+            qs += "&remote_sync=1"
+        return redirect(f"{edit_url}?{qs}")
 
     def get_success_url(self):
         return reverse("operations:report_detail", kwargs={"pk": self.object.pk})
@@ -866,13 +882,19 @@ class RiderReportEditView(LoginRequiredMixin, UpdateView):
         if is_submit:
             report_service.submit_report(self.object, self.request.user)
             messages.success(self.request, "Report saved and submitted.")
+            if _jwt_remote_sync_enabled():
+                url = reverse("operations:rider_reports")
+                return redirect(f"{url}?remote_sync_report={self.object.pk}")
             return redirect("operations:role_redirect")
         messages.success(
             self.request,
             "Draft saved. Saved trips appear in the table below; add more if needed.",
         )
         edit_url = reverse("operations:report_edit", kwargs={"pk": self.object.pk})
-        return redirect(f"{edit_url}?draft_cleared=1")
+        qs = "draft_cleared=1"
+        if _jwt_remote_sync_enabled():
+            qs += "&remote_sync=1"
+        return redirect(f"{edit_url}?{qs}")
 
 
 class ReportSubmitView(LoginRequiredMixin, View):
@@ -1024,6 +1046,22 @@ class ReportFacilitiesAjaxView(LoginRequiredMixin, View):
             for f in qs[:500]
         ]
         return JsonResponse({"facilities": data})
+
+
+class ReportSyncPayloadView(LoginRequiredMixin, View):
+    """GET /reports/<pk>/sync-payload/ — JSON envelope for remote JWT uplink."""
+
+    def get(self, request, pk):
+        report = get_object_or_404(get_reports_queryset(request.user), pk=pk)
+        if not is_rider_like(request.user):
+            return JsonResponse({"error": "forbidden"}, status=403)
+        envelope = report_sync_envelope(report)
+        if not envelope.get("idempotency_key"):
+            return JsonResponse(
+                {"error": "report has no client_uuid; save draft once locally first"},
+                status=400,
+            )
+        return JsonResponse(envelope)
 
 
 class RiderRegisterDeviceView(LoginRequiredMixin, View):

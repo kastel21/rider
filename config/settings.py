@@ -28,12 +28,12 @@ BASE_DIR, DATA_DIR = _resolve_base_and_data()
 load_dotenv(DATA_DIR / ".env")
 
 SECRET_KEY = os.environ.get(
-    "DJANGO_SECRET_KEY", "dev-only-change-in-production-unsafe-key-replace-me"
+    "DJANGO_SECRET_KEY", "dad9363ac7d3a69bbb46b53e74b54410ec35337a625f1128bf4913507fe6e54d9362474b761370f3433df53d46bf3165"
 )
 
 DEBUG = os.environ.get("DJANGO_DEBUG", "1") == "1"
 
-_allowed = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,*")
+_allowed = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,https://pythonclusters-208233-0.cloudclusters.net")
 ALLOWED_HOSTS = [h.strip() for h in _allowed.split(",") if h.strip()]
 
 INSTALLED_APPS = [

@@ -57,6 +57,11 @@ urlpatterns = [
     path("reports/export/", views.ReportExportView.as_view(), name="report_export"),
     path("reports/<int:pk>/", views.RiderReportDetailView.as_view(), name="report_detail"),
     path("reports/<int:pk>/edit/", views.RiderReportEditView.as_view(), name="report_edit"),
+    path(
+        "reports/<int:pk>/sync-payload/",
+        views.ReportSyncPayloadView.as_view(),
+        name="report_sync_payload",
+    ),
     path("reports/<int:pk>/submit/", views.ReportSubmitView.as_view(), name="report_submit"),
     path("pc/reports/", views.RiderReportListView.as_view(), name="pc_reports"),
     path(

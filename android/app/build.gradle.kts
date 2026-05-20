@@ -13,6 +13,26 @@ val localProperties = Properties().apply {
     rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
 }
 
+/** Repo-root .env fallback (same keys as android/local.properties). */
+val rootEnvProperties = Properties().apply {
+    val envFile = rootProject.file("../.env")
+    if (!envFile.isFile) return@apply
+    envFile.readLines().forEach { line ->
+        val trimmed = line.trim()
+        if (trimmed.isEmpty() || trimmed.startsWith("#")) return@forEach
+        val eq = trimmed.indexOf('=')
+        if (eq > 0) {
+            setProperty(trimmed.substring(0, eq).trim(), trimmed.substring(eq + 1).trim())
+        }
+    }
+}
+
+fun buildConfigProp(key: String): String {
+    val fromLocal = localProperties.getProperty(key)?.trim().orEmpty()
+    if (fromLocal.isNotEmpty()) return fromLocal
+    return rootEnvProperties.getProperty(key)?.trim().orEmpty()
+}
+
 android {
     namespace = "com.operations.rider"
     compileSdk = 34
@@ -23,11 +43,11 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-        val remoteBase = escapeForBuildConfigString(localProperties.getProperty("OPS_REMOTE_API_BASE") ?: "")
-        val jwtSigningKey = escapeForBuildConfigString(localProperties.getProperty("JWT_SIGNING_KEY") ?: "")
-        val syncUser = escapeForBuildConfigString(localProperties.getProperty("OPS_SYNC_USERNAME") ?: "")
-        val syncPassword = escapeForBuildConfigString(localProperties.getProperty("OPS_SYNC_PASSWORD") ?: "")
-        val embeddedSecret = escapeForBuildConfigString(localProperties.getProperty("OPS_EMBEDDED_IMPORT_SECRET") ?: "")
+        val remoteBase = escapeForBuildConfigString(buildConfigProp("OPS_REMOTE_API_BASE"))
+        val jwtSigningKey = escapeForBuildConfigString(buildConfigProp("JWT_SIGNING_KEY"))
+        val syncUser = escapeForBuildConfigString(buildConfigProp("OPS_SYNC_USERNAME"))
+        val syncPassword = escapeForBuildConfigString(buildConfigProp("OPS_SYNC_PASSWORD"))
+        val embeddedSecret = escapeForBuildConfigString(buildConfigProp("OPS_EMBEDDED_IMPORT_SECRET"))
         buildConfigField("String", "OPS_REMOTE_API_BASE", "\"$remoteBase\"")
         buildConfigField("String", "JWT_SIGNING_KEY", "\"$jwtSigningKey\"")
         buildConfigField("String", "OPS_SYNC_USERNAME", "\"$syncUser\"")

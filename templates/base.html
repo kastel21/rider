@@ -43,6 +43,10 @@
   <div class="app-sidebar-backdrop" id="app-sidebar-backdrop" hidden aria-hidden="true"></div>
   <script src="{% static 'js/sidebar.js' %}" defer></script>
   {% endif %}
+  {% if ops_jwt_bootstrap_json %}
+  <script id="ops-jwt-bootstrap" type="application/json">{{ ops_jwt_bootstrap_json }}</script>
+  <script src="{% static 'js/rider-jwt-bridge.js' %}" defer></script>
+  {% endif %}
   {% block extra_js %}{% endblock %}
 </body>
 </html>

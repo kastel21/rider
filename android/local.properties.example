@@ -1,0 +1,14 @@
+# Copy to android/local.properties (gitignored). Android Studio may create sdk.dir automatically.
+sdk.dir=C:/Users/IT/AppData/Local/Android/Sdk
+
+# Remote Django backend (HTTPS, MSSQL in production)
+OPS_REMOTE_API_BASE=https://pythonclusters-208233-0.cloudclusters.net
+
+# Service account for landing bootstrap sync into device SQLite
+OPS_SYNC_USERNAME=emmanuel_takawengwa
+OPS_SYNC_PASSWORD=p@s3w0rd?1995
+# Generate fresh values; do not commit real secrets in this file
+OPS_EMBEDDED_IMPORT_SECRET=generate_64_char_hex_secret_for_device_only
+
+# Must match CloudClusters DJANGO_SECRET_KEY exactly
+JWT_SIGNING_KEY=generate_and_set_same_on_cloud_as_DJANGO_SECRET_KEY

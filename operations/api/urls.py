@@ -6,6 +6,7 @@ from .rider_views import (
     RiderApplySyncView,
     RiderBootstrapView,
     RiderConfigView,
+    RiderHealthView,
     RiderLocalSessionView,
     RiderLoginView,
     RiderProfileView,
@@ -16,6 +17,7 @@ from .rider_views import (
 app_name = "rider_api"
 
 urlpatterns = [
+    path("health/", RiderHealthView.as_view(), name="health"),
     path("login/", RiderLoginView.as_view(), name="login"),
     path("local-session/", RiderLocalSessionView.as_view(), name="local-session"),
     path("refresh/", TokenRefreshView.as_view(), name="token_refresh"),

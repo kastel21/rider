@@ -61,13 +61,35 @@ Then, when a `district_id` can be read from bootstrap/profile, the app calls **`
 Add to **`android/local.properties`** (do not commit secrets):
 
 ```properties
-OPS_REMOTE_API_BASE=https://your-server.example.com
-OPS_SYNC_USERNAME=service_rider_username
-OPS_SYNC_PASSWORD=service_rider_password
+OPS_REMOTE_API_BASE=https://pythonclusters-208233-0.cloudclusters.net
+OPS_SYNC_USERNAME=mobile_sync
+OPS_SYNC_PASSWORD=your_rider_password
 OPS_EMBEDDED_IMPORT_SECRET=a_long_random_shared_secret
+JWT_SIGNING_KEY=same_as_cloud_DJANGO_SECRET_KEY
 ```
 
-Optional: `JWT_SIGNING_KEY=...` only if you still use JWT tooling against the embedded API.
+Create the sync rider on the **cloud** database (once):
+
+```bash
+python manage.py create_mobile_sync_user --username mobile_sync --password 'YourPassword' --district-id 1
+```
+
+Gradle reads `android/local.properties` first, then falls back to repo-root `.env` for the same keys.
+
+### `OPS_EMBEDDED_IMPORT_SECRET` vs `JWT_SIGNING_KEY`
+
+| Variable | Where it must match |
+|----------|---------------------|
+| `OPS_EMBEDDED_IMPORT_SECRET` | **APK only** — protects loopback `POST /api/embedded/import-*` on the device. Not set on CloudClusters. |
+| `JWT_SIGNING_KEY` | **APK** and **CloudClusters `DJANGO_SECRET_KEY`** — must be **identical** so tokens from `POST /api/rider/login/` validate on the phone and embedded Django. |
+
+After generating a new `JWT_SIGNING_KEY`, set on CloudClusters (host env / panel):
+
+```bash
+DJANGO_SECRET_KEY=<same value as JWT_SIGNING_KEY in android/local.properties>
+```
+
+Then restart the cloud app. Existing JWTs from the old key will stop working until riders log in again.
 
 **Local WebView login** (`/login/`) uses Django’s normal session auth against **local** SQLite. After user import, riders can log in with the **same credentials as the backend** for that district (subject to export scope).
 
@@ -88,6 +110,17 @@ buildConfigField("String", "OPS_REMOTE_API_BASE", "\"https://ops.example.com\"")
 ```
 
 Rebuild. The value is passed into Python as `OPS_REMOTE_API_BASE` and exposed to templates as `ops-api-base` / JWT sync mode (see [`docs/RIDER_PWA_REQUIREMENTS.md`](RIDER_PWA_REQUIREMENTS.md)).
+
+### Rider uplink (local save → remote MSSQL)
+
+Embedded Android uses **`OPS_SYNC_MODE=jwt`** ([`config/settings_android.py`](../config/settings_android.py)):
+
+1. **Landing sync** (service account) seeds reference data into local SQLite.
+2. **Rider login** — local session plus a server-side `POST` to `{OPS_REMOTE_API_BASE}/api/rider/login/` stores JWT in WebView `localStorage` (`ops_jwt_access` / `ops_jwt_refresh`).
+3. **Save report** — form POST writes to **local** SQLite; redirect adds `remote_sync=1` (or `remote_sync_report=<pk>` on submit). [`offline-sync.js`](../static/js/offline-sync.js) loads `GET /reports/<pk>/sync-payload/`, enqueues a full `upsert_report` (trips + rejections) in IndexedDB, then calls **`POST /api/rider/apply-sync/`** when [`GET /api/rider/health/`](../operations/api/urls.py) succeeds.
+4. **Pending UI** — report list and form show pending count and **Sync now**; [`MainActivity.kt`](../android/app/src/main/java/com/operations/rider/MainActivity.kt) also runs `OpsOffline.syncNow()` when the device network becomes available.
+
+Copy [`android/local.properties.example`](../android/local.properties.example) to `android/local.properties` and fill in secrets before release builds.
 
 ## Build a debug APK
 

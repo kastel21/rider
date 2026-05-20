@@ -17,7 +17,7 @@
   </p>
 </div>
 {% endif %}
-  <form method="post" action="{% if report %}{% if is_pc_edit %}{% url 'operations:pc_report_edit' report.pk %}{% else %}{% url 'operations:report_edit' report.pk %}{% if request.GET.draft_cleared == '1' %}?draft_cleared=1{% endif %}{% endif %}{% endif %}" id="report-form" data-report-form data-week-start="{% if sync_week_start %}{{ sync_week_start }}{% elif report %}{{ report.week_start|date:'Y-m-d' }}{% endif %}"{% if report_facilities_ajax_url %} data-facilities-url="{{ report_facilities_ajax_url }}"{% endif %}>
+  <form method="post" action="{% if report %}{% if is_pc_edit %}{% url 'operations:pc_report_edit' report.pk %}{% else %}{% url 'operations:report_edit' report.pk %}{% if request.GET.draft_cleared == '1' %}?draft_cleared=1{% endif %}{% endif %}{% endif %}" id="report-form" data-report-form data-week-start="{% if sync_week_start %}{{ sync_week_start }}{% elif report %}{{ report.week_start|date:'Y-m-d' }}{% endif %}"{% if report %} data-report-pk="{{ report.pk }}"{% endif %}{% if report_facilities_ajax_url %} data-facilities-url="{{ report_facilities_ajax_url }}"{% endif %}>
 {% if user_role == 'rider' or user_role == 'driver' %}
   <input type="hidden" name="client_uuid" id="id_client_uuid" value="{{ offline_client_uuid|default:'' }}">
 {% endif %}

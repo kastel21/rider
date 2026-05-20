@@ -15,7 +15,7 @@
     <string name="landing_status_synced">Last sync completed.</string>
     <string name="landing_sync">Sync now</string>
     <string name="landing_continue">Continue to login</string>
-    <string name="landing_config_error">Set OPS_REMOTE_API_BASE, OPS_SYNC_USERNAME, and OPS_EMBEDDED_IMPORT_SECRET in android/local.properties</string>
+    <string name="landing_config_error">Set OPS_REMOTE_API_BASE, OPS_SYNC_USERNAME, OPS_SYNC_PASSWORD, and OPS_EMBEDDED_IMPORT_SECRET in android/local.properties (see docs/ANDROID_BUILD.md)</string>
     <string name="landing_server_failed">Local server failed: %1$s</string>
     <string name="landing_server_failed_toast">Embedded Django server did not start</string>
     <string name="landing_import_failed">Import failed</string>

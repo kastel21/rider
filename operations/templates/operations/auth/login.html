@@ -4,6 +4,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% if ops_remote_api_base %}
+  <meta name="ops-api-base" content="{{ ops_remote_api_base }}">
+  {% endif %}
+  {% if ops_sync_mode %}
+  <meta name="ops-sync-mode" content="{{ ops_sync_mode }}">
+  {% endif %}
   <title>Sign in</title>
   <link rel="stylesheet" href="{% static 'css/standalone-shell.css' %}">
   <style>
@@ -72,5 +78,9 @@
       });
     })();
   </script>
+  {% if ops_jwt_bootstrap_json %}
+  <script id="ops-jwt-bootstrap" type="application/json">{{ ops_jwt_bootstrap_json }}</script>
+  <script src="{% static 'js/rider-jwt-bridge.js' %}"></script>
+  {% endif %}
 </body>
 </html>
