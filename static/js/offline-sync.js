@@ -71,6 +71,32 @@
     return id;
   }
 
+  /** Embedded APK WebView: call cloud API via same-origin /api/rider-remote/ (no CORS). */
+  function useLocalRiderProxy() {
+    if (syncConfig.mode !== "jwt" || !syncConfig.apiBase) return false;
+    try {
+      const remote = new URL(syncConfig.apiBase);
+      const here = new URL(window.location.href);
+      return (
+        remote.origin !== here.origin &&
+        (here.hostname === "127.0.0.1" || here.hostname === "localhost")
+      );
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function riderApiUrl(path) {
+    const suffix = path.startsWith("/") ? path : "/" + path;
+    if (useLocalRiderProxy()) {
+      const tail = suffix.replace(/^\/api\/rider/, "");
+      return "/api/rider-remote" + (tail.startsWith("/") ? tail : "/" + tail);
+    }
+    const base = (syncConfig.apiBase || "").replace(/\/$/, "");
+    if (suffix.startsWith("/api/rider")) return base + suffix;
+    return base + "/api/rider" + suffix;
+  }
+
   async function remoteReachable() {
     if (syncConfig.mode !== "jwt" || !syncConfig.apiBase) {
       return navigator.onLine;
@@ -83,14 +109,19 @@
       remoteReachableCache = { at: now, ok: false };
       return false;
     }
-    const base = syncConfig.apiBase.replace(/\/$/, "");
     const ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
     const timer = ctrl
       ? setTimeout(function () {
           ctrl.abort();
         }, REMOTE_PROBE_MS)
       : null;
-    const probeUrls = [base + "/api/rider/health/", base + "/api/rider/login/", base + "/"];
+    const probeUrls = useLocalRiderProxy()
+      ? [riderApiUrl("/health/"), riderApiUrl("/login/")]
+      : [
+          syncConfig.apiBase.replace(/\/$/, "") + "/api/rider/health/",
+          syncConfig.apiBase.replace(/\/$/, "") + "/api/rider/login/",
+          syncConfig.apiBase.replace(/\/$/, "") + "/",
+        ];
     try {
       for (let u = 0; u < probeUrls.length; u++) {
         const res = await fetch(probeUrls[u], {
@@ -121,13 +152,16 @@
     return true;
   }
 
+  function isLikelyOffline() {
+    return !navigator.onLine;
+  }
+
   async function jwtRefreshIfNeeded() {
     const access = syncConfig.getAccessToken();
     if (access) return access;
     const refresh = syncConfig.getRefreshToken();
     if (!refresh) return "";
-    const base = syncConfig.apiBase || "";
-    const res = await fetch(base + "/api/rider/refresh/", {
+    const res = await fetch(riderApiUrl("/refresh/"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refresh: refresh }),
@@ -304,8 +338,7 @@
         payload: r.payload,
       };
     });
-    const base = syncConfig.apiBase || "";
-    const url = base + "/api/rider/apply-sync/";
+    const url = riderApiUrl("/apply-sync/");
     const body = {
       device_id: deviceId(),
       operations: operations,
@@ -395,13 +428,19 @@
   async function syncNow() {
     const rows = await getOutboxRowsEligible();
     if (!rows.length) {
-      setStatus("online · nothing to sync");
+      await refreshPendingUi();
+      if (syncConfig.mode === "jwt" && !syncConfig.getAccessToken()) {
+        setStatus("sign in again for server sync");
+      } else {
+        setStatus("online · nothing queued (save a report first)");
+      }
       return { ok: true, synced: 0 };
     }
 
     const canSync = await canSyncToRemote();
     if (!canSync) {
       setStatus("offline · " + rows.length + " pending");
+      await refreshPendingUi();
       return { ok: false, error: "offline" };
     }
 
@@ -409,7 +448,15 @@
     let bundle;
     try {
       if (syncConfig.mode === "jwt") {
-        await registerDeviceJwt();
+        if (!syncConfig.getAccessToken() && window.OpsJwtBridge) {
+          await window.OpsJwtBridge.ensureJwtFromServer();
+        }
+        if (!isLikelyOffline()) {
+          const reg = await registerDeviceJwt();
+          if (!reg.ok) {
+            throw new Error(reg.error || "device register failed");
+          }
+        }
         bundle = await syncJwtBatch(rows);
       } else {
         bundle = await syncSessionBatch(rows);
@@ -459,12 +506,19 @@
   }
 
   async function registerDeviceJwt() {
-    if (syncConfig.mode !== "jwt") return;
+    if (syncConfig.mode !== "jwt") return { ok: true };
+    if (isLikelyOffline() || !(await canSyncToRemote())) {
+      return { ok: true, offline: true };
+    }
     let token = syncConfig.getAccessToken() || (await jwtRefreshIfNeeded());
-    if (!token || !syncConfig.apiBase) return;
-    const base = syncConfig.apiBase.replace(/\/$/, "");
+    if (!token) {
+      return { ok: false, error: "missing JWT — sign out and sign in again" };
+    }
+    if (!syncConfig.apiBase) {
+      return { ok: false, error: "missing ops-api-base" };
+    }
     try {
-      await fetch(base + "/api/rider/register-device/", {
+      const res = await fetch(riderApiUrl("/register-device/"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -476,14 +530,37 @@
           user_agent: navigator.userAgent || "",
         }),
       });
+      const data = await res.json().catch(function () {
+        return {};
+      });
+      if (!res.ok) {
+        return { ok: false, error: (data && data.error) || res.statusText || "register-device failed" };
+      }
+      return { ok: true };
     } catch (e) {
-      console.warn("jwt register-device failed", e);
+      return { ok: false, error: e && e.message ? e.message : String(e) };
     }
+  }
+
+  async function enqueueReportForRemote(reportPk) {
+    await enqueueReportFromServerUrl(reportPk);
+    await refreshPendingUi();
+    return { ok: true, queued: true };
+  }
+
+  async function enqueueAndSync(reportPk, opts) {
+    await enqueueReportForRemote(reportPk);
+    if (opts && opts.skipAutoSync) {
+      return { ok: true, queued: true, synced: 0 };
+    }
+    return syncNow();
   }
 
   async function registerDeviceOnce() {
     if (syncConfig.mode === "jwt") {
-      await registerDeviceJwt();
+      if (await canSyncToRemote()) {
+        await registerDeviceJwt();
+      }
       return;
     }
     let id = deviceId();
@@ -569,6 +646,59 @@
     return data;
   }
 
+  function notifyLocalSaveSuccess(pendingCount) {
+    var n = typeof pendingCount === "number" ? pendingCount : 0;
+    var msg =
+      "Report saved on this device." +
+      (n > 0
+        ? " " + n + " pending for cloud sync (tap Sync now when online)."
+        : "");
+    console.log("[OpsOffline] " + msg);
+    if (window.OpsSaveFeedback && typeof window.OpsSaveFeedback.showToast === "function") {
+      window.OpsSaveFeedback.showToast(msg, "success");
+    }
+    setStatus(n > 0 ? "saved locally · " + n + " pending" : "saved locally");
+  }
+
+  async function runSyncEnqueueFromDom() {
+    if (new URLSearchParams(window.location.search).has("remote_sync_report")) {
+      return;
+    }
+    const el = document.getElementById("sync-enqueue-report-id");
+    if (!el || !el.getAttribute("data-report-id")) return;
+    const pk = el.getAttribute("data-report-id");
+    try {
+      await enqueueAndSync(pk, { skipAutoSync: true });
+      var n = await countPendingOutbox();
+      notifyLocalSaveSuccess(n);
+    } catch (e) {
+      console.warn("sync enqueue from dom", e);
+      setStatus("queue failed: " + (e && e.message ? e.message : String(e)));
+      if (window.OpsSaveFeedback) {
+        window.OpsSaveFeedback.showToast(
+          "Saved locally but could not queue cloud sync: " + (e && e.message ? e.message : String(e)),
+          "error",
+        );
+      }
+      refreshPendingUi();
+    }
+  }
+
+  function isRiderReportsHome() {
+    const path = window.location.pathname;
+    return path === "/reports" || path === "/reports/";
+  }
+
+  /** Reload My reports so charts/metrics/table match SQLite after a local save. */
+  function reloadRiderReportsHome() {
+    if (!isRiderReportsHome()) return;
+    const u = new URL(window.location.origin + window.location.pathname);
+    const week = new URLSearchParams(window.location.search).get("week");
+    if (week) u.searchParams.set("week", week);
+    u.searchParams.set("_fresh", String(Date.now()));
+    window.location.replace(u.toString());
+  }
+
   async function handleRemoteSyncQueryParams() {
     const params = new URLSearchParams(window.location.search);
     const reportPk =
@@ -578,63 +708,165 @@
     if (!reportPk) return;
     if (params.get("remote_sync") !== "1" && !params.get("remote_sync_report")) return;
     try {
-      await enqueueReportFromServerUrl(reportPk);
-      refreshPendingUi();
-      const out = await syncNow();
+      await enqueueAndSync(reportPk, { skipAutoSync: true });
+      var n = await countPendingOutbox();
+      await refreshPendingUi();
+      notifyLocalSaveSuccess(n);
       if (params.get("remote_sync") === "1" || params.get("remote_sync_report")) {
-        const u = new URL(window.location.href);
-        u.searchParams.delete("remote_sync");
-        u.searchParams.delete("remote_sync_report");
-        window.history.replaceState({}, "", u.pathname + u.search + u.hash);
+        reloadRiderReportsHome();
+        return { ok: true, queued: true, pending: n, reloading: true };
       }
-      return out;
+      var online = await canSyncToRemote();
+      if (online) {
+        return syncNow();
+      }
+      return { ok: true, queued: true, pending: n };
     } catch (e) {
       console.warn("remote sync enqueue failed", e);
-      setStatus("pending · uplink queue failed");
+      setStatus("saved locally · queue failed");
+      await refreshPendingUi();
+      if (window.OpsSaveFeedback) {
+        window.OpsSaveFeedback.showToast(
+          "Report saved on device, but cloud queue failed: " + (e && e.message ? e.message : String(e)),
+          "error",
+        );
+      }
+    }
+  }
+
+  /** APK / embedded WebView: local Django on 127.0.0.1 saves to SQLite without internet. */
+  function isEmbeddedLocalApp() {
+    try {
+      const h = window.location.hostname;
+      return h === "127.0.0.1" || h === "localhost";
+    } catch (e) {
+      return false;
     }
   }
 
   function bindReportFormOffline(form) {
     if (!form || form.getAttribute("data-offline-bound")) return;
     form.setAttribute("data-offline-bound", "1");
+    if (isEmbeddedLocalApp()) {
+      return;
+    }
     form.addEventListener(
       "submit",
       function (ev) {
-        canSyncToRemote().then(function (online) {
-          if (online) return;
-          ev.preventDefault();
-          submitOfflineForm(form);
-        });
+        if (navigator.onLine) {
+          canSyncToRemote().then(function (online) {
+            if (online) return;
+            if (ev.defaultPrevented) return;
+            ev.preventDefault();
+            submitOfflineForm(form, ev.submitter);
+          });
+          return;
+        }
+        ev.preventDefault();
+        submitOfflineForm(form, ev.submitter);
       },
       true,
     );
   }
 
-  function submitOfflineForm(form) {
-    const payload = serializeReportForm(form);
-    const idemInput = form.querySelector('input[name="client_uuid"], #id_client_uuid');
-    const idem = (idemInput && idemInput.value) || crypto.randomUUID();
-    if (idemInput && !idemInput.value) idemInput.value = idem;
-    const reportPk = form.getAttribute("data-report-pk");
-    const afterQueue = reportPk
-      ? enqueueReportFromServerUrl(reportPk).catch(function () {
-          return queueReportUpsert(payload, idem);
+  function buildReportFormData(form, submitter) {
+    let fd;
+    try {
+      fd = new FormData(form, submitter || undefined);
+    } catch (e) {
+      fd = new FormData(form);
+    }
+    if (!fd.has("action")) {
+      fd.append("action", "submit");
+    }
+    return fd;
+  }
+
+  function submitOfflineForm(form, submitter) {
+    const fd = buildReportFormData(form, submitter);
+    const action = form.getAttribute("action") || window.location.pathname;
+    setStatus("saving offline…");
+
+    function queueAfterLocalSave(reportPk) {
+      const payload = serializeReportForm(form);
+      const idemInput = form.querySelector('input[name="client_uuid"], #id_client_uuid');
+      const idem = (idemInput && idemInput.value) || crypto.randomUUID();
+      if (idemInput && !idemInput.value) idemInput.value = idem;
+      const afterQueue = reportPk
+        ? enqueueReportFromServerUrl(reportPk).catch(function () {
+            return queueReportUpsert(payload, idem);
+          })
+        : queueReportUpsert(payload, idem);
+      return afterQueue
+        .then(function () {
+          return saveDraft(idem, payload);
         })
-      : queueReportUpsert(payload, idem);
-    afterQueue
-      .then(function () {
-        return saveDraft(idem, payload);
-      })
-      .then(function () {
-        setStatus("offline · queued (not synced)");
-        refreshPendingUi();
-        alert(
-          "You appear to be offline. A copy was queued to sync when you are back online. Keep this tab and try Sync now.",
-        );
+        .then(function () {
+          setStatus("offline · queued (not synced)");
+          refreshPendingUi();
+        });
+    }
+
+    fetch(action, {
+      method: "POST",
+      body: fd,
+      credentials: "same-origin",
+      redirect: "follow",
+    })
+      .then(function (res) {
+        if (!res.ok) {
+          throw new Error("save failed (" + res.status + ")");
+        }
+        const reportPk = form.getAttribute("data-report-pk");
+        return queueAfterLocalSave(reportPk).then(function () {
+          if (res.redirected && res.url) {
+            try {
+              const path = new URL(res.url).pathname;
+              if (path === "/reports" || path === "/reports/") {
+                window.location.replace(res.url);
+                return;
+              }
+            } catch (e) {}
+          }
+          const pk = form.getAttribute("data-report-pk");
+          const home =
+            "/reports/?save_ok=submitted" +
+            (pk ? "&remote_sync_report=" + encodeURIComponent(pk) : "");
+          if (window.OpsSaveFeedback && window.OpsSaveFeedback.navigateToRiderHome) {
+            window.OpsSaveFeedback.navigateToRiderHome(home);
+          } else {
+            window.location.replace(home);
+          }
+          return;
+        });
       })
       .catch(function (e) {
-        console.warn(e);
-        alert("Could not save offline queue: " + (e && e.message));
+        console.warn("offline save fetch failed, queue only", e);
+        const payload = serializeReportForm(form);
+        const idemInput = form.querySelector('input[name="client_uuid"], #id_client_uuid');
+        const idem = (idemInput && idemInput.value) || crypto.randomUUID();
+        if (idemInput && !idemInput.value) idemInput.value = idem;
+        const reportPk = form.getAttribute("data-report-pk");
+        const afterQueue = reportPk
+          ? enqueueReportFromServerUrl(reportPk).catch(function () {
+              return queueReportUpsert(payload, idem);
+            })
+          : queueReportUpsert(payload, idem);
+        afterQueue
+          .then(function () {
+            return saveDraft(idem, payload);
+          })
+          .then(function () {
+            setStatus("offline · queued (not synced)");
+            refreshPendingUi();
+            alert(
+              "Could not reach the server. A copy was queued to sync when you are back online. Try Sync now from the reports list.",
+            );
+          })
+          .catch(function (err) {
+            console.warn(err);
+            alert("Could not save offline: " + (err && err.message ? err.message : String(err)));
+          });
       });
   }
 
@@ -664,9 +896,13 @@
       configure({ apiBase: apiMeta.getAttribute("content") });
     }
 
+    const jwtReady =
+      meta && meta.getAttribute("content") === "jwt" && window.OpsJwtBridge
+        ? window.OpsJwtBridge.ensureJwtFromServer()
+        : Promise.resolve();
+
     const root = document.querySelector("[data-sync-root]");
     if (root) {
-      registerDeviceOnce();
       setStatus(navigator.onLine ? "online" : "offline");
       const btn = document.getElementById("sync-now-btn");
       if (btn) {
@@ -692,17 +928,43 @@
         setStatus("offline");
         refreshPendingUi();
       });
-      canSyncToRemote().then(function (online) {
-        setStatus(online ? "online" : "offline");
-        if (online) syncNow().catch(function () {});
-      });
-      refreshPendingUi();
+      jwtReady
+        .then(function () {
+          return registerDeviceOnce();
+        })
+        .then(function () {
+          return handleRemoteSyncQueryParams();
+        })
+        .then(function (handled) {
+          if (handled && handled.reloading) return;
+          return runSyncEnqueueFromDom();
+        })
+        .then(function () {
+          return refreshPendingUi();
+        })
+        .then(function () {
+          const params = new URLSearchParams(window.location.search);
+          if (params.has("save_ok") || params.has("remote_sync_report")) return;
+          return canSyncToRemote().then(function (online) {
+            setStatus(online ? "online" : "offline");
+            if (online) return syncNow().catch(function () {});
+          });
+        })
+        .catch(function (e) {
+          console.warn("offline-sync init", e);
+          refreshPendingUi();
+        });
     }
 
     const reportForm = document.getElementById("report-form");
     if (reportForm) bindReportFormOffline(reportForm);
-    handleRemoteSyncQueryParams().catch(function (e) {
-      console.warn(e);
+
+    window.addEventListener("pageshow", function (ev) {
+      if (!document.getElementById("sync-pending-count")) return;
+      refreshPendingUi();
+      if (ev.persisted && window.OpsRiderHomeCharts) {
+        window.OpsRiderHomeCharts.init();
+      }
     });
   });
 
@@ -725,6 +987,8 @@
     countPendingOutbox: countPendingOutbox,
     queueReportUpsert: queueReportUpsert,
     enqueueReportFromServerUrl: enqueueReportFromServerUrl,
+    enqueueAndSync: enqueueAndSync,
+    enqueueReportForRemote: enqueueReportForRemote,
     saveDraft: saveDraft,
     serializeReportForm: serializeReportForm,
     bindReportFormOffline: bindReportFormOffline,

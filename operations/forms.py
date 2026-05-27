@@ -31,10 +31,13 @@ from .selectors import (
     get_facilities_queryset,
     get_riders_queryset,
 )
+from .services.distance_km import round_distance_km
 from .services.trip_facilities import (
     facilities_for_rider_endpoint,
     facility_allowed_for_user,
-    route_endpoint_kinds,
+    facility_matches_route_endpoint,
+    normalize_route_kind,
+    route_endpoint_roles,
 )
 
 
@@ -57,9 +60,9 @@ class RiderReportForm(forms.ModelForm):
             "distance_travelled": forms.NumberInput(
                 attrs={
                     "class": "report-num-input",
-                    "step": "0.01",
+                    "step": "1",
                     "min": "0",
-                    "inputmode": "decimal",
+                    "inputmode": "numeric",
                 }
             ),
             "notes": forms.Textarea(attrs={"rows": 4}),
@@ -68,7 +71,7 @@ class RiderReportForm(forms.ModelForm):
             "bike": "Bike registration number",
             "car": "Vehicle registration number",
             "average_datalogger_temperature": "Data logger average temperature",
-            "distance_travelled": "Distance travelled (week, km)",
+            "distance_travelled": "Distance travelled on this trip in KM",
         }
 
     def __init__(self, *args, rider_user=None, **kwargs):
@@ -96,6 +99,12 @@ class RiderReportForm(forms.ModelForm):
             else:
                 self.fields["bike"].empty_label = "No bikes in your district"
 
+    def clean_distance_travelled(self):
+        val = self.cleaned_data.get("distance_travelled")
+        if val is not None:
+            return Decimal(round_distance_km(val))
+        return val
+
 
 class PCReportForm(forms.ModelForm):
     """Bike is read-only for PCs (shown in template); riders set it on their own form."""
@@ -115,19 +124,25 @@ class PCReportForm(forms.ModelForm):
             "distance_travelled": forms.NumberInput(
                 attrs={
                     "class": "report-num-input",
-                    "step": "0.01",
+                    "step": "1",
                     "min": "0",
-                    "inputmode": "decimal",
+                    "inputmode": "numeric",
                 }
             ),
         }
         labels = {
             "scheduled_visits": "Scheduled visits",
-            "distance_travelled": "Distance travelled (week, km)",
+            "distance_travelled": "Distance travelled on this trip in KM",
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+    def clean_distance_travelled(self):
+        val = self.cleaned_data.get("distance_travelled")
+        if val is not None:
+            return Decimal(round_distance_km(val))
+        return val
 
 
 class ReportReviewForm(forms.Form):
@@ -288,6 +303,7 @@ class RiderTripEntryForm(forms.ModelForm):
             "fuel_used",
         ]
         labels = {
+            "route_kind": "Trip Route",
             "specimens_other_specify": "others",
             "results_other_specify": "others",
         }
@@ -465,28 +481,29 @@ class RiderTripEntryForm(forms.ModelForm):
             if not purpose:
                 self.add_error("visit_purpose", "Select visit purpose for each trip row with data.")
             if not rk:
-                self.add_error("route_kind", "Select route type for each trip row with data.")
+                self.add_error("route_kind", "Select Trip Route for each trip row with data.")
             if not origin:
                 self.add_error("origin_facility", "Select the From facility.")
             if not dest:
                 self.add_error("destination_facility", "Select the To facility.")
             if not (purpose and rk and origin and dest):
                 return cleaned
-            pair = route_endpoint_kinds(rk)
-            if not pair:
-                self.add_error("route_kind", "Invalid route type.")
+            roles = route_endpoint_roles(rk)
+            if not roles:
+                self.add_error("route_kind", "Invalid Trip Route.")
                 return cleaned
+            cleaned["route_kind"] = normalize_route_kind(rk)
             u = self._entry_user
             if u is None:
                 return cleaned
             p_kw = {}
             if self._pc_province_ids is not None:
                 p_kw["province_ids"] = self._pc_province_ids
-            if origin.kind != pair[0]:
+            if not facility_matches_route_endpoint(origin, roles[0]):
                 self.add_error("origin_facility", "From site does not match this route type.")
             elif not facility_allowed_for_user(u, origin, rk, "from", **p_kw):
                 self.add_error("origin_facility", "From site is not valid for your scope.")
-            if dest.kind != pair[1]:
+            if not facility_matches_route_endpoint(dest, roles[1]):
                 self.add_error("destination_facility", "To site does not match this route type.")
             elif not facility_allowed_for_user(u, dest, rk, "to", **p_kw):
                 self.add_error("destination_facility", "To site is not valid for your scope.")
@@ -534,7 +551,7 @@ class RiderTripEntryForm(forms.ModelForm):
         if not purpose:
             self.add_error("visit_purpose", "Select visit purpose for each trip row with data.")
         if not rk:
-            self.add_error("route_kind", "Select route type for each trip row with data.")
+            self.add_error("route_kind", "Select Trip Route for each trip row with data.")
         if not origin:
             self.add_error("origin_facility", "Select the From facility.")
         if not dest:
@@ -543,10 +560,11 @@ class RiderTripEntryForm(forms.ModelForm):
         if not (purpose and rk and origin and dest):
             return cleaned
 
-        pair = route_endpoint_kinds(rk)
-        if not pair:
-            self.add_error("route_kind", "Invalid route type.")
+        roles = route_endpoint_roles(rk)
+        if not roles:
+            self.add_error("route_kind", "Invalid Trip Route.")
             return cleaned
+        cleaned["route_kind"] = normalize_route_kind(rk)
 
         u = self._entry_user
         if u is None:
@@ -556,12 +574,12 @@ class RiderTripEntryForm(forms.ModelForm):
         if self._pc_province_ids is not None:
             p_kw["province_ids"] = self._pc_province_ids
 
-        if origin.kind != pair[0]:
+        if not facility_matches_route_endpoint(origin, roles[0]):
             self.add_error("origin_facility", "From site does not match this route type.")
         elif not facility_allowed_for_user(u, origin, rk, "from", **p_kw):
             self.add_error("origin_facility", "From site is not valid for your scope.")
 
-        if dest.kind != pair[1]:
+        if not facility_matches_route_endpoint(dest, roles[1]):
             self.add_error("destination_facility", "To site does not match this route type.")
         elif not facility_allowed_for_user(u, dest, rk, "to", **p_kw):
             self.add_error("destination_facility", "To site is not valid for your scope.")

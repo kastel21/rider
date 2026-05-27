@@ -1,14 +1,17 @@
+import json
+
 from django.conf import settings
 from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView as DjangoLoginView
 from django.contrib.auth.views import LogoutView as DjangoLogoutView
-from django.shortcuts import redirect
+from django.http import JsonResponse
+from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views import View
 
 from ..models import UserProfile
-from ..services.remote_jwt import fetch_remote_rider_tokens
+from ..services.remote_jwt import mint_local_rider_tokens, resolve_rider_jwt_tokens
 
 
 def _is_rider_like_user(user):
@@ -38,14 +41,43 @@ class LoginView(DjangoLoginView):
             and sync_mode == "jwt"
             and _is_rider_like_user(self.request.user)
         ):
-            tokens = fetch_remote_rider_tokens(
+            tokens = resolve_rider_jwt_tokens(
+                self.request.user,
                 api_base,
                 form.cleaned_data.get("username", ""),
                 form.cleaned_data.get("password", ""),
             )
             if tokens:
-                self.request.session["ops_remote_jwt"] = tokens
+                return render(
+                    self.request,
+                    "operations/auth/login_success.html",
+                    {
+                        "redirect_url": self.get_success_url(),
+                        "ops_jwt_bootstrap_json": json.dumps(tokens),
+                        "ops_remote_api_base": api_base,
+                        "ops_sync_mode": sync_mode,
+                    },
+                )
         return response
+
+
+class RiderJwtBootstrapView(LoginRequiredMixin, View):
+    """GET /api/rider/jwt-bootstrap/ — (re)issue JWT for WebView localStorage when sync mode is jwt."""
+
+    def get(self, request):
+        sync_mode = getattr(settings, "OPS_SYNC_MODE", "").strip()
+        api_base = getattr(settings, "OPS_REMOTE_API_BASE", "").strip()
+        if sync_mode != "jwt" or not api_base:
+            return JsonResponse({"error": "jwt sync not configured"}, status=404)
+        if not _is_rider_like_user(request.user):
+            return JsonResponse({"error": "not a rider account"}, status=403)
+        tokens = mint_local_rider_tokens(request.user)
+        if not tokens:
+            return JsonResponse(
+                {"error": "could not issue token — complete landing sync and sign in again"},
+                status=503,
+            )
+        return JsonResponse(tokens)
 
 
 class LogoutView(DjangoLogoutView):

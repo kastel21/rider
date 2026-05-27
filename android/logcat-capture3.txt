@@ -1,0 +1,30 @@
+﻿--------- beginning of main
+05-20 13:20:30.313 W/python.stderr( 8512): /data/data/com.operations.rider/files/chaquopy/AssetFinder/requirements/django/conf/__init__.py:289: RemovedInDjango51Warning: The STATICFILES_STORAGE setting is deprecated. Use STORAGES instead.
+05-20 13:20:30.644 I/python.stdout( 8512): Operations to perform:
+05-20 13:20:30.644 I/python.stdout( 8512):   Apply all migrations: admin, auth, contenttypes, operations, sessions
+05-20 13:20:30.680 I/python.stdout( 8512): Running migrations:
+05-20 13:20:30.682 I/python.stdout( 8512):   Applying operations.0022_alter_ridertripentry_transport_kind...
+05-20 13:20:30.711 I/python.stdout( 8512):  OK
+05-20 13:20:30.711 I/python.stdout( 8512):   Applying operations.0023_pcaccidentdetail...
+05-20 13:20:30.737 I/python.stdout( 8512):  OK
+05-20 13:20:30.738 I/python.stdout( 8512):   Applying operations.0024_riderweeklyreport_me_review...
+05-20 13:20:30.785 I/python.stdout( 8512):  OK
+05-20 13:20:30.785 I/python.stdout( 8512):   Applying operations.0025_remove_riderweeklyreport_uniq_rider_week...
+05-20 13:20:30.812 I/python.stdout( 8512):  OK
+05-20 13:20:30.812 I/python.stdout( 8512):   Applying operations.0026_weeklyrecordreviewed...
+05-20 13:20:30.850 I/python.stdout( 8512):  OK
+05-20 13:20:30.850 I/python.stdout( 8512):   Applying operations.0027_riderweekfuelsummary...
+05-20 13:20:30.889 I/python.stdout( 8512):  OK
+05-20 13:20:30.889 I/python.stdout( 8512):   Applying operations.0028_ensure_riderweekfuelsummary_table...
+05-20 13:20:30.916 I/python.stdout( 8512):  OK
+05-20 13:20:30.916 I/python.stdout( 8512):   Applying operations.0029_riderweeklyreport_distance_travelled...
+05-20 13:20:30.972 I/python.stdout( 8512):  OK
+05-20 13:20:40.706 I/chromium( 8512): [0520/132040.706646:INFO:android_webview/browser/variations/variations_seed_loader.cc:67] Failed to open file for reading.: No such file or directory (2)
+05-20 13:20:40.706 I/chromium( 8512): [0520/132040.706926:INFO:android_webview/browser/variations/variations_seed_loader.cc:67] Failed to open file for reading.: No such file or directory (2)
+05-20 13:20:40.791 W/chromium( 8512): [WARNING:android_webview/browser/network_service/net_helpers.cc:137] HTTP Cache size is: 30610966
+05-20 13:20:40.879 W/chromium( 8680): [WARNING:content/app/android/content_main_android.cc:82] android_setCpu already initialized
+05-20 13:20:40.901 W/chromium( 8680): [WARNING:content/child/runtime_features.cc:540] Fenced frames cannot be enabled in this configuration. Use --enable-features=FencedFrames instead.
+05-20 13:20:40.901 W/chromium( 8680): [WARNING:content/child/runtime_features.cc:565] Topics cannot be enabled in this configuration. Use --enable-features=BrowsingTopics in addition.
+05-20 13:20:40.901 W/chromium( 8680): [WARNING:content/child/runtime_features.cc:586] SharedStorage cannot be enabled in this configuration. Use --enable-features=SharedStorageAPI in addition.
+05-20 13:20:40.902 I/chromium( 8680): [INFO:third_party/skia/src/ports/SkFontMgr_android_parser.cpp:723] [SkFontMgr Android Parser] '/product/etc/fonts_customization.xml' could not be opened
+05-20 13:20:40.902 I/chromium( 8680): 

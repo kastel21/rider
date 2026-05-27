@@ -20,6 +20,7 @@ from django.db.models import (
 )
 from django.db.models.functions import Coalesce
 
+from .distance_km import round_distance_km
 from ..models import (
     PCDistrictWeeklyTransportStat,
     Province,
@@ -108,7 +109,7 @@ def _aggregate_trip_specimens_results(*, start_monday: date, end_monday: date) -
         "results_to_specimens_ratio": ratio,
         "fuel_allocated_trip_sum": float(fuel_alloc),
         "fuel_used_trip_sum": float(fuel_used),
-        "distance_trip_sum": float(dist),
+        "distance_trip_sum": float(round_distance_km(dist)),
     }
 
 
@@ -279,7 +280,7 @@ def _fuel_distance(*, start_monday: date, end_monday: date, labels: list[str]) -
             fuel_allocated.append(0.0)
             fuel_used.append(0.0)
         if drow:
-            distance.append(float(drow["dt"] or 0))
+            distance.append(float(round_distance_km(drow["dt"] or 0)))
         else:
             distance.append(0.0)
 
@@ -301,6 +302,7 @@ def _fuel_distance(*, start_monday: date, end_monday: date, labels: list[str]) -
         week_start__lte=end_monday,
     ).aggregate(dt=Sum("distance_travelled"))
     dt = dist_totals["dt"] or Decimal("0")
+    dt_km = round_distance_km(dt)
 
     # samples per km from window reports (same window as fuel weeks)
     window_reports = RiderWeeklyReport.objects.filter(
@@ -309,8 +311,8 @@ def _fuel_distance(*, start_monday: date, end_monday: date, labels: list[str]) -
     )
     samples_sum = int(window_reports.aggregate(s=Sum("samples_collected"))["s"] or 0)
     eff_samples_per_km = None
-    if dt and float(dt) > 0:
-        eff_samples_per_km = round(samples_sum / float(dt), 4)
+    if dt_km > 0:
+        eff_samples_per_km = round(samples_sum / dt_km, 4)
 
     return {
         "week_fuel_allocated": fuel_allocated,
@@ -318,7 +320,7 @@ def _fuel_distance(*, start_monday: date, end_monday: date, labels: list[str]) -
         "week_distance": distance,
         "period_fuel_allocated": float(fa),
         "period_fuel_used": float(fu),
-        "period_distance_km": float(dt),
+        "period_distance_km": float(dt_km),
         "samples_per_km_in_period": eff_samples_per_km,
         "note": (
             "Fuel totals follow the week fuel capture (RiderWeekFuelSummary). "

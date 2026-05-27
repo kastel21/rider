@@ -93,3 +93,9 @@ class RiderHealthApiTests(TestCase):
         res = client.get("/api/rider/health/")
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.json(), {"ok": True})
+
+    def test_health_cors_for_embedded_webview(self):
+        client = APIClient(HTTP_ORIGIN="http://127.0.0.1:8765")
+        res = client.get("/api/rider/health/")
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res["Access-Control-Allow-Origin"], "http://127.0.0.1:8765")

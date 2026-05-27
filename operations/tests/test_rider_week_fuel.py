@@ -62,16 +62,16 @@ class RiderWeekFuelServiceTests(TestCase):
             report=self.report,
             sequence=2,
             transport_kind=TripTransportKind.LEGACY,
-            visit_purpose=TripVisitPurpose.SAMPLE_COLLECTION,
-            route_kind=TripRouteKind.FACILITY_TO_LAB,
+            visit_purpose=TripVisitPurpose.SPECIMENS_RESULTS_TRANSPORT,
+            route_kind=TripRouteKind.HUB_TO_LAB,
             vl_blood_plasma=1,
         )
         t2 = RiderTripEntry.objects.create(
             report=self.report,
             sequence=1,
             transport_kind=TripTransportKind.LEGACY,
-            visit_purpose=TripVisitPurpose.SAMPLE_DELIVERY,
-            route_kind=TripRouteKind.LAB_TO_FACILITY,
+            visit_purpose=TripVisitPurpose.RELAY,
+            route_kind=TripRouteKind.LAB_TO_HUB,
             vl_dbs=1,
         )
         apply_week_fuel_distance_rollup(self.report, Decimal("40"), Decimal("12"))

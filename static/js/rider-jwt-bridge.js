@@ -24,17 +24,49 @@
     }
   }
 
+  function ensureJwtFromServer() {
+    var modeMeta = document.querySelector("meta[name='ops-sync-mode']");
+    if (!modeMeta || modeMeta.getAttribute("content") !== "jwt") {
+      return Promise.resolve();
+    }
+    try {
+      if (localStorage.getItem("ops_jwt_access")) {
+        return Promise.resolve();
+      }
+    } catch (e) {
+      return Promise.resolve();
+    }
+    return fetch("/api/rider/jwt-bootstrap/", {
+      credentials: "same-origin",
+      headers: { Accept: "application/json" },
+    })
+      .then(function (res) {
+        return res.json().then(function (data) {
+          return { ok: res.ok, data: data };
+        });
+      })
+      .then(function (out) {
+        if (out.ok && out.data && out.data.access) {
+          storeTokens(out.data);
+        }
+      })
+      .catch(function (e) {
+        console.warn("ops jwt bootstrap fetch failed", e);
+      });
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     var el = document.getElementById("ops-jwt-bootstrap");
-    if (!el || !el.textContent) return;
-    try {
-      var tokens = JSON.parse(el.textContent);
-      storeTokens(tokens);
-      el.textContent = "";
-    } catch (e) {
-      console.warn("ops jwt bootstrap parse failed", e);
+    if (el && el.textContent) {
+      try {
+        storeTokens(JSON.parse(el.textContent));
+        el.textContent = "";
+      } catch (e) {
+        console.warn("ops jwt bootstrap parse failed", e);
+      }
     }
+    ensureJwtFromServer();
   });
 
-  window.OpsJwtBridge = { storeTokens: storeTokens };
+  window.OpsJwtBridge = { storeTokens: storeTokens, ensureJwtFromServer: ensureJwtFromServer };
 })();

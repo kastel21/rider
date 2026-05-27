@@ -146,9 +146,15 @@
     }
   }
 
+  window.OpsRiderHomeCharts = { init: initRiderHomeCharts };
+
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initRiderHomeCharts);
   } else {
     initRiderHomeCharts();
   }
+
+  window.addEventListener("pageshow", function (ev) {
+    if (ev.persisted) initRiderHomeCharts();
+  });
 })();

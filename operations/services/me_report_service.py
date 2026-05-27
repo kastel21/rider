@@ -18,13 +18,22 @@ def _report_bike_reg_key(report: RiderWeeklyReport) -> str:
     return (_bike_or_car(report) or "").strip().upper()
 
 
-def _me_report_queryset(*, start_monday: date, end_monday: date, role: str):
+def _me_report_queryset(
+    *,
+    start_monday: date,
+    end_monday: date,
+    role: str,
+    pc_approved_only: bool = False,
+):
+    filters = {
+        "week_start__gte": start_monday,
+        "week_start__lte": end_monday,
+        "rider__profile__role": role,
+    }
+    if pc_approved_only:
+        filters["status"] = RiderWeeklyReport.Status.APPROVED
     return (
-        RiderWeeklyReport.objects.filter(
-            week_start__gte=start_monday,
-            week_start__lte=end_monday,
-            rider__profile__role=role,
-        )
+        RiderWeeklyReport.objects.filter(**filters)
         .select_related(
             "rider",
             "rider__profile",
@@ -49,8 +58,14 @@ def _build_me_table(
     end_monday: date,
     columns: tuple[MEReportColumn, ...],
     role: str,
+    pc_approved_only: bool = False,
 ) -> dict[str, Any]:
-    qs = _me_report_queryset(start_monday=start_monday, end_monday=end_monday, role=role)
+    qs = _me_report_queryset(
+        start_monday=start_monday,
+        end_monday=end_monday,
+        role=role,
+        pc_approved_only=pc_approved_only,
+    )
 
     by_rider_bike_week: dict[tuple[int, str, date], list[RiderWeeklyReport]] = defaultdict(list)
     for report in qs:
@@ -115,7 +130,12 @@ def build_driver_me_report_table(*, weeks: int) -> dict[str, Any]:
     )
 
 
-def build_me_report_table_for_week(*, week_start: date, role: str) -> dict[str, Any]:
+def build_me_report_table_for_week(
+    *,
+    week_start: date,
+    role: str,
+    pc_approved_only: bool = True,
+) -> dict[str, Any]:
     """Single calendar week (Monday ``week_start``)."""
     columns = (
         ME_REPORT_COLUMNS
@@ -127,4 +147,5 @@ def build_me_report_table_for_week(*, week_start: date, role: str) -> dict[str, 
         end_monday=week_start,
         columns=columns,
         role=role,
+        pc_approved_only=pc_approved_only,
     )

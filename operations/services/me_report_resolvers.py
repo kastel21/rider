@@ -10,6 +10,8 @@ from typing import Any
 from django.contrib.auth import get_user_model
 
 from ..models import Bike, Car, RiderTripEntry, RiderWeeklyReport, RiderWeekFuelSummary, TripVisitPurpose, UserProfile
+from .distance_km import distance_km_str
+from .other_specify_aggregate import aggregate_other_specify_texts
 
 User = get_user_model()
 
@@ -107,8 +109,8 @@ def _trip_aggregate(report: RiderWeeklyReport) -> dict[str, Any]:
 
     agg["specimens"] = specimens_total
     agg["results"] = results_total
-    agg["specimens_other_joined"] = _dedupe_join(agg["specimens_other_parts"])
-    agg["results_other_joined"] = _dedupe_join(agg["results_other_parts"])
+    agg["specimens_other_joined"] = aggregate_other_specify_texts(agg["specimens_other_parts"])
+    agg["results_other_joined"] = aggregate_other_specify_texts(agg["results_other_parts"])
     del agg["specimens_other_parts"]
     del agg["results_other_parts"]
 
@@ -369,7 +371,10 @@ def resolve_cell(report: RiderWeeklyReport, source: str | None) -> str:
     fn = SOURCE_RESOLVERS.get(source)
     if not fn:
         return ""
-    return _str_or_empty(fn(report))
+    val = fn(report)
+    if source in ("trip.distance_total", "report.distance_total"):
+        return distance_km_str(val)
+    return _str_or_empty(val)
 
 
 def _trip_aggregate_many(
@@ -433,8 +438,8 @@ def _trip_aggregate_many(
                 agg["adhoc_results"] += e.results_total
             agg["count"] += 1
 
-    agg["specimens_other_joined"] = _dedupe_join(agg["specimens_other_parts"])
-    agg["results_other_joined"] = _dedupe_join(agg["results_other_parts"])
+    agg["specimens_other_joined"] = aggregate_other_specify_texts(agg["specimens_other_parts"])
+    agg["results_other_joined"] = aggregate_other_specify_texts(agg["results_other_parts"])
 
     if vehicle_scoped:
         for report in reports:
@@ -576,6 +581,9 @@ def resolve_cell_group(
         "trip.adhoc_results_total": "adhoc_results",
     }
     if source in trip_sources:
-        return _str_or_empty(trip[trip_sources[source]])
+        key = trip_sources[source]
+        if key == "distance":
+            return distance_km_str(trip[key])
+        return _str_or_empty(trip[key])
 
     return resolve_cell(primary, source)

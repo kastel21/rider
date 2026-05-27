@@ -75,6 +75,8 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 OPS_SYNC_MODE = os.environ.get("OPS_SYNC_MODE", "jwt").strip()
 OPS_REMOTE_API_BASE = os.environ.get("OPS_REMOTE_API_BASE", "").strip()
+OPS_RIDER_REMOTE_PROXY = os.environ.get("OPS_RIDER_REMOTE_PROXY", "0") == "1"
+OPS_ALLOW_LOCAL_JWT_MINT = os.environ.get("OPS_ALLOW_LOCAL_JWT_MINT", "1") == "1"
 
 # Helps SQLite when the threaded WSGI server handles parallel static + HTML requests.
 from django.db.backends.signals import connection_created  # noqa: E402

@@ -1,0 +1,111 @@
+﻿--------- beginning of main
+05-20 13:17:40.001 W/python.stderr( 5737): /data/data/com.operations.rider/files/chaquopy/AssetFinder/requirements/django/conf/__init__.py:289: RemovedInDjango51Warning: The STATICFILES_STORAGE setting is deprecated. Use STORAGES instead.
+05-20 13:17:40.227 I/python.stdout( 5737): Operations to perform:
+05-20 13:17:40.227 I/python.stdout( 5737):   Apply all migrations: admin, auth, contenttypes, operations, sessions
+05-20 13:17:40.251 I/python.stdout( 5737): Running migrations:
+05-20 13:17:40.251 I/python.stdout( 5737):   No migrations to apply.
+05-20 13:17:40.272 I/python.stdout( 5737):   Your models in app(s): 'operations' have changes that are not yet reflected in a migration, and so won't be applied.
+05-20 13:17:40.272 I/python.stdout( 5737):   Run 'manage.py makemigrations' to make new migrations, and then re-run 'manage.py migrate' to apply them.
+05-20 13:17:43.026 I/chromium( 5737): [0520/131743.026162:INFO:android_webview/browser/variations/variations_seed_loader.cc:67] Failed to open file for reading.: No such file or directory (2)
+05-20 13:17:43.096 W/chromium( 5737): [WARNING:android_webview/browser/network_service/net_helpers.cc:137] HTTP Cache size is: 27255952
+05-20 13:17:43.177 W/chromium( 5810): [WARNING:content/app/android/content_main_android.cc:82] android_setCpu already initialized
+05-20 13:17:43.190 W/chromium( 5810): [WARNING:content/child/runtime_features.cc:540] Fenced frames cannot be enabled in this configuration. Use --enable-features=FencedFrames instead.
+05-20 13:17:43.191 W/chromium( 5810): [WARNING:content/child/runtime_features.cc:565] Topics cannot be enabled in this configuration. Use --enable-features=BrowsingTopics in addition.
+05-20 13:17:43.191 W/chromium( 5810): [WARNING:content/child/runtime_features.cc:586] SharedStorage cannot be enabled in this configuration. Use --enable-features=SharedStorageAPI in addition.
+05-20 13:17:43.204 I/chromium( 5810): [INFO:third_party/skia/src/ports/SkFontMgr_android_parser.cpp:723] [SkFontMgr Android Parser] '/product/etc/fonts_customization.xml' could not be opened
+05-20 13:17:43.204 I/chromium( 5810): 
+05-20 13:17:45.110 I/chromium( 5737): [INFO:CONSOLE:0] "Access to fetch at 'https://pythonclusters-208233-0.cloudclusters.net/api/rider/health/' from origin 'http://127.0.0.1:8765' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.", source:  (0)
+05-20 13:17:45.113 I/chromium( 5737): [INFO:CONSOLE:0] "Access to fetch at 'https://pythonclusters-208233-0.cloudclusters.net/api/rider/health/' from origin 'http://127.0.0.1:8765' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.", source:  (0)
+05-20 13:17:45.116 I/chromium( 5737): [INFO:CONSOLE:0] "The FetchEvent for "https://pythonclusters-208233-0.cloudclusters.net/api/rider/health/" resulted in a network error response: the promise was rejected.", source:  (0)
+05-20 13:17:45.116 I/chromium( 5737): [INFO:CONSOLE:0] "The FetchEvent for "https://pythonclusters-208233-0.cloudclusters.net/api/rider/health/" resulted in a network error response: the promise was rejected.", source:  (0)
+05-20 13:17:45.117 I/chromium( 5737): [INFO:CONSOLE:0] "Uncaught (in promise) TypeError: Failed to convert value to 'Response'.", source: http://127.0.0.1:8765/service-worker.js (0)
+05-20 13:17:45.118 I/chromium( 5737): [INFO:CONSOLE:0] "Uncaught (in promise) TypeError: Failed to convert value to 'Response'.", source: http://127.0.0.1:8765/service-worker.js (0)
+05-20 13:17:45.118 I/chromium( 5737): [INFO:CONSOLE:0] "Uncaught (in promise) TypeError: Failed to convert value to 'Response'.", source: http://127.0.0.1:8765/service-worker.js (0)
+05-20 13:17:45.118 I/chromium( 5737): [INFO:CONSOLE:0] "Uncaught (in promise) TypeError: Failed to convert value to 'Response'.", source: http://127.0.0.1:8765/service-worker.js (0)
+05-20 13:17:52.730 W/System.err( 5942): java.lang.IllegalStateException: 
+05-20 13:17:52.731 W/System.err( 5942): 	at X.GPm.LCC(SourceFile:16777364)
+05-20 13:17:52.731 W/System.err( 5942): 	at X.GPm.LBL(SourceFile:50331655)
+05-20 13:17:52.731 W/System.err( 5942): 	at com.ss.android.ugc.aweme.net.corenet.IESNetDepend.LCC(SourceFile:33554602)
+05-20 13:17:52.731 W/System.err( 5942): 	at X.1g9.run(SourceFile:12)
+05-20 13:17:52.731 W/System.err( 5942): 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:524)
+05-20 13:17:52.731 W/System.err( 5942): 	at java.util.concurrent.FutureTask.run(FutureTask.java:317)
+05-20 13:17:52.731 W/System.err( 5942): 	at X.1Ev.run(SourceFile:122)
+05-20 13:17:52.731 W/System.err( 5942): 	at X.1mp.run(SourceFile:2)
+05-20 13:17:52.731 W/System.err( 5942): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1156)
+05-20 13:17:52.731 W/System.err( 5942): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:651)
+05-20 13:17:52.731 W/System.err( 5942): 	at Y.ARunnableS0S0200000.run$111(SourceFile:16777230)
+05-20 13:17:52.731 W/System.err( 5942): 	at Y.ARunnableS0S0200000.run(Unknown Source:58)
+05-20 13:17:52.731 W/System.err( 5942): 	at java.lang.Thread.run(Thread.java:1119)
+05-20 13:17:52.731 W/System.err( 5942): 	at com.bytedance.bpea.transmit.delegate.BPEAThread.run(SourceFile:3)
+05-20 13:17:52.847 W/System.err( 5942): java.lang.NoSuchMethodException: jm2.a.addTokenInterceptor []
+05-20 13:17:52.853 W/System.err( 5942): 	at java.lang.Class.getMethod(Class.java:2940)
+05-20 13:17:52.854 W/System.err( 5942): 	at java.lang.Class.getMethod(Class.java:2440)
+05-20 13:17:52.854 W/System.err( 5942): 	at X.CkM.L(SourceFile:185)
+05-20 13:17:52.857 W/System.err( 5942): 	at com.ss.android.ugc.aweme.compliance.business.usercommunication.TTKUserCommunicationServiceImplV2.LB(SourceFile:60)
+05-20 13:17:52.857 W/System.err( 5942): 	at com.ss.android.ugc.aweme.launcher.task.SDKLaunchTask.run(SourceFile:16777358)
+05-20 13:17:52.857 W/System.err( 5942): 	at X.D1A.LCCII(SourceFile:16777253)
+05-20 13:17:52.857 W/System.err( 5942): 	at X.CnH.run(SourceFile:26)
+05-20 13:17:52.857 W/System.err( 5942): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1156)
+05-20 13:17:52.858 W/System.err( 5942): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:651)
+05-20 13:17:52.858 W/System.err( 5942): 	at Y.ARunnableS0S0200000.run$111(SourceFile:16777230)
+05-20 13:17:52.858 W/System.err( 5942): 	at Y.ARunnableS0S0200000.run(Unknown Source:58)
+05-20 13:17:52.858 W/System.err( 5942): 	at java.lang.Thread.run(Thread.java:1119)
+05-20 13:17:52.858 W/System.err( 5942): 	at com.bytedance.bpea.transmit.delegate.BPEAThread.run(SourceFile:3)
+05-20 13:17:53.670 W/System.err( 5942): java.lang.ClassNotFoundException: com.bytedance.bdturing.verify.IdentityService
+05-20 13:17:53.670 W/System.err( 5942): 	at java.lang.Class.classForName(Native Method)
+05-20 13:17:53.670 W/System.err( 5942): 	at java.lang.Class.forName(Class.java:597)
+05-20 13:17:53.670 W/System.err( 5942): 	at java.lang.Class.forName(Class.java:502)
+05-20 13:17:53.670 W/System.err( 5942): 	at X.DlR.<init>(SourceFile:50331728)
+05-20 13:17:53.670 W/System.err( 5942): 	at X.DkJ.L(SourceFile:16777350)
+05-20 13:17:53.670 W/System.err( 5942): 	at Y.ARunnableS0S0400000.run$3(SourceFile:16777244)
+05-20 13:17:53.670 W/System.err( 5942): 	at Y.ARunnableS0S0400000.run(Unknown Source:18)
+05-20 13:17:53.670 W/System.err( 5942): 	at X.1Ev.run(SourceFile:122)
+05-20 13:17:53.670 W/System.err( 5942): 	at X.1mp.run(SourceFile:2)
+05-20 13:17:53.670 W/System.err( 5942): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1156)
+05-20 13:17:53.670 W/System.err( 5942): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:651)
+05-20 13:17:53.670 W/System.err( 5942): 	at Y.ARunnableS0S0200000.run$111(SourceFile:16777230)
+05-20 13:17:53.670 W/System.err( 5942): 	at Y.ARunnableS0S0200000.run(Unknown Source:58)
+05-20 13:17:53.670 W/System.err( 5942): 	at java.lang.Thread.run(Thread.java:1119)
+05-20 13:17:53.670 W/System.err( 5942): 	at com.bytedance.bpea.transmit.delegate.BPEAThread.run(SourceFile:3)
+05-20 13:17:53.670 W/System.err( 5942): Caused by: java.lang.ClassNotFoundException: com.bytedance.bdturing.verify.IdentityService
+05-20 13:17:53.670 W/System.err( 5942): 	... 15 more
+05-20 13:17:53.720 W/System.err( 5942): java.lang.IllegalStateException: 
+05-20 13:17:53.720 W/System.err( 5942): 	at X.GPm.LCC(SourceFile:16777364)
+05-20 13:17:53.720 W/System.err( 5942): 	at X.GPm.LBL(SourceFile:50331655)
+05-20 13:17:53.720 W/System.err( 5942): 	at com.ss.android.ugc.aweme.net.corenet.IESNetDepend.LCC(SourceFile:33554602)
+05-20 13:17:53.720 W/System.err( 5942): 	at X.0ls.LB(SourceFile:50331696)
+05-20 13:17:53.721 W/System.err( 5942): 	at X.1ly.LF(SourceFile:184549460)
+05-20 13:17:53.721 W/System.err( 5942): 	at X.1ly.LCC(SourceFile:67109539)
+05-20 13:17:53.721 W/System.err( 5942): 	at X.1gB.LIII(SourceFile:16777225)
+05-20 13:17:53.721 W/System.err( 5942): 	at X.1g8.run(SourceFile:88)
+05-20 13:17:53.721 W/System.err( 5942): 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:524)
+05-20 13:17:53.721 W/System.err( 5942): 	at java.util.concurrent.FutureTask.run(FutureTask.java:317)
+05-20 13:17:53.721 W/System.err( 5942): 	at X.1Ev.run(SourceFile:122)
+05-20 13:17:53.721 W/System.err( 5942): 	at X.1mp.run(SourceFile:2)
+05-20 13:17:53.721 W/System.err( 5942): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1156)
+05-20 13:17:53.721 W/System.err( 5942): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:651)
+05-20 13:17:53.721 W/System.err( 5942): 	at Y.ARunnableS0S0200000.run$111(SourceFile:16777230)
+05-20 13:17:53.721 W/System.err( 5942): 	at Y.ARunnableS0S0200000.run(Unknown Source:58)
+05-20 13:17:53.721 W/System.err( 5942): 	at java.lang.Thread.run(Thread.java:1119)
+05-20 13:17:53.721 W/System.err( 5942): 	at com.bytedance.bpea.transmit.delegate.BPEAThread.run(SourceFile:3)
+05-20 13:17:53.721 W/System.err( 5942): java.lang.IllegalStateException: 
+05-20 13:17:53.721 W/System.err( 5942): 	at X.GPm.LCC(SourceFile:16777364)
+05-20 13:17:53.721 W/System.err( 5942): 	at X.GPm.LBL(SourceFile:50331655)
+05-20 13:17:53.721 W/System.err( 5942): 	at com.ss.android.ugc.aweme.net.corenet.IESNetDepend.LCC(SourceFile:33554602)
+05-20 13:17:53.721 W/System.err( 5942): 	at X.0ls.LB(SourceFile:50331696)
+05-20 13:17:53.721 W/System.err( 5942): 	at X.1ly.LF(SourceFile:184549475)
+05-20 13:17:53.721 W/System.err( 5942): 	at X.1ly.LCC(SourceFile:67109539)
+05-20 13:17:53.721 W/System.err( 5942): 	at X.1gB.LIII(SourceFile:16777225)
+05-20 13:17:53.721 W/System.err( 5942): 	at X.1g8.run(SourceFile:88)
+05-20 13:17:53.721 W/System.err( 5942): 	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:524)
+05-20 13:17:53.721 W/System.err( 5942): 	at java.util.concurrent.FutureTask.run(FutureTask.java:317)
+05-20 13:17:53.721 W/System.err( 5942): 	at X.1Ev.run(SourceFile:122)
+05-20 13:17:53.722 W/System.err( 5942): 	at X.1mp.run(SourceFile:2)
+05-20 13:17:53.722 W/System.err( 5942): 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1156)
+05-20 13:17:53.722 W/System.err( 5942): 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:651)
+05-20 13:17:53.722 W/System.err( 5942): 	at Y.ARunnableS0S0200000.run$111(SourceFile:16777230)
+05-20 13:17:53.722 W/System.err( 5942): 	at Y.ARunnableS0S0200000.run(Unknown Source:58)
+05-20 13:17:53.722 W/System.err( 5942): 	at java.lang.Thread.run(Thread.java:1119)
+05-20 13:17:53.722 W/System.err( 5942): 	at com.bytedance.bpea.transmit.delegate.BPEAThread.run(SourceFile:3)
+05-20 13:18:00.160 I/chromium( 5737): [INFO:CONSOLE:0] "Access to fetch at 'https://pythonclusters-208233-0.cloudclusters.net/api/rider/health/' from origin 'http://127.0.0.1:8765' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.", source: http://127.0.0.1:8765/reports/ (0)
+05-20 13:18:00.584 I/chromium( 5737): [INFO:CONSOLE:0] "Access to fetch at 'https://pythonclusters-208233-0.cloudclusters.net/api/rider/health/' from origin 'http://127.0.0.1:8765' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.", source: http://127.0.0.1:8765/reports/ (0)

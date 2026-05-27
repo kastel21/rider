@@ -271,7 +271,7 @@
   <h2 class="rider-home-section-title" style="margin-top:1.75rem;">Fuel &amp; distance</h2>
   <p class="muted" style="margin:0 0 0.75rem;font-size:0.92rem;">
     {{ me_metrics.fuel_distance.note }}
-    Trip-row sums (period, for comparison): allocated {{ me_metrics.delivery.fuel_allocated_trip_sum|floatformat:2 }}, used {{ me_metrics.delivery.fuel_used_trip_sum|floatformat:2 }}, distance {{ me_metrics.delivery.distance_trip_sum|floatformat:2 }}.
+    Trip-row sums (period, for comparison): allocated {{ me_metrics.delivery.fuel_allocated_trip_sum|floatformat:2 }}, used {{ me_metrics.delivery.fuel_used_trip_sum|floatformat:2 }}, distance {{ me_metrics.delivery.distance_trip_sum|floatformat:0 }}.
   </p>
   <div class="rider-home-metrics">
     <div class="rider-home-metric-card">
@@ -284,7 +284,7 @@
     </div>
     <div class="rider-home-metric-card">
       <span class="rider-home-metric-label">Distance km (period)</span>
-      <strong class="rider-home-metric-value">{{ me_metrics.fuel_distance.period_distance_km|floatformat:2 }}</strong>
+      <strong class="rider-home-metric-value">{{ me_metrics.fuel_distance.period_distance_km|floatformat:0 }}</strong>
     </div>
     <div class="rider-home-metric-card">
       <span class="rider-home-metric-label">Samples per km (period)</span>

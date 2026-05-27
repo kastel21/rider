@@ -1,6 +1,8 @@
 """
 Apply idempotent PWA sync operations (session-authenticated rider).
 """
+from decimal import Decimal
+
 from django.db import transaction
 from django.utils import timezone as dj_timezone
 from django.utils.dateparse import parse_date
@@ -16,9 +18,16 @@ from ..models import (
     RiderWeeklyReport,
     SampleRejection,
     TripTransportKind,
+    TripVisitPurpose,
     UserProfile,
 )
-from .trip_facilities import facility_allowed_for_user, route_endpoint_kinds
+from .distance_km import round_distance_km
+from .trip_facilities import (
+    facility_allowed_for_user,
+    facility_matches_route_endpoint,
+    normalize_route_kind,
+    route_endpoint_roles,
+)
 
 
 def register_device(user, device_id: str, platform: str = "", user_agent: str = ""):
@@ -308,7 +317,7 @@ def _upsert_trip_rows(user, report, trip_rows):
         obj.results_other_specify = (row.get("results_other_specify") or "")[:255]
         obj.fuel_allocated = row.get("fuel_allocated") or 0
         obj.fuel_used = row.get("fuel_used") or 0
-        obj.distance_travelled = row.get("distance_travelled") or 0
+        obj.distance_travelled = Decimal(round_distance_km(row.get("distance_travelled") or 0))
 
         needs_routing = _trip_row_dict_has_content(row)
         vp = (row.get("visit_purpose") or "").strip()
@@ -323,18 +332,21 @@ def _upsert_trip_rows(user, report, trip_rows):
             dest = Facility.objects.filter(pk=did).select_related("district", "district__province").first()
             if not origin or not dest:
                 raise ValueError("trip row: invalid facility id")
-            pair = route_endpoint_kinds(rk)
-            if not pair:
+            roles = route_endpoint_roles(rk)
+            if not roles:
                 raise ValueError("trip row: invalid route_kind")
-            if origin.kind != pair[0] or dest.kind != pair[1]:
+            rk = normalize_route_kind(rk)
+            if not facility_matches_route_endpoint(origin, roles[0]) or not facility_matches_route_endpoint(
+                dest, roles[1]
+            ):
                 raise ValueError("trip row: From/To kinds do not match route type")
             rider = report.rider
             if not facility_allowed_for_user(user, origin, rk, "from"):
                 raise ValueError("trip row: From facility not allowed for rider")
             if not facility_allowed_for_user(user, dest, rk, "to"):
                 raise ValueError("trip row: To facility not allowed for rider")
-            obj.visit_purpose = vp[:32]
-            obj.route_kind = rk[:40]
+            obj.visit_purpose = TripVisitPurpose.normalize(vp)
+            obj.route_kind = normalize_route_kind(rk)[:40]
             obj.origin_facility = origin
             obj.destination_facility = dest
         else:

@@ -17,6 +17,7 @@ from django.views.generic import DetailView, ListView
 from django.views.generic.edit import CreateView, UpdateView
 
 from ..forms import RiderOperationalForm, RiderTripEntryFormSet, SampleRejectionFormSet
+from ..services.distance_km import round_distance_km
 from ..models import Facility, RiderTripEntry, RiderWeeklyReport, TripTransportKind, UserProfile
 from ..permissions import (
     MERequiredMixin,
@@ -57,6 +58,24 @@ def _jwt_remote_sync_enabled():
         getattr(settings, "OPS_SYNC_MODE", "").strip() == "jwt"
         and bool(getattr(settings, "OPS_REMOTE_API_BASE", "").strip())
     )
+
+
+def _sync_enqueue_context(request, report=None):
+    """Template hints for offline-sync.js to queue remote uplink."""
+    ctx = {}
+    if not _jwt_remote_sync_enabled():
+        return ctx
+    pk = None
+    if report is not None and getattr(report, "pk", None):
+        pk = report.pk
+    raw = (request.GET.get("remote_sync_report") or "").strip()
+    if raw.isdigit():
+        pk = int(raw)
+    if request.GET.get("remote_sync") == "1" and report is not None and report.pk:
+        pk = report.pk
+    if pk:
+        ctx["sync_enqueue_report_id"] = pk
+    return ctx
 
 
 def _report_location_for_user(user):
@@ -311,10 +330,8 @@ class RiderReportListView(LoginRequiredMixin, ListView):
                 trip_count = len(trips)
                 total_samples += week_report.samples_collected or 0
                 total_trips += trip_count
-                total_distance += (
-                    week_report.distance_travelled
-                    if week_report.distance_travelled is not None
-                    else Decimal("0")
+                total_distance += Decimal(
+                    round_distance_km(week_report.distance_travelled)
                 )
                 total_results += sum((t.results_total for t in trips), 0)
                 week_report_rows.append(
@@ -334,6 +351,7 @@ class RiderReportListView(LoginRequiredMixin, ListView):
             }
         else:
             ctx["week_metrics"] = None
+        ctx.update(_sync_enqueue_context(self.request))
         return ctx
 
     def get_template_names(self):
@@ -437,6 +455,7 @@ class RiderReportCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView)
         ctx.update(_week_saved_table_context(None, self.request.user, _monday_of_current_week()))
         ctx["sync_week_start"] = _monday_of_current_week().isoformat()
         ctx["offline_client_uuid"] = str(uuid.uuid4())
+        ctx["form_save_failed"] = self.request.method == "POST"
         return ctx
 
     def get_form_kwargs(self):
@@ -543,22 +562,32 @@ class RiderReportCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView)
         is_submit = self.request.POST.get("action") == "submit"
         if is_submit:
             report_service.submit_report(self.object, self.request.user)
-            messages.success(self.request, "Report saved and submitted.")
+            messages.success(
+                self.request,
+                "Report saved on this device. Cloud sync runs when you are online.",
+            )
             if _jwt_remote_sync_enabled():
                 url = reverse("operations:rider_reports")
-                return redirect(f"{url}?remote_sync_report={self.object.pk}")
+                return redirect(
+                    f"{url}?remote_sync_report={self.object.pk}&save_ok=submitted"
+                )
             return redirect("operations:role_redirect")
         messages.success(
             self.request,
-            "Draft saved. Saved trips appear in the table below; add more if needed.",
+            "Report saved. Saved trips appear in the table below; add more if needed.",
         )
         edit_url = reverse("operations:report_edit", kwargs={"pk": self.object.pk})
-        qs = "draft_cleared=1"
+        qs = "save_ok=1&draft_cleared=1"
         if _jwt_remote_sync_enabled():
             qs += "&remote_sync=1"
         return redirect(f"{edit_url}?{qs}")
 
     def get_success_url(self):
+        if _jwt_remote_sync_enabled():
+            return (
+                reverse("operations:rider_reports")
+                + f"?remote_sync_report={self.object.pk}&save_ok=submitted"
+            )
         return reverse("operations:report_detail", kwargs={"pk": self.object.pk})
 
 
@@ -605,11 +634,7 @@ class RiderReportDetailView(LoginRequiredMixin, DetailView):
         week_start = report.week_start
         ctx["week_range_label"] = week_range_label(week_start)
         trips = list(report.trip_entries.all())
-        total_distance = (
-            report.distance_travelled
-            if report.distance_travelled is not None
-            else Decimal("0")
-        )
+        total_distance = Decimal(round_distance_km(report.distance_travelled))
         total_results = sum((t.results_total for t in trips), 0)
         ctx["week_metrics"] = {
             "status_display": report.get_status_display(),
@@ -753,6 +778,8 @@ class RiderReportEditView(LoginRequiredMixin, UpdateView):
         ctx["offline_client_uuid"] = (
             str(self.object.client_uuid) if self.object.client_uuid else str(uuid.uuid4())
         )
+        ctx.update(_sync_enqueue_context(self.request, self.object))
+        ctx["form_save_failed"] = self.request.method == "POST"
         return ctx
 
     def get_form_kwargs(self):
@@ -881,17 +908,22 @@ class RiderReportEditView(LoginRequiredMixin, UpdateView):
         is_submit = self.request.POST.get("action") == "submit"
         if is_submit:
             report_service.submit_report(self.object, self.request.user)
-            messages.success(self.request, "Report saved and submitted.")
+            messages.success(
+                self.request,
+                "Report saved on this device. Cloud sync runs when you are online.",
+            )
             if _jwt_remote_sync_enabled():
                 url = reverse("operations:rider_reports")
-                return redirect(f"{url}?remote_sync_report={self.object.pk}")
+                return redirect(
+                    f"{url}?remote_sync_report={self.object.pk}&save_ok=submitted"
+                )
             return redirect("operations:role_redirect")
         messages.success(
             self.request,
-            "Draft saved. Saved trips appear in the table below; add more if needed.",
+            "Report saved. Saved trips appear in the table below; add more if needed.",
         )
         edit_url = reverse("operations:report_edit", kwargs={"pk": self.object.pk})
-        qs = "draft_cleared=1"
+        qs = "save_ok=1&draft_cleared=1"
         if _jwt_remote_sync_enabled():
             qs += "&remote_sync=1"
         return redirect(f"{edit_url}?{qs}")
@@ -905,8 +937,9 @@ class ReportSubmitView(LoginRequiredMixin, View):
 
             raise PermissionDenied
         report_service.submit_report(report, request.user)
-        messages.success(request, "Report submitted.")
-        return redirect("operations:report_detail", pk=pk)
+        messages.success(request, "Report submitted for PC review.")
+        url = reverse("operations:report_detail", kwargs={"pk": pk})
+        return redirect(f"{url}?save_ok=review")
 
 
 class ReportMeReviewView(LoginRequiredMixin, MERequiredMixin, View):

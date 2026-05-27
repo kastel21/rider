@@ -5,6 +5,7 @@ from decimal import Decimal, InvalidOperation
 from django.db.models import Sum
 
 from ..models import RiderTripEntry, RiderWeeklyReport, RiderWeekFuelSummary
+from .distance_km import round_distance_km
 
 
 def week_fuel_alloc_used_from_report(report: RiderWeeklyReport) -> tuple[Decimal, Decimal]:
@@ -40,7 +41,7 @@ def week_fuel_totals_from_db(report: RiderWeeklyReport) -> dict:
 def week_fuel_totals_for_report(report: RiderWeeklyReport) -> dict:
     """Fuel from week summary or trip sums; distance from this weekly report record."""
     fa, fu = week_fuel_alloc_used_from_report(report)
-    dt = report.distance_travelled if report.distance_travelled is not None else Decimal("0")
+    dt = Decimal(round_distance_km(report.distance_travelled))
     return {"allocated": str(fa), "used": str(fu), "distance": str(dt)}
 
 
@@ -73,7 +74,7 @@ def upsert_rider_week_fuel_summary(
 
 def week_fuel_decimals_from_report(report: RiderWeeklyReport) -> tuple[Decimal, Decimal, Decimal]:
     fa, fu = week_fuel_alloc_used_from_report(report)
-    dt = report.distance_travelled if report.distance_travelled is not None else Decimal("0")
+    dt = Decimal(round_distance_km(report.distance_travelled))
     return (fa, fu, dt)
 
 
@@ -103,7 +104,7 @@ def apply_week_fuel_distance_rollup(
     fuel_allocated: Decimal,
     fuel_used: Decimal,
 ) -> None:
-    distance = report.distance_travelled if report.distance_travelled is not None else Decimal("0")
+    distance = Decimal(round_distance_km(report.distance_travelled))
     qs = report.trip_entries.order_by("sequence", "pk")
     first = qs.first()
     if not first:

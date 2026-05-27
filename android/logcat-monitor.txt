@@ -1,0 +1,61 @@
+﻿--------- beginning of main
+05-20 14:22:14.379 W/python.stderr( 7498): rider remote proxy register-device/: <urlopen error [Errno 7] No address associated with hostname>
+05-20 14:22:14.380 W/python.stderr( 7498): Bad Gateway: /api/rider-remote/register-device/
+05-20 14:22:20.079 W/python.stderr( 7498): rider remote proxy register-device/: <urlopen error [Errno 7] No address associated with hostname>
+05-20 14:22:20.079 W/python.stderr( 7498): Bad Gateway: /api/rider-remote/register-device/
+05-20 14:22:27.136 W/python.stderr( 7498): rider remote proxy register-device/: <urlopen error [Errno 7] No address associated with hostname>
+05-20 14:22:27.137 W/python.stderr( 7498): Bad Gateway: /api/rider-remote/register-device/
+--------- beginning of system
+05-20 14:22:29.715 I/ActivityManager( 1358): Changes in 10215 19 to 6, 0 to 128
+05-20 14:22:29.716 I/ActivityManager( 1358): Changes in 10121 19 to 6, 0 to 128
+05-20 14:22:29.716 I/ActivityManager( 1358): Changes in 5278 19 to 6, 0 to 128
+05-20 14:22:30.701 I/ActivityManager( 1358): Changes in 10202 7 to 5, 128 to 255
+05-20 14:22:32.573 I/ActivityManager( 1358): Start proc 7833:com.google.android.partnersetup/u0a249 for service {com.google.android.partnersetup/com.google.android.partnersetup.InstalledAppJobService}
+05-20 14:22:32.573 I/ActivityManager( 1358): ProcessObserver broadcast disabled
+05-20 14:22:32.590 I/ActivityManager( 1358): Start proc 7834:com.google.android.apps.turbo:aab/u0a256 for service {com.google.android.apps.turbo/com.google.android.libraries.smartbattery.appusage.library.InferAppBucketsJob}
+05-20 14:22:32.590 I/ActivityManager( 1358): ProcessObserver broadcast disabled
+05-20 14:22:32.600 I/ActivityManager( 1358): Start proc 7837:com.samsung.cmh/5004 for service {com.samsung.cmh/com.samsung.cmh.core.cmhjobservice.CMHJobService}
+05-20 14:22:32.600 I/ActivityManager( 1358): ProcessObserver broadcast disabled
+05-20 14:22:32.611 I/ActivityManager( 1358): Start proc 7850:com.samsung.faceservice/5004 for service {com.samsung.faceservice/androidx.work.impl.background.systemjob.SystemJobService}
+05-20 14:22:32.611 I/ActivityManager( 1358): ProcessObserver broadcast disabled
+05-20 14:22:32.701 I/ActivityManager( 1358): Changes in 10249 19 to 8, 0 to 128
+05-20 14:22:32.721 I/ActivityManager( 1358): Changes in 5004 19 to 8, 0 to 128
+05-20 14:22:32.726 I/ActivityManager( 1358): Changes in 10256 19 to 8, 0 to 128
+05-20 14:22:32.779 I/ActivityManager( 1358): Changes in 5004 8 to 10, 128 to 0
+05-20 14:22:32.792 I/ActivityManager( 1358): Changes in 5004 19 to 8, 0 to 128
+05-20 14:22:32.799 W/ActivityManager( 1358): Unable to start service Intent { flg=0x4 xflg=0x4 cmp=com.srin.indramayu/.core.service.LocationUpdateService (has extras) } U=0: not found
+05-20 14:22:32.804 I/ActivityManager( 1358): Changes in 5004 8 to 10, 128 to 0
+05-20 14:22:32.882 I/ActivityManager( 1358): Changes in 10249 8 to 10, 128 to 0
+05-20 14:22:32.981 I/ActivityManager( 1358): Changes in 10249 19 to 8, 0 to 128
+05-20 14:22:33.035 I/ActivityManager( 1358): Changes in 10249 8 to 10, 128 to 0
+05-20 14:22:33.130 I/ActivityManager( 1358): Changes in 10249 19 to 8, 0 to 128
+05-20 14:22:33.218 I/ActivityManager( 1358): Changes in 10256 8 to 10, 128 to 0
+05-20 14:22:33.292 I/ActivityManager( 1358): Start proc 7941:com.android.chrome/u0a265 for broadcast {com.android.chrome/com.google.android.apps.chrome.rlz.RevenueStatsConfigurationUpdateReceiver}
+05-20 14:22:33.292 I/ActivityManager( 1358): ProcessObserver broadcast disabled
+05-20 14:22:33.313 I/ActivityManager( 1358): Changes in 10249 8 to 10, 128 to 0
+05-20 14:22:33.445 I/ActivityManager( 1358): Changes in 10265 19 to 11, 0 to 128
+05-20 14:22:33.479 I/ActivityManager( 1358): Changes in 10265 11 to 19, 128 to 0
+05-20 14:22:33.749 I/ActivityManager( 1358): broadcastAllowList remove BroadcastFilter{9d6c21e 10389/u0 ReceiverList{e11c659 6603 com.amazon.avod.thirdpartyclient/10389/u0 remote:edf9aa0}}
+05-20 14:22:33.749 I/ActivityManager( 1358): broadcastAllowList remove BroadcastFilter{af52455 10389/u0 ReceiverList{ef6030c 6603 com.amazon.avod.thirdpartyclient/10389/u0 remote:3fede3f}}
+05-20 14:22:33.749 I/ActivityManager( 1358): broadcastAllowList remove BroadcastFilter{44bf49b 10255/u0 ReceiverList{5fc70aa 31688 com.google.android.apps.messaging/10255/u0 remote:b562795}}
+05-20 14:22:33.749 I/ActivityManager( 1358): broadcastAllowList remove BroadcastFilter{a1204f0 10255/u0 ReceiverList{18be933 31688 com.google.android.apps.messaging/10255/u0 remote:79778a2}}
+05-20 14:22:33.749 I/ActivityManager( 1358): broadcastAllowList remove BroadcastFilter{672ba92 10255/u0 ReceiverList{881481d 8046 com.google.android.apps.messaging:rcs/10255/u0 remote:7a0b8f4}}
+05-20 14:22:33.787 I/ActivityManager( 1358): Changes in 10258 17 to 11, 0 to 128
+05-20 14:22:33.921 I/ActivityManager( 1358): Changes in 10258 11 to 17, 128 to 0
+05-20 14:22:33.971 I/ActivityManager( 1358): Killing 6122:com.samsung.android.app.sharelive/5026 (adj 945): Chimera #0
+05-20 14:22:35.821 I/ActivityManager( 1358): Changes in 10215 6 to 10, 128 to 0
+05-20 14:22:35.822 I/ActivityManager( 1358): Changes in 10121 6 to 10, 128 to 0
+05-20 14:22:35.822 I/ActivityManager( 1358): Changes in 5278 6 to 10, 128 to 0
+05-20 14:22:36.513 I/ActivityManager( 1358): Changes in 10202 5 to 7, 255 to 128
+05-20 14:22:42.149 I/ActivityManager( 1358): Changes in 10202 7 to 5, 128 to 255
+05-20 14:22:48.963 I/ActivityManager( 1358): Changes in 10111 5 to 10, 184 to 0
+05-20 14:22:48.968 I/ActivityManager( 1358): Killing 4757:com.samsung.accessory.budsunitemgr/u0a57 (adj 975): empty #33
+05-20 14:22:48.971 I/ActivityManager( 1358): Killing 6003:com.android.carrierdefaultapp/u0a159 (adj 975): empty #34
+05-20 14:22:48.972 I/ActivityManager( 1358): Killing 5898:com.google.android.gms.unstable/u0a259 (adj 975): empty #35
+05-20 14:22:52.013 I/ActivityManager( 1358): Changes in 10215 19 to 6, 0 to 128
+05-20 14:22:52.013 I/ActivityManager( 1358): Changes in 10121 19 to 6, 0 to 128
+05-20 14:22:52.015 I/ActivityManager( 1358): Changes in 5278 19 to 6, 0 to 128
+05-20 14:22:52.289 I/ActivityManager( 1358): Changes in 10202 5 to 7, 255 to 128
+05-20 14:22:57.043 I/ActivityManager( 1358): Changes in 10215 6 to 10, 128 to 0
+05-20 14:22:57.044 I/ActivityManager( 1358): Changes in 10121 6 to 10, 128 to 0
+05-20 14:22:57.044 I/ActivityManager( 1358): Changes in 5278 6 to 10, 128 to 0

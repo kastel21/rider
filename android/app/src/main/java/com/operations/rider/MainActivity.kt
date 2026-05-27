@@ -7,6 +7,9 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.os.Bundle
+import android.util.Log
+import android.webkit.ConsoleMessage
+import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -42,6 +45,15 @@ class MainActivity : AppCompatActivity() {
         webView = wv
         wv.settings.javaScriptEnabled = true
         wv.settings.domStorageEnabled = true
+        wv.webChromeClient = object : WebChromeClient() {
+            override fun onConsoleMessage(message: ConsoleMessage): Boolean {
+                Log.i(
+                    "chromium",
+                    "${message.message()} -- ${message.sourceId()}:${message.lineNumber()}",
+                )
+                return true
+            }
+        }
         wv.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                 val uri = request.url

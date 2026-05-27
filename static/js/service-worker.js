@@ -1,21 +1,29 @@
 /* eslint-disable no-restricted-globals */
-const CACHE = "ops-rider-v5";
+const CACHE = "ops-rider-v9";
 const PRECACHE = [
   "/static/css/standalone-shell.css",
   "/static/css/dashboard-record.css",
   "/static/css/app-chrome.css",
+  "/static/js/report-save-feedback.js",
   "/static/js/offline-sync.js",
   "/static/js/sidebar.js",
   "/static/js/report-trip-routing.js",
   "/static/js/report-fuel-validation.js",
   "/static/js/driver-trip-tabs.js",
   "/static/js/rejection-table.js",
+  "/static/js/report-rejection-validation.js",
   "/static/js/rider-home-charts.js?v=3",
   "/static/js/pc-accidents-incomplete-tabs.js",
   "/static/js/pc-trans-stats-add-row.js",
   "/static/js/vendor/chart.umd.min.js?v=4.4.1",
   "/static/manifest.json",
 ];
+
+function isHtmlNavigation(req) {
+  if (req.mode === "navigate") return true;
+  const accept = req.headers.get("accept") || "";
+  return accept.includes("text/html");
+}
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -25,9 +33,12 @@ self.addEventListener("install", (event) => {
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key)))
-    ).then(() => self.clients.claim())
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key)))
+      )
+      .then(() => self.clients.claim())
   );
 });
 
@@ -36,6 +47,8 @@ self.addEventListener("fetch", (event) => {
   if (req.method !== "GET") return;
 
   const url = new URL(req.url);
+  if (url.origin !== self.location.origin) return;
+
   const isStaticAsset = url.pathname.startsWith("/static/");
 
   if (isStaticAsset) {
@@ -43,7 +56,6 @@ self.addEventListener("fetch", (event) => {
       caches.match(req).then((cached) => {
         if (cached) return cached;
         return fetch(req).then((response) => {
-          // Cache fetched static files so future offline visits keep styling/scripts.
           if (response && response.ok) {
             const copy = response.clone();
             caches.open(CACHE).then((cache) => cache.put(req, copy));
@@ -55,10 +67,13 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  event.respondWith(
-    caches.match(req).then((cached) => {
-      if (cached) return cached;
-      return fetch(req).catch(() => caches.match("/reports/"));
-    })
-  );
+  // Dynamic Django HTML: always network (never cache-first). Offline → last-resort shell.
+  if (isHtmlNavigation(req)) {
+    event.respondWith(
+      fetch(req).catch(() =>
+        caches.match("/reports/").then((cached) => cached || new Response("Offline", { status: 503 }))
+      )
+    );
+    return;
+  }
 });

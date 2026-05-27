@@ -98,6 +98,10 @@
       totalEl.value = String(total + 1);
       refreshRowNumbers(tbody);
 
+      if (typeof window.wireRejectionRow === "function") {
+        window.wireRejectionRow(clone);
+      }
+
       syncAddButton(btn, prefix);
     });
   }

@@ -1,0 +1,37 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% if ops_remote_api_base %}
+  <meta name="ops-api-base" content="{{ ops_remote_api_base }}">
+  {% endif %}
+  {% if ops_sync_mode %}
+  <meta name="ops-sync-mode" content="{{ ops_sync_mode }}">
+  {% endif %}
+  <title>Signing in…</title>
+</head>
+<body>
+  <p>Connecting to server…</p>
+  <script id="ops-jwt-bootstrap" type="application/json">{{ ops_jwt_bootstrap_json|safe }}</script>
+  <script src="{% static 'js/rider-jwt-bridge.js' %}"></script>
+  <script>
+    (function () {
+      var target = "{{ redirect_url|escapejs }}";
+      var el = document.getElementById("ops-jwt-bootstrap");
+      if (el && el.textContent && window.OpsJwtBridge) {
+        try {
+          window.OpsJwtBridge.storeTokens(JSON.parse(el.textContent));
+        } catch (e) {
+          console.warn("ops jwt store failed", e);
+        }
+        el.textContent = "";
+      }
+      setTimeout(function () {
+        window.location.replace(target);
+      }, 250);
+    })();
+  </script>
+</body>
+</html>

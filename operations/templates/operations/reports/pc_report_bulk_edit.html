@@ -70,10 +70,10 @@
           </thead>
           <tbody>
             {% for rej_form in rejection_formset %}
-            <tr>
+            <tr data-rejection-row>
               <td>{% for hidden in rej_form.hidden_fields %}{{ hidden }}{% endfor %}{{ forloop.counter }}</td>
               <td>{{ rej_form.sample_type.errors }}{{ rej_form.sample_type }}</td>
-              <td>{{ rej_form.rejected_total.errors }}{{ rej_form.rejected_total }}</td>
+              <td>{{ rej_form.rejected_total.errors }}{{ rej_form.rejected_total }}<p class="rejection-live-error" data-rejection-live-msg hidden aria-live="polite"></p></td>
               <td>{{ rej_form.rejected_too_old.errors }}{{ rej_form.rejected_too_old }}</td>
               <td>{{ rej_form.rejected_patient_info_mismatch.errors }}{{ rej_form.rejected_patient_info_mismatch }}</td>
               <td>{{ rej_form.rejected_request_form_missing.errors }}{{ rej_form.rejected_request_form_missing }}</td>
@@ -109,4 +109,5 @@
 {% block extra_js %}
 <script src="{% static 'js/report-trip-routing.js' %}" defer></script>
 <script src="{% static 'js/report-fuel-validation.js' %}" defer></script>
+<script src="{% static 'js/report-rejection-validation.js' %}" defer></script>
 {% endblock %}

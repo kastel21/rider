@@ -18,6 +18,11 @@
     National weekly capture for the selected Monday week. One row per <strong>rider or driver name</strong> and
     <strong>bike / vehicle registration</strong> in that week. Multiple reports for the same person on the same bike are
     <strong>summed</strong> into one row (matching the M&amp;E rider weekly export).
+    {% if pc_approved_only %}
+      Only <strong>PC-approved</strong> reports are included.
+    {% else %}
+      <strong>All report statuses</strong> are included (draft, submitted, under review, approved, and rejected).
+    {% endif %}
   </p>
 
   <form method="get" action="{% url 'operations:weekly_report' %}" class="report-week-filter report-week-picker">
@@ -33,15 +38,28 @@
         class="report-week-filter__input report-week-picker__input"
         autocomplete="off"
       >
+      <label for="id-weekly-report-pc-approved" class="report-week-picker__label" style="margin-left:0.75rem;">
+        <span class="report-week-picker__label-text">PC approved only</span>
+      </label>
+      <input type="hidden" name="pc_approved" value="0">
+      <input
+        type="checkbox"
+        id="id-weekly-report-pc-approved"
+        name="pc_approved"
+        value="1"
+        class="report-week-filter__input"
+        {% if pc_approved_only %}checked{% endif %}
+        style="width:1.1rem;height:1.1rem;vertical-align:middle;"
+      >
       <button type="submit" class="btn-dash btn-dash-primary">Apply</button>
     </div>
   </form>
   <p class="muted" style="margin-top:0.65rem;">
     Showing: <strong>{{ week_range_label }}</strong>
     <span class="muted" style="margin-left:0.75rem;">
-      <a href="{% url 'operations:weekly_report' %}?week={{ weekly_report_prev_week }}">Previous week</a>
+      <a href="{% url 'operations:weekly_report' %}{{ weekly_report_prev_week_href }}">Previous week</a>
       ·
-      <a href="{% url 'operations:weekly_report' %}?week={{ weekly_report_next_week }}">Next week</a>
+      <a href="{% url 'operations:weekly_report' %}{{ weekly_report_next_week_href }}">Next week</a>
     </span>
   </p>
 </div>

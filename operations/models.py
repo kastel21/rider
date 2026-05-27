@@ -302,7 +302,6 @@ class RiderWeeklyReport(models.Model):
         max_digits=10,
         decimal_places=2,
         default=0,
-        help_text="Distance travelled this reporting week (km). Synced to the first trip row for exports.",
     )
 
     bike = models.ForeignKey(
@@ -518,9 +517,27 @@ class ReferredSample(models.Model):
 
 
 class TripVisitPurpose(models.TextChoices):
-    SAMPLE_COLLECTION = "sample_collection", "Sample collection"
-    SAMPLE_DELIVERY = "sample_delivery", "Sample delivery"
-    ADHOC = "adhoc", "Ad hoc"
+    SPECIMENS_RESULTS_TRANSPORT = (
+        "specimens_results_transport",
+        "Specimens and Results Transportation",
+    )
+    ADHOC = "adhoc", "Adhoc"
+    RELAY = "relay", "Relay"
+
+    @classmethod
+    def normalize(cls, raw: str) -> str:
+        """Map legacy stored/sync values to current choice values."""
+        v = (raw or "").strip()
+        legacy = {
+            "sample_collection": cls.SPECIMENS_RESULTS_TRANSPORT,
+            "sample_delivery": cls.SPECIMENS_RESULTS_TRANSPORT,
+        }
+        if v in legacy:
+            return legacy[v]
+        valid = {choice for choice, _ in cls.choices}
+        if v in valid:
+            return v
+        return v[:32]
 
 
 class TripTransportKind(models.TextChoices):
@@ -532,13 +549,10 @@ class TripTransportKind(models.TextChoices):
 
 
 class TripRouteKind(models.TextChoices):
-    FACILITY_TO_FACILITY = "facility_to_facility", "Facility to facility"
-    FACILITY_TO_LAB = "facility_to_lab", "Facility to lab"
-    LAB_TO_FACILITY = "lab_to_facility", "Lab to facility"
     HUB_TO_HUB = "hub_to_hub", "Hub to hub"
-    HUB_TO_LAB = "hub_to_lab", "Hub to lab"
-    LAB_TO_HUB = "lab_to_hub", "Lab to hub"
-    LAB_TO_LAB = "lab_to_lab", "Lab to lab"
+    HUB_TO_LAB = "hub_to_lab", "Hub to VL Lab"
+    LAB_TO_HUB = "lab_to_hub", "VL Lab to hub"
+    LAB_TO_LAB = "lab_to_lab", "VL Lab to VL Lab"
 
 
 class RiderTripEntry(models.Model):
@@ -571,6 +585,7 @@ class RiderTripEntry(models.Model):
         max_length=40,
         choices=TripRouteKind.choices,
         blank=True,
+        verbose_name="Trip Route",
     )
     origin_facility = models.ForeignKey(
         Facility,

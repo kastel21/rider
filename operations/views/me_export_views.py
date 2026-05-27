@@ -11,7 +11,7 @@ from django.views import View
 
 from ..models import UserProfile
 from ..permissions import ProgramReportingMixin
-from ..selectors import week_start_from_request
+from ..selectors import parse_pc_approved_param, week_start_from_request
 from ..services.me_accidents_data import load_me_accidents_incomplete_data, me_accidents_week_start_from_request
 from ..services.me_metrics_service import build_me_metrics, parse_weeks_param
 from ..services.me_referred_samples_table import build_me_referred_samples_table
@@ -72,9 +72,11 @@ class METableExportView(LoginRequiredMixin, ProgramReportingMixin, View):
 
         if table_key == "weekly_report_riders":
             week_start = week_start_from_request(request)
+            pc_approved_only = parse_pc_approved_param(request)
             data = build_me_report_table_for_week(
                 week_start=week_start,
                 role=UserProfile.Role.RIDER,
+                pc_approved_only=pc_approved_only,
             )
             stem = week_download_stem(week_start=week_start, prefix="weekly-report-riders")
             if fmt == "csv":
@@ -83,9 +85,11 @@ class METableExportView(LoginRequiredMixin, ProgramReportingMixin, View):
 
         if table_key == "weekly_report_drivers":
             week_start = week_start_from_request(request)
+            pc_approved_only = parse_pc_approved_param(request)
             data = build_me_report_table_for_week(
                 week_start=week_start,
                 role=UserProfile.Role.DRIVER,
+                pc_approved_only=pc_approved_only,
             )
             stem = week_download_stem(week_start=week_start, prefix="weekly-report-drivers")
             if fmt == "csv":
@@ -119,8 +123,17 @@ def me_matrix_export_hrefs(*, name_csv: str, name_xlsx: str, weeks: int) -> dict
     }
 
 
-def me_week_export_hrefs(*, name_csv: str, name_xlsx: str, week_iso: str) -> dict[str, str]:
-    q = urlencode({"week": week_iso})
+def me_week_export_hrefs(
+    *,
+    name_csv: str,
+    name_xlsx: str,
+    week_iso: str,
+    pc_approved_only: bool | None = None,
+) -> dict[str, str]:
+    params: dict[str, str] = {"week": week_iso}
+    if pc_approved_only is not None:
+        params["pc_approved"] = "1" if pc_approved_only else "0"
+    q = urlencode(params)
     return {
         "export_csv_href": f"{reverse(name_csv)}?{q}",
         "export_xlsx_href": f"{reverse(name_xlsx)}?{q}",

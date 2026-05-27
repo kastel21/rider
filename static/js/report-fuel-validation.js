@@ -149,7 +149,7 @@
     var requiresRoute = hasTripData(card);
     var map = [
       ["visit_purpose", "Visit purpose is required for rows with data."],
-      ["route_kind", "Route type is required for rows with data."],
+      ["route_kind", "Trip Route is required for rows with data."],
       ["origin_facility", "From facility is required for rows with data."],
       ["destination_facility", "To facility is required for rows with data."]
     ];

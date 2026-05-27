@@ -59,7 +59,7 @@ def _is_rider(user):
 
 def _get_device_for_sync(rider, device_id):
     """
-    Return (RiderDevice, None) if device exists and is active; else (None, Response).
+    Return (RiderDevice, None). Auto-registers device on first apply-sync (mobile APK).
     """
     if not device_id or not str(device_id).strip():
         return None, Response(
@@ -69,11 +69,15 @@ def _get_device_for_sync(rider, device_id):
     device_id = str(device_id).strip()
     device = RiderDevice.objects.filter(rider=rider, device_id=device_id).first()
     if not device:
-        return None, Response(
-            {
-                "error": "Device not registered. Call POST /api/rider/register-device/ first.",
+        device, _ = RiderDevice.objects.update_or_create(
+            rider=rider,
+            device_id=device_id,
+            defaults={
+                "device_model": "",
+                "app_version": "",
+                "is_active": True,
+                "last_seen": timezone.now(),
             },
-            status=status.HTTP_403_FORBIDDEN,
         )
     if not device.is_active:
         return None, Response(

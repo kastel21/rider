@@ -50,6 +50,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "operations.middleware.rider_api_cors.RiderApiCorsMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.middleware.gzip.GZipMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -58,6 +59,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "operations.middleware.no_cache_html.NoCacheDynamicHtmlMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -191,3 +193,4 @@ SIMPLE_JWT = {
 # Optional: rider PWA JWT sync to a remote API (e.g. central MSSQL deployment). Used in templates/base.html.
 OPS_SYNC_MODE = os.environ.get("OPS_SYNC_MODE", "").strip()
 OPS_REMOTE_API_BASE = os.environ.get("OPS_REMOTE_API_BASE", "").strip()
+OPS_ALLOW_LOCAL_JWT_MINT = os.environ.get("OPS_ALLOW_LOCAL_JWT_MINT", "0") == "1"

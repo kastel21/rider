@@ -9,6 +9,7 @@
 {% endblock %}
 {% block content %}
 {% if user_role == 'rider' or user_role == 'driver' %}
+{% if sync_enqueue_report_id %}<span id="sync-enqueue-report-id" data-report-id="{{ sync_enqueue_report_id }}" hidden></span>{% endif %}
 <div data-sync-root>
   <p class="sync-status" id="sync-status">
     Sync: <span id="sync-state">idle</span>
@@ -17,9 +18,15 @@
   </p>
 </div>
 {% endif %}
-  <form method="post" action="{% if report %}{% if is_pc_edit %}{% url 'operations:pc_report_edit' report.pk %}{% else %}{% url 'operations:report_edit' report.pk %}{% if request.GET.draft_cleared == '1' %}?draft_cleared=1{% endif %}{% endif %}{% endif %}" id="report-form" data-report-form data-week-start="{% if sync_week_start %}{{ sync_week_start }}{% elif report %}{{ report.week_start|date:'Y-m-d' }}{% endif %}"{% if report %} data-report-pk="{{ report.pk }}"{% endif %}{% if report_facilities_ajax_url %} data-facilities-url="{{ report_facilities_ajax_url }}"{% endif %}>
+  <form method="post" action="{% if report %}{% if is_pc_edit %}{% url 'operations:pc_report_edit' report.pk %}{% else %}{% url 'operations:report_edit' report.pk %}{% if request.GET.draft_cleared == '1' %}?draft_cleared=1{% endif %}{% endif %}{% else %}{% url 'operations:report_create' %}{% endif %}" id="report-form" data-report-form data-week-start="{% if sync_week_start %}{{ sync_week_start }}{% elif report %}{{ report.week_start|date:'Y-m-d' }}{% endif %}"{% if report %} data-report-pk="{{ report.pk }}"{% endif %}{% if report_facilities_ajax_url %} data-facilities-url="{{ report_facilities_ajax_url }}"{% endif %}>
 {% if user_role == 'rider' or user_role == 'driver' %}
   <input type="hidden" name="client_uuid" id="id_client_uuid" value="{{ offline_client_uuid|default:'' }}">
+{% endif %}
+{% if form_save_failed %}
+<div class="messages" style="margin-bottom:12px;">
+  <li class="msg-error" style="list-style:none;">Could not save. Fix the highlighted fields below and tap Save and submit again.</li>
+</div>
+<span id="ops-form-save-failed" hidden></span>
 {% endif %}
 <div class="card">
   <h1>{% if report %}Edit{% else %}New{% endif %} weekly report</h1>
@@ -230,7 +237,7 @@
               <span class="rejection-row-num">{{ forloop.counter }}</span>
             </td>
             <td>{{ rej_form.sample_type.errors }}{{ rej_form.sample_type }}</td>
-            <td>{{ rej_form.rejected_total.errors }}{{ rej_form.rejected_total }}</td>
+            <td>{{ rej_form.rejected_total.errors }}{{ rej_form.rejected_total }}<p class="rejection-live-error" data-rejection-live-msg hidden aria-live="polite"></p></td>
             <td>{{ rej_form.rejected_too_old.errors }}{{ rej_form.rejected_too_old }}</td>
             <td>{{ rej_form.rejected_patient_info_mismatch.errors }}{{ rej_form.rejected_patient_info_mismatch }}</td>
             <td>{{ rej_form.rejected_request_form_missing.errors }}{{ rej_form.rejected_request_form_missing }}</td>
@@ -257,9 +264,8 @@
 <div class="card" style="margin-top:1rem;">
   {% if report %}
   <h2>Submit for review</h2>
-  <p class="muted" style="margin-bottom:12px;">Save your work with <strong>Save draft</strong> or <strong>Save and submit</strong>. When ready for a PC to review, use <strong>Submit for review</strong> (after saving).</p>
+  <p class="muted" style="margin-bottom:12px;">Use <strong>Save and submit</strong> to save your trip data. When ready for a PC to review, use <strong>Submit for review</strong>.</p>
   <div class="record-form-actions">
-    <button type="submit" class="btn-dash btn-dash-draft">Save draft</button>
     <button type="submit" name="action" value="submit" class="btn-dash btn-dash-submit">Save and submit</button>
     {% if report.status == 'draft' or report.status == 'rejected' %}
     <button type="submit" class="btn-dash btn-dash-submit" formaction="{% url 'operations:report_submit' report.pk %}">Submit for review</button>
@@ -267,9 +273,8 @@
   </div>
   {% else %}
   <h2>Save report</h2>
-  <p class="muted" style="margin-bottom:12px;">Save your weekly report and trip entries.</p>
+  <p class="muted" style="margin-bottom:12px;">Save your weekly report and trip entries with <strong>Save and submit</strong>.</p>
   <div class="record-form-actions">
-    <button type="submit" class="btn-dash btn-dash-draft">Save draft</button>
     <button type="submit" name="action" value="submit" class="btn-dash btn-dash-submit">Save and submit</button>
   </div>
   {% endif %}
@@ -298,7 +303,7 @@
 {% if week_saved_trips is not None %}
 <div class="card" style="margin-top:1rem;">
   <h2>Trip rows on file for this week</h2>
-  <p class="muted" style="margin-bottom:0.75rem;">{{ week_range_label }} — saved in the database (updates when you save a draft)</p>
+  <p class="muted" style="margin-bottom:0.75rem;">{{ week_range_label }} — saved in the database (updates when you save)</p>
   <div style="overflow-x:auto;">
     <table class="data-table">
       <thead>
@@ -307,7 +312,7 @@
           <th>Date</th>
           <th>Transport</th>
           <th>Purpose</th>
-          <th>Route</th>
+          <th>Trip Route</th>
           <th>From</th>
           <th>To</th>
           <th>Specimens</th>
@@ -348,8 +353,10 @@
 {% endif %}
 {% if rejection_formset %}
 <script src="{% static 'js/rejection-table.js' %}" defer></script>
+<script src="{% static 'js/report-rejection-validation.js' %}" defer></script>
 {% endif %}
 {% if user_role == 'rider' or user_role == 'driver' %}
-<script src="{% static 'js/offline-sync.js' %}" defer></script>
+<script src="{% static 'js/report-save-feedback.js' %}?v=9" defer></script>
+<script src="{% static 'js/offline-sync.js' %}?v=9" defer></script>
 {% endif %}
 {% endblock %}

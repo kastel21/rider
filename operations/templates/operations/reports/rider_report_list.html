@@ -9,6 +9,7 @@
 {% block content %}
 <div class="card">
   <h1>My reports</h1>
+  {% if sync_enqueue_report_id %}<span id="sync-enqueue-report-id" data-report-id="{{ sync_enqueue_report_id }}" hidden></span>{% endif %}
   <p class="sync-status" id="sync-status" data-sync-root>
     Offline sync: <span id="sync-state">idle</span>
     <span style="margin-left:0.5rem;">Pending: <strong id="sync-pending-count"></strong></span>
@@ -171,7 +172,8 @@
 {% block extra_js %}
 <script src="{% static 'js/vendor/chart.umd.min.js' %}?v=4.4.1"></script>
 <script defer src="{% static 'js/rider-home-charts.js' %}?v=3"></script>
-<script src="{% static 'js/offline-sync.js' %}" defer></script>
+<script src="{% static 'js/report-save-feedback.js' %}?v=10" defer></script>
+<script src="{% static 'js/offline-sync.js' %}?v=10" defer></script>
 <script>
   (function () {
     var w = document.getElementById("id-report-week");

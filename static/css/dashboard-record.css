@@ -99,6 +99,44 @@ body.dashboard-shell .msg-success {
   border: 1px solid #bbf7d0;
 }
 
+.ops-save-toast {
+  position: fixed;
+  bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  max-width: min(92vw, 22rem);
+  padding: 0.85rem 1.1rem;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  line-height: 1.35;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.22);
+  pointer-events: none;
+}
+
+.ops-save-toast[hidden] {
+  display: none !important;
+}
+
+.ops-save-toast--success {
+  background: #166534;
+  color: #f0fdf4;
+  border: 1px solid #14532d;
+}
+
+.ops-save-toast--pending {
+  background: #1e3a5f;
+  color: #eff6ff;
+  border: 1px solid #1d4ed8;
+}
+
+.ops-save-toast--error {
+  background: #991b1b;
+  color: #fef2f2;
+  border: 1px solid #7f1d1d;
+}
+
 body.dashboard-shell .msg-error {
   background: #fee2e2;
   color: #991b1b;
@@ -829,6 +867,15 @@ body.dashboard-shell .msg-debug {
   margin: 0;
   font-size: 13px;
   color: #b91c1c;
+}
+
+.dashboard-shell .rejection-live-error {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.3;
+  color: #b91c1c;
+  white-space: normal;
+  max-width: 8rem;
 }
 
 /* Actions — dashboard report_form inline button styles */

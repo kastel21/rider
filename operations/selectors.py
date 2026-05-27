@@ -4,6 +4,7 @@ from decimal import Decimal
 from django.db.models import Q, QuerySet
 from django.utils import timezone
 
+from .services.distance_km import round_distance_km
 from .models import (
     Bike,
     Car,
@@ -75,6 +76,17 @@ def week_start_from_request(request, *, default_week_monday: date | None = None)
     return monday_of_week_containing(d)
 
 
+def parse_pc_approved_param(request, *, default: bool = True) -> bool:
+    """
+  Parse ``?pc_approved=1|0`` for weekly report filters.
+  When the parameter is absent, returns ``default`` (PC-approved only by default).
+  """
+    raw = request.GET.get("pc_approved")
+    if raw is None:
+        return default
+    return raw.strip().lower() in ("1", "true", "yes", "on")
+
+
 def rider_home_profile_metrics(user) -> dict:
     """Summary about the rider for the home dashboard (all-time counts)."""
     if not user or not getattr(user, "is_authenticated", False):
@@ -144,7 +156,7 @@ def rider_home_weekly_trends(user, *, num_weeks: int = 12) -> dict:
             samples.append(int(r.samples_collected or 0))
             trips.append(len(tr))
             dist = r.distance_travelled if r.distance_travelled is not None else Decimal("0")
-            distance_km.append(float(dist))
+            distance_km.append(float(round_distance_km(dist)))
         else:
             samples.append(0)
             trips.append(0)

@@ -69,6 +69,8 @@ def _run_wsgi(
         os.environ["DJANGO_SECRET_KEY"] = secret_key
     if remote_api_base:
         os.environ["OPS_REMOTE_API_BASE"] = remote_api_base
+        os.environ["OPS_RIDER_REMOTE_PROXY"] = "1"
+        os.environ.setdefault("OPS_ALLOW_LOCAL_JWT_MINT", "1")
     if jwt_signing_key:
         os.environ["JWT_SIGNING_KEY"] = jwt_signing_key
     emb = str(embedded_import_secret or "").strip()
