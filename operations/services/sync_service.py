@@ -18,6 +18,7 @@ from ..models import (
     RiderWeeklyReport,
     SampleRejection,
     TripTransportKind,
+    TripRouteKind,
     TripVisitPurpose,
     UserProfile,
 )
@@ -322,6 +323,8 @@ def _upsert_trip_rows(user, report, trip_rows):
         needs_routing = _trip_row_dict_has_content(row)
         vp = (row.get("visit_purpose") or "").strip()
         rk = (row.get("route_kind") or "").strip()
+        if vp == TripVisitPurpose.RELAY:
+            rk = TripRouteKind.HUB_TO_HUB
         oid = _parse_fk_id(row, "origin_facility_id", "origin_facility")
         did = _parse_fk_id(row, "destination_facility_id", "destination_facility")
 

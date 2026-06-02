@@ -2,6 +2,9 @@
  * Populate From/To facility dropdowns from report_facilities_ajax when route_kind changes.
  */
 (function () {
+  var RELAY_PURPOSE = "relay";
+  var RELAY_ROUTE_KIND = "hub_to_hub";
+
   function facilitiesUrl() {
     var root = document.getElementById("report-form");
     return root && root.getAttribute("data-facilities-url");
@@ -67,6 +70,7 @@
   }
 
   function refreshCard(card) {
+    enforceRelayRoute(card);
     var rkInput = card.querySelector(".trip-route-kind");
     var rk = rkInput ? rkInput.value : "";
     var fromSel = card.querySelector(".trip-origin-facility");
@@ -85,10 +89,28 @@
     ]);
   }
 
+  function enforceRelayRoute(card) {
+    var purposeInput = card.querySelector(".trip-visit-purpose");
+    var routeInput = card.querySelector(".trip-route-kind");
+    if (!purposeInput || !routeInput) return;
+    if (purposeInput.value === RELAY_PURPOSE) {
+      routeInput.value = RELAY_ROUTE_KIND;
+      routeInput.disabled = true;
+      routeInput.setAttribute("aria-readonly", "true");
+      return;
+    }
+    routeInput.disabled = false;
+    routeInput.removeAttribute("aria-readonly");
+  }
+
   function bindCard(card) {
     var rkInput = card.querySelector(".trip-route-kind");
-    if (!rkInput) return;
+    var purposeInput = card.querySelector(".trip-visit-purpose");
+    if (!rkInput || !purposeInput) return;
     rkInput.addEventListener("change", function () {
+      refreshCard(card);
+    });
+    purposeInput.addEventListener("change", function () {
       refreshCard(card);
     });
     if (rkInput.value) {

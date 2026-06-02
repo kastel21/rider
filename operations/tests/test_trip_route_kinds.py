@@ -1,14 +1,12 @@
-from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from operations.models import District, Facility, Province, RiderProfile, TripRouteKind, UserProfile
+from operations.forms import _route_kind_for_visit_purpose
+from operations.models import District, Facility, Province, TripRouteKind, TripVisitPurpose
 from operations.services.trip_facilities import (
     facility_matches_route_endpoint,
     normalize_route_kind,
     route_endpoint_roles,
 )
-
-User = get_user_model()
 
 
 class TripRouteKindsTests(TestCase):
@@ -44,3 +42,10 @@ class TripRouteKindsTests(TestCase):
 
     def test_only_four_route_choices(self):
         self.assertEqual(len(TripRouteKind.choices), 4)
+
+    def test_relay_forces_hub_to_hub_route(self):
+        rk = _route_kind_for_visit_purpose(
+            TripVisitPurpose.RELAY,
+            TripRouteKind.HUB_TO_LAB,
+        )
+        self.assertEqual(rk, TripRouteKind.HUB_TO_HUB)

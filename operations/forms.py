@@ -22,6 +22,7 @@ from .models import (
     SupportType,
     TripVisitPurpose,
     TripTransportKind,
+    TripRouteKind,
     UserProfile,
 )
 from .selectors import (
@@ -273,6 +274,13 @@ def _row_should_save(cleaned: dict, *, driver_dual_mode: bool) -> bool:
     return _row_has_substantive_trip_data(cleaned)
 
 
+def _route_kind_for_visit_purpose(purpose: str, route_kind: str) -> str:
+    """Force Hub to hub route for relay visits."""
+    if (purpose or "").strip() == TripVisitPurpose.RELAY:
+        return TripRouteKind.HUB_TO_HUB
+    return (route_kind or "").strip()
+
+
 class RiderTripEntryForm(forms.ModelForm):
     class Meta:
         model = RiderTripEntry
@@ -407,14 +415,18 @@ class RiderTripEntryForm(forms.ModelForm):
                     self.add_error(f, "Enter a valid number.")
 
     def _route_kind_value(self) -> str:
+        purpose = ""
         rk = ""
         if self.data:
+            purpose = (self.data.get(f"{self.prefix}-visit_purpose") or "").strip()
             rk = (self.data.get(f"{self.prefix}-route_kind") or "").strip()
-        if not rk:
+        if not rk or not purpose:
+            purpose = purpose or (self.initial.get("visit_purpose") or "").strip()
             rk = (self.initial.get("route_kind") or "").strip()
-        if not rk and getattr(self.instance, "pk", None):
+        if (not rk or not purpose) and getattr(self.instance, "pk", None):
+            purpose = purpose or (self.instance.visit_purpose or "").strip()
             rk = (self.instance.route_kind or "").strip()
-        return rk
+        return _route_kind_for_visit_purpose(purpose, rk)
 
     def _province_ids_for_endpoint(self):
         if self._pc_province_ids is not None:
@@ -475,7 +487,8 @@ class RiderTripEntryForm(forms.ModelForm):
             if explicit_zero and not substantive:
                 return cleaned
             purpose = (cleaned.get("visit_purpose") or "").strip()
-            rk = (cleaned.get("route_kind") or "").strip()
+            rk = _route_kind_for_visit_purpose(purpose, cleaned.get("route_kind"))
+            cleaned["route_kind"] = rk
             origin = cleaned.get("origin_facility")
             dest = cleaned.get("destination_facility")
             if not purpose:
@@ -544,7 +557,8 @@ class RiderTripEntryForm(forms.ModelForm):
             return cleaned
 
         purpose = (cleaned.get("visit_purpose") or "").strip()
-        rk = (cleaned.get("route_kind") or "").strip()
+        rk = _route_kind_for_visit_purpose(purpose, cleaned.get("route_kind"))
+        cleaned["route_kind"] = rk
         origin = cleaned.get("origin_facility")
         dest = cleaned.get("destination_facility")
 
