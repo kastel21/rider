@@ -18,6 +18,7 @@ from .models import (
     RiderProfile,
     RiderTripEntry,
     RiderWeeklyReport,
+    RiderWeekReliefCoverage,
     SampleRejection,
     SupportType,
     TripVisitPurpose,
@@ -148,6 +149,64 @@ class PCReportForm(forms.ModelForm):
 
 class ReportReviewForm(forms.Form):
     pc_notes = forms.CharField(required=False, widget=forms.Textarea(attrs={"rows": 4}))
+
+
+class RiderWeekReliefForm(forms.Form):
+    """PC relief coverage for a submitting rider-week (not per report record)."""
+
+    is_relief_submission = forms.BooleanField(
+        required=False,
+        label="Record made by a relief rider",
+        widget=forms.CheckboxInput(attrs={"id": "id_is_relief_submission", "data-relief-toggle": "1"}),
+    )
+    relieved_rider = forms.ModelChoiceField(
+        queryset=get_user_model().objects.none(),
+        required=False,
+        label="Rider being relieved",
+        empty_label="Select rider…",
+        widget=forms.Select(attrs={"class": "report-bike-select"}),
+    )
+    relief_reason = forms.ChoiceField(
+        choices=[("", "Select reason…")] + list(RiderWeekReliefCoverage.ReliefReason.choices),
+        required=False,
+        label="Reason for relief",
+        widget=forms.Select(attrs={"class": "report-bike-select"}),
+    )
+
+    def __init__(self, *args, pc_user=None, submitting_rider=None, **kwargs):
+        self._pc_user = pc_user
+        self._submitting_rider = submitting_rider
+        super().__init__(*args, **kwargs)
+        User = get_user_model()
+        qs = User.objects.none()
+        if pc_user is not None and submitting_rider is not None:
+            rp = getattr(submitting_rider, "rider_profile", None)
+            district_id = getattr(rp, "district_id", None) if rp else None
+            if district_id:
+                qs = (
+                    get_riders_queryset(pc_user)
+                    .filter(district_id=district_id)
+                    .exclude(user_id=submitting_rider.pk)
+                    .select_related("user")
+                )
+        self.fields["relieved_rider"].queryset = User.objects.filter(
+            pk__in=qs.values_list("user_id", flat=True)
+        ).order_by("first_name", "last_name", "username")
+
+    def clean(self):
+        cleaned = super().clean()
+        if not cleaned.get("is_relief_submission"):
+            cleaned["relieved_rider"] = None
+            cleaned["relief_reason"] = ""
+            return cleaned
+        if not cleaned.get("relieved_rider"):
+            raise ValidationError({"relieved_rider": "Select the rider being relieved."})
+        if not (cleaned.get("relief_reason") or "").strip():
+            raise ValidationError({"relief_reason": "Select the reason for relief."})
+        relieved = cleaned["relieved_rider"]
+        if self._submitting_rider is not None and relieved.pk == self._submitting_rider.pk:
+            raise ValidationError({"relieved_rider": "Cannot relieve yourself."})
+        return cleaned
 
 
 class SampleRejectionForm(forms.ModelForm):

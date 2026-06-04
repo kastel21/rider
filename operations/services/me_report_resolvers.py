@@ -9,7 +9,16 @@ from typing import Any
 
 from django.contrib.auth import get_user_model
 
-from ..models import Bike, Car, RiderTripEntry, RiderWeeklyReport, RiderWeekFuelSummary, TripVisitPurpose, UserProfile
+from ..models import (
+    Bike,
+    Car,
+    RiderTripEntry,
+    RiderWeeklyReport,
+    RiderWeekFuelSummary,
+    RiderWeekReliefCoverage,
+    TripVisitPurpose,
+    UserProfile,
+)
 from .distance_km import distance_km_str
 from .other_specify_aggregate import aggregate_other_specify_texts
 
@@ -204,6 +213,13 @@ def _support_type_display(report: RiderWeeklyReport) -> str:
 
 
 def _relief_rider_name(report: RiderWeeklyReport) -> str:
+    row = RiderWeekReliefCoverage.objects.filter(
+        rider_id=report.rider_id,
+        week_start=report.week_start,
+    ).select_related("relieved_rider").first()
+    if row and row.is_relief_submission and row.relieved_rider_id:
+        u = row.relieved_rider
+        return (u.get_full_name() or u.username or "").strip()
     ex = report.extra_data or {}
     if not isinstance(ex, dict):
         return ""

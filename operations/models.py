@@ -394,6 +394,98 @@ class RiderWeekFuelSummary(models.Model):
         return f"Week fuel {self.week_start} ({self.rider})"
 
 
+class RiderWeekReliefCoverage(models.Model):
+    """PC-entered relief coverage: one row per submitting rider per week."""
+
+    class ReliefReason(models.TextChoices):
+        SICK = "sick", "Sick leave"
+        ANNUAL = "annual", "Annual leave"
+        SPECIAL = "special", "Special leave"
+
+    rider = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="week_relief_coverages",
+    )
+    week_start = models.DateField(db_index=True)
+    is_relief_submission = models.BooleanField(
+        default=False,
+        help_text="Whether this week's record was made by a relief rider.",
+    )
+    relieved_rider = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="weeks_covered_by_relief",
+        help_text="Assigned rider being relieved this week.",
+    )
+    relief_reason = models.CharField(
+        max_length=20,
+        choices=ReliefReason.choices,
+        blank=True,
+        help_text="Why the assigned rider is absent (when relief submission).",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["rider", "week_start"],
+                name="uniq_rider_week_relief_coverage",
+            ),
+        ]
+        ordering = ["-week_start", "-id"]
+
+    def __str__(self):
+        return f"Week relief {self.week_start} ({self.rider})"
+
+    def clean(self):
+        super().clean()
+        if not self.is_relief_submission:
+            return
+        if not self.relieved_rider_id:
+            raise ValidationError({"relieved_rider": "Select the rider being relieved."})
+        if not (self.relief_reason or "").strip():
+            raise ValidationError({"relief_reason": "Select the reason for relief."})
+        if self.relieved_rider_id == self.rider_id:
+            raise ValidationError({"relieved_rider": "Cannot relieve yourself."})
+        submitter_role = None
+        relieved_role = None
+        submitter_district = None
+        relieved_district = None
+        if self.rider_id:
+            try:
+                submitter_role = self.rider.profile.role
+            except Exception:
+                pass
+            rp = getattr(self.rider, "rider_profile", None)
+            submitter_district = getattr(rp, "district_id", None) if rp else None
+        if self.relieved_rider_id:
+            try:
+                relieved_role = self.relieved_rider.profile.role
+            except Exception:
+                pass
+            rp2 = getattr(self.relieved_rider, "rider_profile", None)
+            relieved_district = getattr(rp2, "district_id", None) if rp2 else None
+        if submitter_role != UserProfile.Role.RIDER:
+            raise ValidationError("Relief coverage applies to rider submissions only.")
+        if relieved_role != UserProfile.Role.RIDER:
+            raise ValidationError({"relieved_rider": "The relieved person must be a rider."})
+        if not submitter_district or not relieved_district or submitter_district != relieved_district:
+            raise ValidationError(
+                {"relieved_rider": "The relieved rider must be in the same district as the submitting rider."}
+            )
+
+    def save(self, *args, **kwargs):
+        if not self.is_relief_submission:
+            self.relieved_rider = None
+            self.relief_reason = ""
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+
 class SampleRejection(models.Model):
     """One row per sample-type group: rejection totals and reason breakdown."""
 

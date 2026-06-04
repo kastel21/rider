@@ -10,8 +10,14 @@ from django.views import View
 from django.views.generic import ListView
 from django.views.generic.edit import UpdateView
 
-from ..forms import PCReportForm, ReportReviewForm, RiderTripEntryPCFormSet, SampleRejectionFormSet
-from ..models import ReportAuditLog, RiderTripEntry, RiderWeeklyReport
+from ..forms import (
+    PCReportForm,
+    ReportReviewForm,
+    RiderTripEntryPCFormSet,
+    RiderWeekReliefForm,
+    SampleRejectionFormSet,
+)
+from ..models import ReportAuditLog, RiderTripEntry, RiderWeeklyReport, UserProfile
 from ..permissions import can_edit_report_as_pc, require_pc
 from ..selectors import (
     get_reports_queryset,
@@ -28,6 +34,7 @@ from ..services.week_fuel_service import (
     week_fuel_totals_from_bulk_post,
     week_fuel_totals_from_pc_post,
 )
+from ..services.week_relief_service import relief_form_initial, upsert_rider_week_relief_coverage
 from .report_views import (
     _pc_trip_formset_kwargs,
     _report_form_ajax_context,
@@ -36,6 +43,39 @@ from .report_views import (
     _rollup_totals,
     _week_saved_table_context,
 )
+
+
+def _submitting_user_is_rider(rider_user) -> bool:
+    try:
+        return rider_user.profile.role == UserProfile.Role.RIDER
+    except Exception:
+        return False
+
+
+def _build_relief_form(*, request, rider_user, week_start, post=None, relief_form=None):
+    if relief_form is not None:
+        return relief_form
+    if not _submitting_user_is_rider(rider_user):
+        return None
+    kwargs = {
+        "pc_user": request.user,
+        "submitting_rider": rider_user,
+    }
+    if post is not None:
+        return RiderWeekReliefForm(post, **kwargs)
+    return RiderWeekReliefForm(initial=relief_form_initial(rider_id=rider_user.pk, week_start=week_start), **kwargs)
+
+
+def _try_upsert_relief(*, request, rider_user, week_start) -> None:
+    if not _submitting_user_is_rider(rider_user):
+        return
+    form = RiderWeekReliefForm(request.POST, pc_user=request.user, submitting_rider=rider_user)
+    if form.is_valid():
+        upsert_rider_week_relief_coverage(
+            rider_id=rider_user.pk,
+            week_start=week_start,
+            cleaned_data=form.cleaned_data,
+        )
 
 
 class PCReportEditView(LoginRequiredMixin, UpdateView):
@@ -67,6 +107,7 @@ class PCReportEditView(LoginRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         pc_fuel_post_override = kwargs.pop("pc_fuel_post_override", None)
         pc_fuel_aggregate_errors = kwargs.pop("pc_fuel_aggregate_errors", None)
+        relief_form = kwargs.pop("relief_form", None)
         ctx = super().get_context_data(**kwargs)
         ctx["is_pc_edit"] = True
         report = self.object
@@ -143,6 +184,14 @@ class PCReportEditView(LoginRequiredMixin, UpdateView):
             else:
                 ctx["pc_fuel_week_totals"] = week_fuel_totals_for_report(report)
             ctx["pc_fuel_aggregate_errors"] = list(pc_fuel_aggregate_errors or [])
+        ctx["show_relief_panel"] = _submitting_user_is_rider(rider_user)
+        ctx["relief_form"] = _build_relief_form(
+            request=self.request,
+            rider_user=rider_user,
+            week_start=report.week_start,
+            post=self.request.POST if self.request.method == "POST" else None,
+            relief_form=relief_form,
+        )
         return ctx
 
     def form_valid(self, form):
@@ -197,6 +246,22 @@ class PCReportEditView(LoginRequiredMixin, UpdateView):
                     pc_fuel_post_override=self.request.POST,
                 )
             )
+        relief_form = _build_relief_form(
+            request=self.request,
+            rider_user=self.object.rider,
+            week_start=self.object.week_start,
+            post=self.request.POST,
+        )
+        if relief_form is not None and not relief_form.is_valid():
+            return self.render_to_response(
+                self.get_context_data(
+                    form=form,
+                    trip_formset=trip_formset,
+                    rejection_formset=rejection_formset,
+                    pc_fuel_post_override=self.request.POST,
+                    relief_form=relief_form,
+                )
+            )
         track = ["pc_notes", "scheduled_visits"]
         before = {k: getattr(self.object, k) for k in track}
         with transaction.atomic():
@@ -213,6 +278,12 @@ class PCReportEditView(LoginRequiredMixin, UpdateView):
             _rollup_totals(self.object)
             rejection_formset.instance = self.object
             rejection_formset.save()
+            if relief_form is not None:
+                upsert_rider_week_relief_coverage(
+                    rider_id=self.object.rider_id,
+                    week_start=self.object.week_start,
+                    cleaned_data=relief_form.cleaned_data,
+                )
             self.object.refresh_from_db()
             report_service.complete_review(
                 self.object,
@@ -258,16 +329,22 @@ class PCReportEditView(LoginRequiredMixin, UpdateView):
                     pass
             self.object.save(update_fields=["pc_notes", "scheduled_visits", "updated_at"])
 
-            report_service.complete_review(
-                self.object,
-                request.user,
-                approved=True,
-                pc_notes=self.object.pc_notes or "",
-            )
-            weekly_review_service.create_weekly_review_record(
-                source_report=self.object,
-                reviewer=request.user,
-            )
+            with transaction.atomic():
+                _try_upsert_relief(
+                    request=request,
+                    rider_user=self.object.rider,
+                    week_start=self.object.week_start,
+                )
+                report_service.complete_review(
+                    self.object,
+                    request.user,
+                    approved=True,
+                    pc_notes=self.object.pc_notes or "",
+                )
+                weekly_review_service.create_weekly_review_record(
+                    source_report=self.object,
+                    reviewer=request.user,
+                )
             self.object.refresh_from_db()
             after = {k: getattr(self.object, k) for k in track}
             changed = [k for k in track if before.get(k) != after.get(k)]
@@ -351,10 +428,11 @@ class PCBulkWeekEditView(LoginRequiredMixin, View):
             "fuel_errors": [],
         }
 
-    def _context(self, bundles):
+    def _context(self, bundles, *, relief_form=None):
         first_report = bundles[0]["report"]
         rider_user = first_report.rider
         loc = _report_location_for_user(rider_user)
+        post = self.request.POST if self.request.method == "POST" else None
         return {
             "bundles": bundles,
             "week_start": first_report.week_start,
@@ -366,6 +444,14 @@ class PCBulkWeekEditView(LoginRequiredMixin, View):
             },
             "is_pc_edit": True,
             "bulk_edit": True,
+            "show_relief_panel": _submitting_user_is_rider(rider_user),
+            "relief_form": _build_relief_form(
+                request=self.request,
+                rider_user=rider_user,
+                week_start=first_report.week_start,
+                post=post,
+                relief_form=relief_form,
+            ),
             **_report_form_ajax_context(),
         }
 
@@ -393,7 +479,14 @@ class PCBulkWeekEditView(LoginRequiredMixin, View):
 
         if action == "review_all":
             reviewed = 0
+            first_rider = reports[0].rider
+            week_start = reports[0].week_start
             with transaction.atomic():
+                _try_upsert_relief(
+                    request=request,
+                    rider_user=first_rider,
+                    week_start=week_start,
+                )
                 for bundle in editable_bundles:
                     report = bundle["report"]
                     form = bundle["form"]
@@ -432,6 +525,15 @@ class PCBulkWeekEditView(LoginRequiredMixin, View):
         # save_all path: full validation before commit.
         has_errors = False
         parsed_fuel = {}
+        first_report = reports[0]
+        relief_form = _build_relief_form(
+            request=request,
+            rider_user=first_report.rider,
+            week_start=first_report.week_start,
+            post=request.POST,
+        )
+        if relief_form is not None and not relief_form.is_valid():
+            has_errors = True
         for bundle in editable_bundles:
             form = bundle["form"]
             trip_formset = bundle["trip_formset"]
@@ -456,10 +558,16 @@ class PCBulkWeekEditView(LoginRequiredMixin, View):
                 bundle["fuel_errors"].append(str(exc))
                 has_errors = True
         if has_errors:
-            return self.render_to_response(self._context(bundles))
+            return self.render_to_response(self._context(bundles, relief_form=relief_form))
 
         saved = 0
         with transaction.atomic():
+            if relief_form is not None:
+                upsert_rider_week_relief_coverage(
+                    rider_id=first_report.rider_id,
+                    week_start=first_report.week_start,
+                    cleaned_data=relief_form.cleaned_data,
+                )
             for bundle in editable_bundles:
                 report = bundle["report"]
                 form = bundle["form"]

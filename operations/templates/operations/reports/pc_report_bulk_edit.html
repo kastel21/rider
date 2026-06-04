@@ -7,6 +7,7 @@
   <div class="card">
     <h1>Bulk edit weekly reports</h1>
     <p class="muted">{{ demographics.rider_name }} · {{ demographics.district|default:"-" }} · {{ demographics.province|default:"-" }}</p>
+    {% include "operations/reports/_pc_relief_rider_panel.html" %}
   </div>
 
   {% for item in bundles %}
@@ -110,4 +111,5 @@
 <script src="{% static 'js/report-trip-routing.js' %}" defer></script>
 <script src="{% static 'js/report-fuel-validation.js' %}" defer></script>
 <script src="{% static 'js/report-rejection-validation.js' %}" defer></script>
+<script src="{% static 'js/pc-relief-rider.js' %}" defer></script>
 {% endblock %}

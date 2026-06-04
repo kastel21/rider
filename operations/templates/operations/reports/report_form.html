@@ -77,6 +77,7 @@
       </div>
       <p class="fuel-strip-live-error" data-pc-fuel-live-msg hidden aria-live="polite"></p>
     </div>
+    {% include "operations/reports/_pc_relief_rider_panel.html" %}
     <div class="dashboard-info-grid" style="margin-top:0.75rem;">
       <div class="dashboard-info-item">
         <span>Status</span>
@@ -347,6 +348,7 @@
 {% endif %}
 {% if is_pc_edit %}
 <script src="{% static 'js/report-fuel-validation.js' %}" defer></script>
+<script src="{% static 'js/pc-relief-rider.js' %}" defer></script>
 {% endif %}
 {% if driver_dual_tabs %}
 <script src="{% static 'js/driver-trip-tabs.js' %}" defer></script>

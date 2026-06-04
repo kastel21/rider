@@ -1,0 +1,26 @@
+{% if show_relief_panel and relief_form %}
+<h2 style="margin-top:1rem;">Relief rider (week)</h2>
+<p class="muted" style="margin:0 0 0.65rem;font-size:0.9rem;max-width:42rem;">
+  Set once for this rider and week. If someone else submitted on behalf of an absent rider, indicate who was relieved and why.
+</p>
+<div class="field" style="margin-bottom:0.75rem;">
+  <label for="{{ relief_form.is_relief_submission.id_for_label }}">
+    {{ relief_form.is_relief_submission }}
+    <strong>{{ relief_form.is_relief_submission.label }}</strong>
+  </label>
+  {{ relief_form.is_relief_submission.errors }}
+</div>
+<div id="relief-details" class="dashboard-info-grid pc-visit-schedule-row"{% if not relief_form.is_relief_submission.value %} hidden{% endif %}>
+  <div class="dashboard-info-item field">
+    <label for="{{ relief_form.relieved_rider.id_for_label }}"><strong>{{ relief_form.relieved_rider.label }}</strong></label>
+    {{ relief_form.relieved_rider }}
+    {{ relief_form.relieved_rider.errors }}
+  </div>
+  <div class="dashboard-info-item field">
+    <label for="{{ relief_form.relief_reason.id_for_label }}"><strong>{{ relief_form.relief_reason.label }}</strong></label>
+    {{ relief_form.relief_reason }}
+    {{ relief_form.relief_reason.errors }}
+  </div>
+</div>
+{{ relief_form.non_field_errors }}
+{% endif %}

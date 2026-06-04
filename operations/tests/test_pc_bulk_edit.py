@@ -11,6 +11,7 @@ from operations.models import (
     PCProfile,
     Province,
     RiderProfile,
+    RiderWeekReliefCoverage,
     RiderWeeklyReport,
     UserProfile,
     WeeklyRecordReviewed,
@@ -62,9 +63,25 @@ class PCBulkEditViewTests(TestCase):
             "operations:pc_reports_bulk_edit",
             kwargs={"rider_id": self.rider_user.id, "week_str": self.week.isoformat()},
         )
+        User = get_user_model()
+        self.absent_user = User.objects.create_user(
+            username="absent_bulk",
+            password="pass123",
+            first_name="Absent",
+            last_name="Rider",
+        )
+        UserProfile.objects.update_or_create(
+            user=self.absent_user, defaults={"role": UserProfile.Role.RIDER}
+        )
+        RiderProfile.objects.get_or_create(
+            user=self.absent_user,
+            defaults={"province": self.province, "district": self.district},
+        )
 
-    def _save_payload(self):
+    def _save_payload(self, *, relief=None):
         payload = {"action": "save_all"}
+        if relief:
+            payload.update(relief)
         for report in (self.report_one, self.report_two):
             rid = report.pk
             payload[f"report_{rid}-pc_notes"] = f"note-{rid}"
@@ -99,6 +116,50 @@ class PCBulkEditViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, f"Record #{self.report_one.pk}")
         self.assertContains(response, f"Record #{self.report_two.pk}")
+        self.assertContains(response, "Relief rider (week)")
+
+    def test_bulk_save_relief_coverage(self):
+        self.client.force_login(self.pc_user)
+        payload = self._save_payload(
+            relief={
+                "is_relief_submission": "on",
+                "relieved_rider": str(self.absent_user.pk),
+                "relief_reason": "sick",
+            }
+        )
+        response = self.client.post(self.url, data=payload, follow=True)
+        self.assertEqual(response.status_code, 200)
+        row = RiderWeekReliefCoverage.objects.get(rider=self.rider_user, week_start=self.week)
+        self.assertTrue(row.is_relief_submission)
+        self.assertEqual(row.relieved_rider_id, self.absent_user.pk)
+        self.assertEqual(row.relief_reason, "sick")
+
+    def test_bulk_save_relief_validation_when_checked_without_relieved(self):
+        self.client.force_login(self.pc_user)
+        payload = self._save_payload(relief={"is_relief_submission": "on"})
+        response = self.client.post(self.url, data=payload)
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(
+            RiderWeekReliefCoverage.objects.filter(
+                rider=self.rider_user, week_start=self.week, is_relief_submission=True
+            ).exists()
+        )
+
+    def test_bulk_save_clears_relief_when_unchecked(self):
+        RiderWeekReliefCoverage.objects.create(
+            rider=self.rider_user,
+            week_start=self.week,
+            is_relief_submission=True,
+            relieved_rider=self.absent_user,
+            relief_reason="annual",
+        )
+        self.client.force_login(self.pc_user)
+        response = self.client.post(self.url, data=self._save_payload(), follow=True)
+        self.assertEqual(response.status_code, 200)
+        row = RiderWeekReliefCoverage.objects.get(rider=self.rider_user, week_start=self.week)
+        self.assertFalse(row.is_relief_submission)
+        self.assertIsNone(row.relieved_rider_id)
+        self.assertEqual(row.relief_reason, "")
 
     def test_bulk_save_all_updates_each_report(self):
         self.client.force_login(self.pc_user)

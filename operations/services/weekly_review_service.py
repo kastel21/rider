@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from ..models import RiderWeeklyReport, WeeklyRecordReviewed
+from .week_relief_service import relief_coverage_snapshot_dict
 
 
 def _decimal_to_string(value) -> str:
@@ -126,6 +127,10 @@ def build_weekly_review_snapshot(*, rider, week_start):
             "specimens_transported": total_specimens,
             "results_transported": total_results,
         },
+        "relief_coverage": relief_coverage_snapshot_dict(
+            rider_id=rider.id,
+            week_start=week_start,
+        ),
         "reports": report_entries,
     }
 
