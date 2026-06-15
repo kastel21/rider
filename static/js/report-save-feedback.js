@@ -57,15 +57,26 @@
     if (ok === "review") {
       return "Report submitted for PC review.";
     }
+    if (ok === "fuel") {
+      return "Fuel saved for this week.";
+    }
     if (ok === "1" || params.get("draft_cleared") === "1") {
       return "Report saved on this device.";
     }
     return "";
   }
 
+  function isWeekFuelPage() {
+    return /\/reports\/week-fuel\/?$/.test(window.location.pathname);
+  }
+
   function isReportFormPage() {
     return /\/reports\/create\/?$/.test(window.location.pathname) ||
       /\/reports\/\d+\/edit\/?$/.test(window.location.pathname);
+  }
+
+  function isRiderSaveRedirectPage() {
+    return isReportFormPage() || isWeekFuelPage();
   }
 
   function isRiderHomePage() {
@@ -88,6 +99,9 @@
       clearStaleSaveIntent();
       if (o.action === "review") {
         return "Report submitted for PC review.";
+      }
+      if (o.action === "fuel") {
+        return "Fuel saved for this week.";
       }
       return "Report saved on this device. Cloud sync runs when you tap Sync now (online).";
     } catch (e) {
@@ -158,15 +172,24 @@
   }
 
   function riderHomeAfterSubmit(form, resUrl) {
-    var qs = "save_ok=submitted";
-    var pk =
-      (form && form.getAttribute("data-report-pk")) ||
-      "";
-    if (!pk && resUrl) {
-      var m = String(resUrl).match(/\/reports\/(\d+)(?:\/|$)/);
-      if (m) pk = m[1];
+    var qs;
+    var weekInput = form && form.querySelector('input[name="week"]');
+    if (isWeekFuelPage()) {
+      qs = "save_ok=fuel";
+      if (weekInput && weekInput.value) {
+        qs += "&week=" + encodeURIComponent(weekInput.value);
+      }
+    } else {
+      qs = "save_ok=submitted";
+      var pk =
+        (form && form.getAttribute("data-report-pk")) ||
+        "";
+      if (!pk && resUrl) {
+        var m = String(resUrl).match(/\/reports\/(\d+)(?:\/|$)/);
+        if (m) pk = m[1];
+      }
+      if (pk) qs += "&remote_sync_report=" + encodeURIComponent(pk);
     }
-    if (pk) qs += "&remote_sync_report=" + encodeURIComponent(pk);
     qs += "&_fresh=" + Date.now();
     return RIDER_HOME + "?" + qs;
   }
@@ -207,7 +230,7 @@
 
   function scheduleNavigateFallback() {
     setTimeout(function () {
-      if (!isReportFormPage()) return;
+      if (!isRiderSaveRedirectPage()) return;
       if (document.querySelector(".errorlist li") || document.getElementById("ops-form-save-failed")) {
         console.log("[OpsSave] fallback skipped — validation errors on form");
         return;
@@ -296,9 +319,13 @@
 
         ev.preventDefault();
         ev.stopPropagation();
-        stashSaveIntent("submit");
+        stashSaveIntent(isWeekFuelPage() ? "fuel" : "submit");
         console.log("[OpsSave] submit via fetch");
-        showToast("Saving your report…", "pending", 120000);
+        showToast(
+          isWeekFuelPage() ? "Saving fuel totals…" : "Saving your report…",
+          "pending",
+          120000,
+        );
 
         submitReportFormViaFetch(form, sub).catch(function (err) {
           console.warn("[OpsSave] fetch submit failed", err);

@@ -746,6 +746,7 @@
 
   function bindReportFormOffline(form) {
     if (!form || form.getAttribute("data-offline-bound")) return;
+    if (form.hasAttribute("data-week-fuel-form")) return;
     form.setAttribute("data-offline-bound", "1");
     if (isEmbeddedLocalApp()) {
       return;

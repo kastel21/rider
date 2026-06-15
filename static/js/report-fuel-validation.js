@@ -1,5 +1,5 @@
 /**
- * Instant validation: fuel used cannot exceed fuel allocated (per trip row).
+ * Instant validation: fuel used cannot exceed fuel allocated (week totals and legacy per-row strips).
  */
 (function () {
   function parseAmount(val) {
@@ -205,7 +205,9 @@
 
   document.addEventListener("DOMContentLoaded", function () {
     var forms = Array.from(
-      document.querySelectorAll("form[data-report-form], form[data-bulk-report-form]")
+      document.querySelectorAll(
+        "form[data-report-form], form[data-bulk-report-form], form[data-week-fuel-form]",
+      )
     );
     forms.forEach(function (form) {
       form.querySelectorAll(".fuel-strip").forEach(wireStrip);

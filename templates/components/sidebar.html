@@ -72,6 +72,10 @@
       </a>
       {% endif %}
       {% if user_role == "rider" or user_role == "driver" %}
+      <a href="{% url 'operations:rider_week_stats' %}" class="app-sidebar__link" title="Week stats">
+        <span class="app-sidebar__glyph" aria-hidden="true">S</span>
+        <span class="app-sidebar__text">Stats</span>
+      </a>
       <a href="{% url 'operations:rider_week_fuel' %}" class="app-sidebar__link" title="Week fuel totals">
         <span class="app-sidebar__glyph" aria-hidden="true">F</span>
         <span class="app-sidebar__text">Week fuel</span>

@@ -319,7 +319,7 @@ def _driver_explicit_zero_row(cleaned: dict) -> bool:
     for f in _DECIMAL_TRIP_FIELDS:
         v = cleaned.get(f)
         if v is None or v == "":
-            return False
+            continue
         if Decimal(str(v)) != 0:
             return False
     return True

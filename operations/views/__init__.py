@@ -22,6 +22,7 @@ from .report_views import (
     RiderReportListView,
     RiderSyncView,
     RiderWeekFuelView,
+    RiderWeekStatsView,
 )
 from .pc_management_views import (
     BikeCreateView,
@@ -72,6 +73,7 @@ __all__ = [
     "RiderReportDetailView",
     "RiderReportEditView",
     "RiderWeekFuelView",
+    "RiderWeekStatsView",
     "ReportSubmitView",
     "ReportMeReviewView",
     "ReportFacilitiesAjaxView",

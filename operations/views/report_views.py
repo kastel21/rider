@@ -38,6 +38,7 @@ from ..selectors import (
     week_start_from_request,
 )
 from ..services import report_service
+from ..services.rider_week_stats_service import build_rider_week_stats
 from ..services.week_fuel_service import (
     apply_week_fuel_distance_rollup,
     parse_week_fuel_pc_post,
@@ -141,8 +142,7 @@ def _report_form_ajax_context():
 def _driver_trip_formset_kwargs(user):
     kw = _trip_formset_kwargs(user, for_pc=False)
     kw["driver_dual_mode"] = True
-    # Drivers enter fuel per trip row (required numerics); riders use week-level fuel rollup.
-    kw["pc_aggregate_fuel"] = False
+    # Week-level fuel (Week fuel page + RiderWeekFuelSummary), same as riders.
     return kw
 
 
@@ -1048,7 +1048,37 @@ class RiderWeekFuelView(LoginRequiredMixin, UserPassesTestMixin, View):
             request.user.id, week_start, fuel_alloc, fuel_used
         )
         messages.success(request, "Fuel saved for this week.")
-        return redirect(f"{reverse('operations:rider_week_fuel')}?{urlencode({'week': week_start.isoformat()})}")
+        home_url = reverse("operations:rider_reports")
+        return redirect(
+            f"{home_url}?{urlencode({'week': week_start.isoformat(), 'save_ok': 'fuel'})}"
+        )
+
+
+class RiderWeekStatsView(LoginRequiredMixin, UserPassesTestMixin, View):
+    """Rider/driver: week breakdown of specimens, results, rejections, fuel, and distance."""
+
+    template_name = "operations/reports/rider_week_stats.html"
+
+    def test_func(self):
+        return is_rider_like(self.request.user)
+
+    def _week_start(self, request):
+        return week_start_from_request(request, default_week_monday=_monday_of_current_week())
+
+    def get(self, request, *args, **kwargs):
+        week_start = self._week_start(request)
+        stats = build_rider_week_stats(request.user, week_start)
+        return render(
+            request,
+            self.template_name,
+            {
+                "week_start": week_start,
+                "week_range_label": week_range_label(week_start),
+                "report_location": _report_location_for_user(request.user),
+                "stats": stats,
+                "user_role": getattr(getattr(request.user, "profile", None), "role", None),
+            },
+        )
 
 
 class ReportFacilitiesAjaxView(LoginRequiredMixin, View):

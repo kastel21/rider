@@ -54,6 +54,7 @@ urlpatterns = [
     path("reports/", views.RiderReportListView.as_view(), name="rider_reports"),
     path("reports/create/", views.RiderReportCreateView.as_view(), name="report_create"),
     path("reports/week-fuel/", views.RiderWeekFuelView.as_view(), name="rider_week_fuel"),
+    path("reports/stats/", views.RiderWeekStatsView.as_view(), name="rider_week_stats"),
     path("reports/export/", views.ReportExportView.as_view(), name="report_export"),
     path("reports/<int:pk>/", views.RiderReportDetailView.as_view(), name="report_detail"),
     path("reports/<int:pk>/edit/", views.RiderReportEditView.as_view(), name="report_edit"),

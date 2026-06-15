@@ -343,6 +343,9 @@
 {% endif %}
 {% endblock %}
 {% block extra_js %}
+{% if not report %}
+<script src="{% static 'js/report-num-placeholder.js' %}" defer></script>
+{% endif %}
 {% if trip_formset or trip_formset_relay %}
 <script src="{% static 'js/report-trip-routing.js' %}" defer></script>
 {% endif %}

@@ -190,6 +190,7 @@ class RiderWeekFuelViewTests(TestCase):
             },
         )
         self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("operations:rider_reports") + f"?week={self.week.isoformat()}&save_ok=fuel")
         row = RiderWeekFuelSummary.objects.get(rider=self.rider, week_start=self.week)
         self.assertEqual(row.fuel_allocated, Decimal("25"))
         self.assertEqual(row.fuel_used, Decimal("10"))
@@ -231,3 +232,66 @@ class RiderWeekFuelViewTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "cannot exceed")
+
+
+class DriverWeekFuelTests(TestCase):
+    databases = _operations_test_databases()
+
+    def setUp(self):
+        User = get_user_model()
+        self.driver = User.objects.create_user(username="driver_fuel", password="pass123")
+        UserProfile.objects.update_or_create(
+            user=self.driver, defaults={"role": UserProfile.Role.DRIVER}
+        )
+        self.province = Province.objects.create(name="PDriverFuel")
+        self.district = District.objects.create(name="DDriverFuel", province=self.province)
+        RiderProfile.objects.get_or_create(
+            user=self.driver,
+            defaults={"province": self.province, "district": self.district},
+        )
+        self.week = date(2026, 9, 7)
+        self.url = reverse("operations:rider_week_fuel")
+
+    def _post(self, data):
+        self.client.get(self.url)
+        token = self.client.cookies.get("csrftoken")
+        if token:
+            data = {**data, "csrfmiddlewaretoken": token.value}
+        return self.client.post(self.url, data=data)
+
+    def test_driver_saves_week_fuel_summary(self):
+        self.client.force_login(self.driver)
+        response = self._post(
+            {
+                "week": self.week.isoformat(),
+                "pc_fuel_allocated_total": "40",
+                "pc_fuel_used_total": "18",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        row = RiderWeekFuelSummary.objects.get(rider=self.driver, week_start=self.week)
+        self.assertEqual(row.fuel_allocated, Decimal("40"))
+        self.assertEqual(row.fuel_used, Decimal("18"))
+
+
+class DriverTripFormFuelTests(TestCase):
+    databases = _operations_test_databases()
+
+    def test_driver_trip_form_omits_per_row_fuel(self):
+        from operations.forms import RiderTripEntryForm
+        from operations.views.report_views import _driver_trip_formset_kwargs
+
+        User = get_user_model()
+        driver = User.objects.create_user(username="driver_trip_fuel", password="pass")
+        UserProfile.objects.update_or_create(
+            user=driver, defaults={"role": UserProfile.Role.DRIVER}
+        )
+        kw = _driver_trip_formset_kwargs(driver)
+        self.assertTrue(kw.get("pc_aggregate_fuel"))
+        self.assertTrue(kw.get("driver_dual_mode"))
+        form = RiderTripEntryForm(
+            user=driver,
+            driver_numeric_required=True,
+            pc_aggregate_fuel=True,
+        )
+        self.assertFalse(form.has_trip_row_fuel_fields())
