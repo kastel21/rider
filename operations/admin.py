@@ -3,6 +3,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 
 from .models import (
+    AccessibleApp,
     Bike,
     Car,
     District,
@@ -202,3 +203,22 @@ class WeeklyRecordReviewedAdmin(admin.ModelAdmin):
 @admin.register(RegisteredDevice)
 class RegisteredDeviceAdmin(admin.ModelAdmin):
     list_display = ("user", "device_id", "platform", "last_seen_at")
+
+
+@admin.register(AccessibleApp)
+class AccessibleAppAdmin(admin.ModelAdmin):
+    """User-reported launcher apps only — system packages are hidden from this list."""
+
+    list_display = ("label", "package_name", "is_allowed", "report_count", "last_seen_at")
+    list_filter = ("is_allowed",)
+    list_editable = ("is_allowed",)
+    search_fields = ("label", "package_name")
+    ordering = ("label", "package_name")
+    readonly_fields = ("package_name", "label", "report_count", "last_seen_at", "created_at")
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.filter(is_system=False, last_seen_at__isnull=False)
+
+    def has_add_permission(self, request):
+        return False

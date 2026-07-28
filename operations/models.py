@@ -967,6 +967,36 @@ class RiderRemoteConfig(models.Model):
         return "Rider app config"
 
 
+class AccessibleApp(models.Model):
+    """
+    User-facing Android app reported from rider devices.
+    Admins enable ``is_allowed`` for apps that may be accessible on managed handsets.
+    """
+
+    package_name = models.CharField(max_length=255, unique=True, db_index=True)
+    label = models.CharField(max_length=255, blank=True)
+    is_system = models.BooleanField(
+        default=False,
+        db_index=True,
+        help_text="System/launcher-hidden packages are excluded from the admin picker.",
+    )
+    is_allowed = models.BooleanField(
+        default=False,
+        help_text="When enabled, this app may be accessible on rider devices.",
+    )
+    last_seen_at = models.DateTimeField(null=True, blank=True)
+    report_count = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["label", "package_name"]
+        verbose_name = "Accessible app"
+        verbose_name_plural = "Accessible apps"
+
+    def __str__(self):
+        return self.label or self.package_name
+
+
 # API bootstrap uses the same route kinds as trip entries.
 TransportRouteType = TripRouteKind
 

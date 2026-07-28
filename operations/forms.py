@@ -1195,7 +1195,12 @@ class RiderCreateForm(forms.Form):
                 email=data.get("email") or "",
                 password=data["password1"],
             )
-            UserProfile.objects.create(user=user, role=self._profile_role)
+            # post_save ensure_user_profile may already have created UserProfile
+            # with role=rider; update so driver creates get the correct role.
+            UserProfile.objects.update_or_create(
+                user=user,
+                defaults={"role": self._profile_role},
+            )
             district = data["district"]
             st = data.get("support_type") or ""
             if self._profile_role == UserProfile.Role.DRIVER:

@@ -1,8 +1,17 @@
 # PWA icons
 
-Place PNG icons here as referenced by [`static/manifest.json`](../manifest.json):
+Branded **Cooler Sync** icon (3D specimen transport cooler with orbital sync arrows).
 
-- `icon-192.png` — 192×192
-- `icon-512.png` — 512×512
+| File | Size | Use |
+|------|------|-----|
+| `app-icon-cooler-sync.png` | 1024×1024 | Master artwork |
+| `icon-192.png` | 192×192 | PWA / manifest |
+| `icon-512.png` | 512×512 | PWA / manifest |
 
-The repository includes minimal generated placeholders; replace with branded assets for production.
+Referenced by [`static/manifest.json`](../manifest.json).
+
+Regenerate Android mipmaps after editing the master:
+
+```bash
+python scripts/generate_app_icons.py
+```

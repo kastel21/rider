@@ -11,6 +11,7 @@ from .rider_views import (
     RiderLoginView,
     RiderProfileView,
     RiderRegisterDeviceView,
+    RiderReportUserAppsView,
     RiderSyncView,
 )
 
@@ -24,6 +25,7 @@ urlpatterns = [
     path("profile/", RiderProfileView.as_view(), name="profile"),
     path("register-device/", RiderRegisterDeviceView.as_view(), name="register-device"),
     path("config/", RiderConfigView.as_view(), name="config"),
+    path("report-user-apps/", RiderReportUserAppsView.as_view(), name="report-user-apps"),
     path("bootstrap/", RiderBootstrapView.as_view(), name="bootstrap"),
     path("mobile-user-export/", MobileUserExportView.as_view(), name="mobile-user-export"),
     path("sync-bundle/", RiderSyncBundleView.as_view(), name="sync-bundle"),

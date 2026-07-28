@@ -1,11 +1,15 @@
 package com.operations.rider
 
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
+import android.widget.ProgressBar
+import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -21,48 +25,68 @@ import java.util.concurrent.TimeUnit
  */
 class LandingActivity : AppCompatActivity() {
 
+    private enum class SyncStep {
+        SIGN_IN,
+        DOWNLOAD,
+        SAVE_LOCAL,
+        DOWNLOAD_USERS,
+        SAVE_USERS,
+    }
+
+    private lateinit var status: TextView
+    private lateinit var syncBtn: Button
+    private lateinit var continueBtn: Button
+    private lateinit var progress: ProgressBar
+    private lateinit var err: TextView
+    private lateinit var errScroll: ScrollView
+    private lateinit var prefs: SharedPreferences
+
+    private var syncInProgress = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_landing)
 
-        val status = findViewById<TextView>(R.id.landing_status)
-        val syncBtn = findViewById<Button>(R.id.sync_button)
-        val continueBtn = findViewById<Button>(R.id.continue_button)
-        val err = findViewById<TextView>(R.id.sync_error)
+        status = findViewById(R.id.landing_status)
+        syncBtn = findViewById(R.id.sync_button)
+        continueBtn = findViewById(R.id.continue_button)
+        progress = findViewById(R.id.landing_progress)
+        err = findViewById(R.id.sync_error)
+        errScroll = findViewById(R.id.sync_error_scroll)
+        prefs = getSharedPreferences(OpsPrefs.NAME, MODE_PRIVATE)
 
-        val prefs = getSharedPreferences(OpsPrefs.NAME, MODE_PRIVATE)
-        refreshContinueState(continueBtn, prefs)
+        refreshContinueState()
+        beginStartup()
 
         Thread {
             try {
                 OpsEmbeddedServer.ensureStarted(applicationContext)
+                runOnUiThread { endStartup(success = true) }
+            } catch (_: Exception) {
                 runOnUiThread {
-                    status.setText(R.string.landing_status_ready)
-                    syncBtn.isEnabled = true
-                }
-            } catch (e: Exception) {
-                runOnUiThread {
-                    status.text = getString(R.string.landing_server_failed, e.message ?: "")
+                    endStartup(success = false)
+                    status.setText(R.string.landing_server_failed)
                     Toast.makeText(this, R.string.landing_server_failed_toast, Toast.LENGTH_LONG).show()
                 }
             }
         }.start()
 
         syncBtn.setOnClickListener {
-            err.visibility = View.GONE
+            if (syncInProgress) return@setOnClickListener
+            hideSyncError()
             val base = BuildConfig.OPS_REMOTE_API_BASE.trim().trimEnd('/')
             val user = BuildConfig.OPS_SYNC_USERNAME.trim()
             val pass = BuildConfig.OPS_SYNC_PASSWORD
             val emb = BuildConfig.OPS_EMBEDDED_IMPORT_SECRET.trim()
             if (base.isEmpty() || user.isEmpty() || pass.isEmpty() || emb.isEmpty()) {
                 err.text = getString(R.string.landing_config_error)
-                err.visibility = View.VISIBLE
+                errScroll.visibility = View.VISIBLE
                 return@setOnClickListener
             }
-            syncBtn.isEnabled = false
-            status.setText(R.string.landing_status_syncing)
+            beginSync()
             Thread {
                 try {
+                    postStepStatus(R.string.landing_status_sign_in)
                     val loginUrl = "$base/api/rider/login/"
                     val loginJson = JSONObject().apply {
                         put("username", user)
@@ -76,17 +100,21 @@ class LandingActivity : AppCompatActivity() {
                     loginResp.use { lr ->
                         val body = lr.body?.string().orEmpty()
                         if (!lr.isSuccessful) {
-                            val msg = parseError(body, lr.message)
                             runOnUiThread {
-                                syncBtn.isEnabled = true
-                                status.setText(R.string.landing_status_ready)
-                                err.text = msg
-                                err.visibility = View.VISIBLE
+                                showSyncError(SyncStep.SIGN_IN, body, lr.code)
                             }
                             return@Thread
                         }
-                        val access = JSONObject(body).getString("access")
+                        val access = try {
+                            JSONObject(body).getString("access")
+                        } catch (_: Exception) {
+                            runOnUiThread {
+                                showSyncError(SyncStep.SIGN_IN, body, lr.code)
+                            }
+                            return@Thread
+                        }
 
+                        postStepStatus(R.string.landing_status_download)
                         val bootReq = Request.Builder()
                             .url("$base/api/rider/bootstrap/")
                             .header("Authorization", "Bearer $access")
@@ -102,10 +130,7 @@ class LandingActivity : AppCompatActivity() {
                             val bootBody = br.body?.string().orEmpty()
                             if (!br.isSuccessful) {
                                 runOnUiThread {
-                                    syncBtn.isEnabled = true
-                                    status.setText(R.string.landing_status_ready)
-                                    err.text = parseError(bootBody, br.message)
-                                    err.visibility = View.VISIBLE
+                                    showSyncError(SyncStep.DOWNLOAD, bootBody, br.code)
                                 }
                                 return@Thread
                             }
@@ -115,15 +140,13 @@ class LandingActivity : AppCompatActivity() {
                                 val profBody = pr.body?.string().orEmpty()
                                 if (!pr.isSuccessful) {
                                     runOnUiThread {
-                                        syncBtn.isEnabled = true
-                                        status.setText(R.string.landing_status_ready)
-                                        err.text = parseError(profBody, pr.message)
-                                        err.visibility = View.VISIBLE
+                                        showSyncError(SyncStep.DOWNLOAD, profBody, pr.code)
                                     }
                                     return@Thread
                                 }
                                 val profObj = JSONObject(profBody)
 
+                                postStepStatus(R.string.landing_status_save_local)
                                 val combined = JSONObject().apply {
                                     put("bootstrap", bootObj)
                                     put("profile", profObj)
@@ -137,10 +160,7 @@ class LandingActivity : AppCompatActivity() {
                                     val ib = ir.body?.string().orEmpty()
                                     if (!ir.isSuccessful) {
                                         runOnUiThread {
-                                            syncBtn.isEnabled = true
-                                            status.setText(R.string.landing_status_ready)
-                                            err.text = parseError(ib, ir.message)
-                                            err.visibility = View.VISIBLE
+                                            showSyncError(SyncStep.SAVE_LOCAL, ib, ir.code)
                                         }
                                         return@Thread
                                     }
@@ -151,22 +171,24 @@ class LandingActivity : AppCompatActivity() {
                                     }
                                     if (!bootstrapOk) {
                                         runOnUiThread {
-                                            syncBtn.isEnabled = true
-                                            status.setText(R.string.landing_status_ready)
-                                            err.text = ib.ifEmpty { getString(R.string.landing_import_failed) }
-                                            err.visibility = View.VISIBLE
+                                            showSyncError(
+                                                SyncStep.SAVE_LOCAL,
+                                                ib,
+                                                ir.code,
+                                                fallbackRes = R.string.landing_import_failed,
+                                            )
                                         }
                                         return@Thread
                                     }
 
                                     val districtId = resolveDistrictId(bootObj, profObj)
                                     if (districtId == null) {
-                                        runOnUiThread {
-                                            finishSyncSuccess(prefs, continueBtn, status, syncBtn)
-                                        }
+                                        runOnUiThread { finishSyncSuccess() }
+                                        reportUserAppsInBackground(base, access)
                                         return@Thread
                                     }
 
+                                    postStepStatus(R.string.landing_status_download_users)
                                     val userExportUrl =
                                         "$base/api/rider/mobile-user-export/?district_id=$districtId"
                                     val userExportReq = Request.Builder()
@@ -178,14 +200,16 @@ class LandingActivity : AppCompatActivity() {
                                         val ub = ur.body?.string().orEmpty()
                                         if (!ur.isSuccessful) {
                                             runOnUiThread {
-                                                syncBtn.isEnabled = true
-                                                status.setText(R.string.landing_status_ready)
-                                                err.text = parseError(ub, ur.message)
-                                                    .ifEmpty { getString(R.string.landing_user_import_failed) }
-                                                err.visibility = View.VISIBLE
+                                                showSyncError(
+                                                    SyncStep.DOWNLOAD_USERS,
+                                                    ub,
+                                                    ur.code,
+                                                    fallbackRes = R.string.landing_user_import_failed,
+                                                )
                                             }
                                             return@Thread
                                         }
+                                        postStepStatus(R.string.landing_status_save_users)
                                         val userImportReq = Request.Builder()
                                             .url("http://127.0.0.1:${OpsEmbeddedServer.PORT}/api/embedded/import-users/")
                                             .header("X-Ops-Embedded-Secret", emb)
@@ -194,12 +218,13 @@ class LandingActivity : AppCompatActivity() {
                                         client.newCall(userImportReq).execute().use { uir ->
                                             val uib = uir.body?.string().orEmpty()
                                             runOnUiThread {
-                                                syncBtn.isEnabled = true
                                                 if (!uir.isSuccessful) {
-                                                    status.setText(R.string.landing_status_ready)
-                                                    err.text = parseError(uib, uir.message)
-                                                        .ifEmpty { getString(R.string.landing_user_import_failed) }
-                                                    err.visibility = View.VISIBLE
+                                                    showSyncError(
+                                                        SyncStep.SAVE_USERS,
+                                                        uib,
+                                                        uir.code,
+                                                        fallbackRes = R.string.landing_user_import_failed,
+                                                    )
                                                     return@runOnUiThread
                                                 }
                                                 val uOk = try {
@@ -208,25 +233,26 @@ class LandingActivity : AppCompatActivity() {
                                                     false
                                                 }
                                                 if (!uOk) {
-                                                    status.setText(R.string.landing_status_ready)
-                                                    err.text = uib.ifEmpty { getString(R.string.landing_user_import_failed) }
-                                                    err.visibility = View.VISIBLE
+                                                    showSyncError(
+                                                        SyncStep.SAVE_USERS,
+                                                        uib,
+                                                        uir.code,
+                                                        fallbackRes = R.string.landing_user_import_failed,
+                                                    )
                                                     return@runOnUiThread
                                                 }
-                                                finishSyncSuccess(prefs, continueBtn, status, syncBtn)
+                                                finishSyncSuccess()
                                             }
                                         }
                                     }
+                                    reportUserAppsInBackground(base, access)
                                 }
                             }
                         }
                     }
                 } catch (e: Exception) {
                     runOnUiThread {
-                        syncBtn.isEnabled = true
-                        status.setText(R.string.landing_status_ready)
-                        err.text = e.message ?: getString(R.string.login_error_network)
-                        err.visibility = View.VISIBLE
+                        showSyncError(SyncStep.DOWNLOAD, e.message.orEmpty(), 0)
                     }
                 }
             }.start()
@@ -241,31 +267,137 @@ class LandingActivity : AppCompatActivity() {
         }
     }
 
-    private fun finishSyncSuccess(
-        prefs: android.content.SharedPreferences,
-        continueBtn: Button,
-        status: TextView,
-        syncBtn: Button,
+    private fun beginStartup() {
+        progress.visibility = View.VISIBLE
+        syncBtn.isEnabled = false
+        continueBtn.isEnabled = false
+        status.setText(R.string.landing_status_starting)
+    }
+
+    private fun endStartup(success: Boolean) {
+        progress.visibility = View.GONE
+        if (success) {
+            status.setText(R.string.landing_status_ready)
+            syncBtn.isEnabled = true
+            refreshContinueState()
+        }
+    }
+
+    private fun beginSync() {
+        syncInProgress = true
+        progress.visibility = View.VISIBLE
+        syncBtn.isEnabled = false
+        syncBtn.text = getString(R.string.landing_sync_in_progress)
+        continueBtn.isEnabled = false
+        status.setText(R.string.landing_status_syncing)
+    }
+
+    private fun endSync() {
+        syncInProgress = false
+        progress.visibility = View.GONE
+        syncBtn.isEnabled = true
+        syncBtn.text = getString(R.string.landing_sync)
+        refreshContinueState()
+    }
+
+    private fun postStepStatus(@StringRes messageRes: Int) {
+        runOnUiThread { status.setText(messageRes) }
+    }
+
+    private fun hideSyncError() {
+        err.text = ""
+        errScroll.visibility = View.GONE
+    }
+
+    private fun showSyncError(
+        step: SyncStep,
+        body: String,
+        httpCode: Int,
+        withRetryHint: Boolean = true,
+        fallbackRes: Int? = null,
     ) {
+        endSync()
+        status.setText(R.string.landing_status_ready)
+        val detail = friendlyDetail(extractErrorMessage(body), httpCode, fallbackRes)
+        val prefix = when (step) {
+            SyncStep.SIGN_IN -> getString(R.string.landing_error_sign_in, detail)
+            SyncStep.DOWNLOAD -> getString(R.string.landing_error_download, detail)
+            SyncStep.SAVE_LOCAL -> getString(R.string.landing_error_save_local, detail)
+            SyncStep.DOWNLOAD_USERS -> getString(R.string.landing_error_download_users, detail)
+            SyncStep.SAVE_USERS -> getString(R.string.landing_error_save_users, detail)
+        }
+        err.text = if (withRetryHint) {
+            "$prefix\n\n${getString(R.string.landing_error_retry_hint)}"
+        } else {
+            prefix
+        }
+        errScroll.visibility = View.VISIBLE
+    }
+
+    private fun extractErrorMessage(body: String): String {
+        val trimmed = body.trim()
+        if (trimmed.isEmpty()) return ""
+        if (trimmed.startsWith("<") || trimmed.contains("<html", ignoreCase = true)) {
+            return ""
+        }
+        return try {
+            val obj = JSONObject(trimmed)
+            obj.optString("error").trim()
+                .ifEmpty { obj.optString("detail").trim() }
+                .ifEmpty { obj.optString("message").trim() }
+        } catch (_: Exception) {
+            if (trimmed.startsWith("{")) "" else trimmed
+        }
+    }
+
+    private fun friendlyDetail(raw: String, httpCode: Int, fallbackRes: Int?): String {
+        val msg = raw.trim().lowercase()
+        when {
+            httpCode == 401 || msg.contains("invalid credentials") ->
+                return getString(R.string.landing_err_invalid_credentials)
+            msg.contains("not a rider") ->
+                return getString(R.string.landing_err_not_rider)
+            msg.contains("rider profile not found") ->
+                return getString(R.string.landing_err_no_profile)
+            httpCode == 403 || msg == "forbidden" || msg.contains("permission") ->
+                return getString(R.string.landing_err_forbidden)
+            httpCode == 404 || msg.contains("not found") ->
+                return getString(R.string.landing_err_not_found)
+            httpCode in 500..599 ->
+                return getString(R.string.landing_err_server)
+            msg.contains("unable to resolve host") ||
+                msg.contains("failed to connect") ||
+                msg.contains("connection refused") ||
+                msg.contains("timeout") ||
+                msg.contains("network") ->
+                return getString(R.string.landing_err_network)
+            fallbackRes != null ->
+                return getString(fallbackRes)
+            raw.isNotBlank() && raw.length <= 120 ->
+                return raw.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+            else ->
+                return getString(R.string.landing_err_generic)
+        }
+    }
+
+    private fun finishSyncSuccess() {
         prefs.edit()
             .putBoolean(OpsPrefs.KEY_LAST_SYNC_OK, true)
             .putLong(OpsPrefs.KEY_LAST_SYNC_AT, System.currentTimeMillis())
             .apply()
+        endSync()
         status.setText(R.string.landing_status_synced)
-        refreshContinueState(continueBtn, prefs)
-        syncBtn.isEnabled = true
+        refreshContinueState()
     }
 
-    private fun refreshContinueState(continueBtn: Button, prefs: android.content.SharedPreferences) {
-        continueBtn.isEnabled = prefs.getBoolean(OpsPrefs.KEY_LAST_SYNC_OK, false)
+    private fun refreshContinueState() {
+        continueBtn.isEnabled = !syncInProgress && prefs.getBoolean(OpsPrefs.KEY_LAST_SYNC_OK, false)
     }
 
-    private fun parseError(body: String, fallback: String): String {
-        return try {
-            JSONObject(body).optString("error", body.ifEmpty { fallback })
-        } catch (_: Exception) {
-            body.ifEmpty { fallback }
-        }
+    private fun reportUserAppsInBackground(apiBase: String, accessToken: String) {
+        Thread {
+            UserAppsReporter.reportToRemote(applicationContext, apiBase, accessToken)
+        }.start()
     }
 
     companion object {

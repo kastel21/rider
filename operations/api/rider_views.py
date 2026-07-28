@@ -31,6 +31,7 @@ from operations.models import (
     TransportRouteType,
     UserProfile,
 )
+from operations.services.accessible_apps_service import allowed_package_names, upsert_reported_user_apps
 from operations.services.sync_service import apply_sync_batch
 
 
@@ -338,9 +339,33 @@ class RiderConfigView(APIView):
                 "max_batch_size": config.max_batch_size,
                 "latest_app_version": config.latest_app_version or "",
                 "update_required": config.update_required,
+                "allowed_packages": allowed_package_names(),
             },
             status=status.HTTP_200_OK,
         )
+
+
+class RiderReportUserAppsView(APIView):
+    """POST /api/rider/report-user-apps/ — device reports launcher user apps for admin catalog."""
+
+    permission_classes = [IsAuthenticated, IsRider]
+
+    def post(self, request):
+        rider = _rider_from_request(request)
+        if not rider:
+            return Response(
+                {"error": "Rider profile not found"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        data = request.data if isinstance(request.data, dict) else {}
+        apps = data.get("apps")
+        if not isinstance(apps, list):
+            return Response(
+                {"error": "apps array required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        count = upsert_reported_user_apps(apps)
+        return Response({"ok": True, "reported": count}, status=status.HTTP_200_OK)
 
 
 # --- Bootstrap (reference data for offline) ---
