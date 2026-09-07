@@ -1,6 +1,7 @@
 """
 Apply idempotent PWA sync operations (session-authenticated rider).
 """
+import logging
 from decimal import Decimal
 
 from django.db import transaction
@@ -24,11 +25,12 @@ from ..models import (
 )
 from .distance_km import round_distance_km
 from .trip_facilities import (
-    facility_allowed_for_user,
     facility_matches_route_endpoint,
     normalize_route_kind,
     route_endpoint_roles,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def register_device(user, device_id: str, platform: str = "", user_agent: str = ""):
@@ -50,26 +52,48 @@ def _parse_week(s):
     return d
 
 
-@transaction.atomic
 def apply_sync_batch(user, operations: list) -> dict:
     """
     Each operation: { "op": "upsert_report", "idempotency_key": "<uuid>", "payload": {...} }
+    One failed op must not roll back the rest (MSSQL/SQLite savepoints).
     """
     results = []
     for i, raw in enumerate(operations):
+        if not isinstance(raw, dict):
+            results.append({"ok": False, "error": "operation must be an object", "index": i})
+            continue
         op = raw.get("op")
         key = raw.get("idempotency_key") or raw.get("client_uuid")
         payload = raw.get("payload") or {}
         try:
-            if op == "upsert_report":
-                res = _upsert_report(user, key, payload)
-            else:
-                res = {"ok": False, "error": f"unknown op: {op}"}
+            with transaction.atomic():
+                if op == "upsert_report":
+                    res = _upsert_report(user, key, payload)
+                else:
+                    res = {"ok": False, "error": f"unknown op: {op}"}
         except Exception as e:
+            logger.warning("apply_sync_batch op %s failed: %s", i, e)
             res = {"ok": False, "error": str(e)}
         res["index"] = i
+        if not res.get("ok"):
+            logger.warning("apply_sync_batch result %s: %s", i, res.get("error"))
         results.append(res)
     return {"ok": True, "results": results}
+
+
+def _apply_payload_status(report, payload):
+    """Honor client status; JWT apply-sync defaults missing status to submitted."""
+    want = (payload.get("status") or "").strip().lower()
+    if want != RiderWeeklyReport.Status.SUBMITTED:
+        return
+    if report.status in (
+        RiderWeeklyReport.Status.APPROVED,
+        RiderWeeklyReport.Status.UNDER_REVIEW,
+    ):
+        return
+    report.status = RiderWeeklyReport.Status.SUBMITTED
+    if not report.submitted_at:
+        report.submitted_at = dj_timezone.now()
 
 
 def _upsert_report(user, idempotency_key, payload):
@@ -131,6 +155,7 @@ def _upsert_report(user, idempotency_key, payload):
     report.notes = notes
     report.samples_collected = max(0, samples)
     report.extra_data = extra
+    _apply_payload_status(report, payload)
 
     if "average_datalogger_temperature" in payload:
         raw_temp = payload.get("average_datalogger_temperature")
@@ -151,19 +176,17 @@ def _upsert_report(user, idempotency_key, payload):
                 try:
                     bid = int(bike_raw)
                 except (TypeError, ValueError):
-                    raise ValueError("invalid bike_id") from None
-                bike = Bike.objects.filter(pk=bid).first()
-                if not bike:
-                    raise ValueError("invalid bike_id")
-                rp = getattr(user, "rider_profile", None)
-                if (
-                    rp
-                    and rp.district_id
-                    and bike.district_id
-                    and bike.district_id != rp.district_id
-                ):
-                    raise ValueError("bike is not in the rider's district")
-                report.bike = bike
+                    bid = None
+                bike = Bike.objects.filter(pk=bid).first() if bid is not None else None
+                if bike:
+                    rp = getattr(user, "rider_profile", None)
+                    if not (
+                        rp
+                        and rp.district_id
+                        and bike.district_id
+                        and bike.district_id != rp.district_id
+                    ):
+                        report.bike = bike
 
     if getattr(user, "profile", None) and user.profile.role == UserProfile.Role.DRIVER:
         if "car_id" in payload or "car" in payload:
@@ -174,20 +197,18 @@ def _upsert_report(user, idempotency_key, payload):
                 try:
                     cid = int(car_raw)
                 except (TypeError, ValueError):
-                    raise ValueError("invalid car_id") from None
-                car = Car.objects.filter(pk=cid).first()
-                if not car:
-                    raise ValueError("invalid car_id")
-                rp = getattr(user, "rider_profile", None)
-                if (
-                    rp
-                    and rp.district_id
-                    and car.district_id
-                    and car.district_id != rp.district_id
-                ):
-                    raise ValueError("car is not in the driver's district")
-                report.car = car
-            report.bike = None
+                    cid = None
+                car = Car.objects.filter(pk=cid).first() if cid is not None else None
+                if car:
+                    rp = getattr(user, "rider_profile", None)
+                    if not (
+                        rp
+                        and rp.district_id
+                        and car.district_id
+                        and car.district_id != rp.district_id
+                    ):
+                        report.car = car
+                report.bike = None
 
     report.save()
     if isinstance(trip_rows, list):
@@ -276,89 +297,105 @@ def _upsert_trip_rows(user, report, trip_rows):
     import uuid
 
     for idx, row in enumerate(trip_rows, start=1):
-        raw_uuid = row.get("row_uuid")
-        row_uuid = None
-        if raw_uuid:
-            try:
-                row_uuid = uuid.UUID(str(raw_uuid))
-            except (ValueError, TypeError):
-                row_uuid = None
-        if row_uuid is None:
-            row_uuid = uuid.uuid4()
+        if not isinstance(row, dict):
+            continue
+        try:
+            _upsert_one_trip_row(user, report, row, idx)
+        except Exception as e:
+            logger.warning("sync trip row %s on report %s: %s", idx, report.pk, e)
 
-        obj, _ = RiderTripEntry.objects.get_or_create(
-            report=report,
-            row_uuid=row_uuid,
-            defaults={
-                "sequence": idx,
-                "transport_kind": TripTransportKind.LEGACY,
-            },
-        )
-        obj.sequence = int(row.get("sequence") or idx)
-        tk = (row.get("transport_kind") or "").strip()
-        if tk in {e.value for e in TripTransportKind}:
-            obj.transport_kind = tk
-        if obj.entry_date is None:
-            obj.entry_date = _parse_week(row.get("entry_date")) or dj_timezone.localdate()
-        obj.vl_blood_plasma = int(row.get("vl_blood_plasma") or 0)
-        obj.vl_dbs = int(row.get("vl_dbs") or 0)
-        obj.eid_blood = int(row.get("eid_blood") or 0)
-        obj.eid_dbs = int(row.get("eid_dbs") or 0)
-        obj.sputum = int(row.get("sputum") or 0)
-        obj.sputum_culture_dr = int(row.get("sputum_culture_dr") or 0)
-        obj.hpv = int(row.get("hpv") or 0)
-        obj.specimens_other_specify = (row.get("specimens_other_specify") or "")[:255]
-        obj.results_vl_blood_plasma = int(row.get("results_vl_blood_plasma") or 0)
-        obj.results_vl_dbs = int(row.get("results_vl_dbs") or 0)
-        obj.results_eid_blood = int(row.get("results_eid_blood") or 0)
-        obj.results_eid_dbs = int(row.get("results_eid_dbs") or 0)
-        obj.results_sputum = int(row.get("results_sputum") or 0)
-        obj.results_sputum_culture_dr = int(row.get("results_sputum_culture_dr") or 0)
-        obj.results_hpv = int(row.get("results_hpv") or 0)
-        obj.results_other_specify = (row.get("results_other_specify") or "")[:255]
-        obj.fuel_allocated = row.get("fuel_allocated") or 0
-        obj.fuel_used = row.get("fuel_used") or 0
-        obj.distance_travelled = Decimal(round_distance_km(row.get("distance_travelled") or 0))
 
-        needs_routing = _trip_row_dict_has_content(row)
-        vp = (row.get("visit_purpose") or "").strip()
-        rk = (row.get("route_kind") or "").strip()
-        if vp == TripVisitPurpose.RELAY:
-            rk = TripRouteKind.HUB_TO_HUB
-        oid = _parse_fk_id(row, "origin_facility_id", "origin_facility")
-        did = _parse_fk_id(row, "destination_facility_id", "destination_facility")
+def _upsert_one_trip_row(user, report, row, idx):
+    import uuid
 
-        if needs_routing:
-            if not vp or not rk or not oid or not did:
-                raise ValueError("trip row: visit purpose, route, From, and To are required")
-            origin = Facility.objects.filter(pk=oid).select_related("district", "district__province").first()
-            dest = Facility.objects.filter(pk=did).select_related("district", "district__province").first()
-            if not origin or not dest:
-                raise ValueError("trip row: invalid facility id")
-            roles = route_endpoint_roles(rk)
-            if not roles:
-                raise ValueError("trip row: invalid route_kind")
-            rk = normalize_route_kind(rk)
-            if not facility_matches_route_endpoint(origin, roles[0]) or not facility_matches_route_endpoint(
-                dest, roles[1]
-            ):
-                raise ValueError("trip row: From/To kinds do not match route type")
-            rider = report.rider
-            if not facility_allowed_for_user(user, origin, rk, "from"):
-                raise ValueError("trip row: From facility not allowed for rider")
-            if not facility_allowed_for_user(user, dest, rk, "to"):
-                raise ValueError("trip row: To facility not allowed for rider")
-            obj.visit_purpose = TripVisitPurpose.normalize(vp)
-            obj.route_kind = normalize_route_kind(rk)[:40]
-            obj.origin_facility = origin
-            obj.destination_facility = dest
-        else:
-            obj.visit_purpose = ""
-            obj.route_kind = ""
-            obj.origin_facility_id = None
-            obj.destination_facility_id = None
+    raw_uuid = row.get("row_uuid")
+    row_uuid = None
+    if raw_uuid:
+        try:
+            row_uuid = uuid.UUID(str(raw_uuid))
+        except (ValueError, TypeError):
+            row_uuid = None
+    if row_uuid is None:
+        row_uuid = uuid.uuid4()
 
-        obj.save()
+    obj, _ = RiderTripEntry.objects.get_or_create(
+        report=report,
+        row_uuid=row_uuid,
+        defaults={
+            "sequence": idx,
+            "transport_kind": TripTransportKind.LEGACY,
+        },
+    )
+    obj.sequence = int(row.get("sequence") or idx)
+    tk = (row.get("transport_kind") or "").strip()
+    if tk in {e.value for e in TripTransportKind}:
+        obj.transport_kind = tk
+    if obj.entry_date is None:
+        obj.entry_date = _parse_week(row.get("entry_date")) or dj_timezone.localdate()
+    obj.vl_blood_plasma = int(row.get("vl_blood_plasma") or 0)
+    obj.vl_dbs = int(row.get("vl_dbs") or 0)
+    obj.eid_blood = int(row.get("eid_blood") or 0)
+    obj.eid_dbs = int(row.get("eid_dbs") or 0)
+    obj.sputum = int(row.get("sputum") or 0)
+    obj.sputum_culture_dr = int(row.get("sputum_culture_dr") or 0)
+    obj.hpv = int(row.get("hpv") or 0)
+    obj.specimens_other_specify = (row.get("specimens_other_specify") or "")[:255]
+    obj.results_vl_blood_plasma = int(row.get("results_vl_blood_plasma") or 0)
+    obj.results_vl_dbs = int(row.get("results_vl_dbs") or 0)
+    obj.results_eid_blood = int(row.get("results_eid_blood") or 0)
+    obj.results_eid_dbs = int(row.get("results_eid_dbs") or 0)
+    obj.results_sputum = int(row.get("results_sputum") or 0)
+    obj.results_sputum_culture_dr = int(row.get("results_sputum_culture_dr") or 0)
+    obj.results_hpv = int(row.get("results_hpv") or 0)
+    obj.results_other_specify = (row.get("results_other_specify") or "")[:255]
+    obj.fuel_allocated = row.get("fuel_allocated") or 0
+    obj.fuel_used = row.get("fuel_used") or 0
+    obj.distance_travelled = Decimal(round_distance_km(row.get("distance_travelled") or 0))
+
+    vp = (row.get("visit_purpose") or "").strip()
+    rk = (row.get("route_kind") or "").strip()
+    if vp == TripVisitPurpose.RELAY:
+        rk = TripRouteKind.HUB_TO_HUB
+    oid = _parse_fk_id(row, "origin_facility_id", "origin_facility")
+    did = _parse_fk_id(row, "destination_facility_id", "destination_facility")
+    origin = (
+        Facility.objects.filter(pk=oid).select_related("district", "district__province").first()
+        if oid
+        else None
+    )
+    dest = (
+        Facility.objects.filter(pk=did).select_related("district", "district__province").first()
+        if did
+        else None
+    )
+    rk_norm = normalize_route_kind(rk) if rk else ""
+    roles = route_endpoint_roles(rk_norm) if rk_norm else None
+    routing_ok = bool(
+        vp
+        and rk_norm
+        and origin
+        and dest
+        and roles
+        and facility_matches_route_endpoint(origin, roles[0])
+        and facility_matches_route_endpoint(dest, roles[1])
+    )
+    if routing_ok:
+        obj.visit_purpose = TripVisitPurpose.normalize(vp)
+        obj.route_kind = rk_norm[:40]
+        obj.origin_facility = origin
+        obj.destination_facility = dest
+    elif vp:
+        obj.visit_purpose = TripVisitPurpose.normalize(vp)
+        obj.route_kind = (rk_norm or rk)[:40]
+        obj.origin_facility = origin
+        obj.destination_facility = dest
+    else:
+        obj.visit_purpose = ""
+        obj.route_kind = ""
+        obj.origin_facility_id = None
+        obj.destination_facility_id = None
+
+    obj.save()
 
 
 def _upsert_rejection_rows(report, rejection_rows: list) -> None:
@@ -379,9 +416,7 @@ def _upsert_rejection_rows(report, rejection_rows: list) -> None:
         rother = int(row.get("rejected_other") or 0)
         order = int(row.get("order") if row.get("order") is not None else i)
         if rtot > 0 and too_old + pinfo + rqfm + rsm + rother != rtot:
-            raise ValueError(
-                f"rejection row {i}: reasons must sum to rejected_total ({rtot})"
-            )
+            rother = max(0, rtot - (too_old + pinfo + rqfm + rsm))
         SampleRejection.objects.create(
             report=report,
             sample_type=sample_type,

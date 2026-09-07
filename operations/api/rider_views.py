@@ -4,6 +4,7 @@ JWT auth, profile, bootstrap, device registration, and idempotent sync (same sem
 """
 from datetime import datetime
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 
 from django.contrib.auth import authenticate
@@ -16,6 +17,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 
+from operations.api.authentication import RiderJWTAuthentication
 from operations.api.permissions import IsRider
 
 from operations.models import (
@@ -27,6 +29,7 @@ from operations.models import (
     RiderDevice,
     RiderProfile,
     RiderRemoteConfig,
+    RiderWeeklyReport,
     SampleRejection,
     TransportRouteType,
     UserProfile,
@@ -40,7 +43,37 @@ User = get_user_model()
 
 def _rider_from_request(request):
     """Return RiderProfile for request.user or None."""
-    return getattr(request.user, "rider_profile", None)
+    user = getattr(request, "user", None)
+    if not user or not getattr(user, "is_authenticated", False):
+        return None
+    try:
+        return user.rider_profile
+    except ObjectDoesNotExist:
+        return None
+
+
+def _tokens_for_rider(user):
+    refresh = RefreshToken.for_user(user)
+    refresh["username"] = user.get_username()
+    access = refresh.access_token
+    access["username"] = user.get_username()
+    return refresh, access
+
+
+def _prepare_mobile_operations(operations):
+    """Existing APK payloads omit status; mark as submitted so PC queues see them."""
+    prepared = []
+    for raw in operations:
+        if not isinstance(raw, dict):
+            prepared.append(raw)
+            continue
+        op = dict(raw)
+        payload = dict(op.get("payload") or {})
+        if not (payload.get("status") or "").strip():
+            payload["status"] = RiderWeeklyReport.Status.SUBMITTED
+        op["payload"] = payload
+        prepared.append(op)
+    return prepared
 
 
 def _is_rider(user):
@@ -127,16 +160,19 @@ class RiderLoginView(APIView):
                 {"error": "Not a rider account"},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        rider = getattr(user, "rider_profile", None)
+        try:
+            rider = user.rider_profile
+        except ObjectDoesNotExist:
+            rider = None
         if not rider:
             return Response(
                 {"error": "Rider profile not found"},
                 status=status.HTTP_403_FORBIDDEN,
             )
-        refresh = RefreshToken.for_user(user)
+        refresh, access = _tokens_for_rider(user)
         return Response(
             {
-                "access": str(refresh.access_token),
+                "access": str(access),
                 "refresh": str(refresh),
                 "expires_in": 3600,
                 "user": {
@@ -484,15 +520,13 @@ class RiderApplySyncView(APIView):
     device_id required when enforcing RiderDevice registration.
     """
 
+    authentication_classes = [RiderJWTAuthentication]
     permission_classes = [IsAuthenticated, IsRider]
 
     def post(self, request):
         rider = _rider_from_request(request)
         if not rider:
-            return Response(
-                {"error": "Rider profile not found"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+            rider, _ = RiderProfile.objects.get_or_create(user=request.user)
         data = request.data if isinstance(request.data, dict) else {}
         device, err_response = _get_device_for_sync(rider, data.get("device_id"))
         if err_response is not None:
@@ -506,7 +540,7 @@ class RiderApplySyncView(APIView):
                 {"ok": False, "error": "operations must be a list"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        out = apply_sync_batch(request.user, operations)
+        out = apply_sync_batch(request.user, _prepare_mobile_operations(operations))
         return Response(out, status=status.HTTP_200_OK)
 
 

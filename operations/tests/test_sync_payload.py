@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from rest_framework.test import APIClient
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from operations.models import (
     RiderProfile,
@@ -85,6 +86,83 @@ class SyncPayloadTests(TestCase):
         data = res.json()
         self.assertEqual(data["idempotency_key"], str(self.report.client_uuid))
         self.assertEqual(len(data["payload"]["trip_rows"]), 1)
+
+    def test_apply_sync_saves_incomplete_trip_rows(self):
+        key = str(uuid.uuid4())
+        out = apply_sync_batch(
+            self.user,
+            [
+                {
+                    "op": "upsert_report",
+                    "idempotency_key": key,
+                    "payload": {
+                        "week_start": "2026-04-13",
+                        "title": "Incomplete trips",
+                        "status": "submitted",
+                        "trip_rows": [
+                            {
+                                "vl_blood_plasma": 3,
+                                "sequence": 1,
+                            }
+                        ],
+                        "rejections": [
+                            {
+                                "sample_type": "vl_plasma",
+                                "rejected_total": 2,
+                                "rejected_too_old": 1,
+                            }
+                        ],
+                    },
+                }
+            ],
+        )
+        self.assertTrue(out["results"][0]["ok"], out["results"][0])
+        report = RiderWeeklyReport.objects.get(client_uuid=key)
+        self.assertEqual(report.status, RiderWeeklyReport.Status.SUBMITTED)
+        self.assertEqual(report.trip_entries.count(), 1)
+        self.assertEqual(report.trip_entries.first().vl_blood_plasma, 3)
+        self.assertEqual(report.sample_rejections.count(), 1)
+
+
+class RiderApplySyncApiTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="rider_sync", password="pass")
+        UserProfile.objects.update_or_create(
+            user=self.user, defaults={"role": UserProfile.Role.RIDER}
+        )
+        RiderProfile.objects.get_or_create(user=self.user)
+        self.client = APIClient()
+        refresh = RefreshToken.for_user(self.user)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {refresh.access_token}")
+
+    def test_apply_sync_jwt_creates_submitted_report(self):
+        key = str(uuid.uuid4())
+        res = self.client.post(
+            "/api/rider/apply-sync/",
+            {
+                "device_id": "phone-1",
+                "operations": [
+                    {
+                        "op": "upsert_report",
+                        "idempotency_key": key,
+                        "payload": {
+                            "week_start": "2026-04-20",
+                            "title": "From APK",
+                            "trip_rows": [{"vl_blood_plasma": 1, "sequence": 1}],
+                            "rejections": [],
+                        },
+                    }
+                ],
+            },
+            format="json",
+        )
+        self.assertEqual(res.status_code, 200, res.content)
+        body = res.json()
+        self.assertTrue(body["results"][0]["ok"], body)
+        report = RiderWeeklyReport.objects.get(client_uuid=key)
+        self.assertEqual(report.rider_id, self.user.pk)
+        self.assertEqual(report.status, RiderWeeklyReport.Status.SUBMITTED)
+        self.assertEqual(report.trip_entries.count(), 1)
 
 
 class RiderHealthApiTests(TestCase):

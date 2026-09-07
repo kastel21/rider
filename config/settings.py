@@ -33,8 +33,28 @@ SECRET_KEY = os.environ.get(
 
 DEBUG = os.environ.get("DJANGO_DEBUG", "1") == "1"
 
-_allowed = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,https://pythonclusters-208233-0.cloudclusters.net")
-ALLOWED_HOSTS = [h.strip() for h in _allowed.split(",") if h.strip()]
+
+def _parse_allowed_hosts(raw: str) -> list:
+    """Accept hostnames, and URLs pasted from the hosting panel (strip scheme)."""
+    hosts = []
+    for part in (raw or "").split(","):
+        h = part.strip()
+        if not h:
+            continue
+        if "://" in h:
+            from urllib.parse import urlparse
+
+            parsed = urlparse(h)
+            h = parsed.hostname or h
+        hosts.append(h)
+    return hosts
+
+
+_allowed = os.environ.get(
+    "DJANGO_ALLOWED_HOSTS",
+    "localhost,127.0.0.1,pythonclusters-208233-0.cloudclusters.net",
+)
+ALLOWED_HOSTS = _parse_allowed_hosts(_allowed)
 
 INSTALLED_APPS = [
     "django.contrib.admin",
