@@ -1,8 +1,9 @@
 """
 Apply remote rider bootstrap + profile JSON into the local SQLite DB (embedded Android).
 
-Service-account sync scopes reference data to the remote rider's district/province; it does not
-create end-user passwords. Local /login/ still requires User rows from seed or provisioning.
+Landing sync uses a service account. Cloud bootstrap for that username may include every
+facility (see OPS_MOBILE_SYNC_USERNAMES). It does not create end-user passwords; local
+/login/ still requires User rows from seed or provisioning.
 """
 
 from __future__ import annotations
@@ -96,15 +97,18 @@ def apply_embedded_bootstrap(payload: dict) -> dict:
         if District.objects.filter(pk=did).exists():
             continue
         dname = (row.get("district_name") or f"District {did}")[:128]
-        root_pid = bootstrap.get("province_id")
+        root_pid = row.get("province_id")
+        if root_pid is None:
+            root_pid = bootstrap.get("province_id")
         if root_pid is None and dist_payload:
             root_pid = dist_payload.get("province_id")
         if root_pid is None:
             root_pid = 1
         root_pid = int(root_pid)
+        pname = (row.get("province_name") or f"Province {root_pid}")[:128]
         Province.objects.update_or_create(
             pk=root_pid,
-            defaults={"name": f"Province {root_pid}", "code": ""},
+            defaults={"name": pname, "code": ""},
         )
         stats["provinces"] += 1
         District.objects.update_or_create(

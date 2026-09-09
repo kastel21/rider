@@ -52,7 +52,7 @@ On first launch, [`server.py`](../android/app/src/main/python/server.py) copies 
 
 ## Landing sync + local login (`local.properties`)
 
-The app launcher is **Sync data** ([`LandingActivity`](../android/app/src/main/java/com/operations/rider/LandingActivity.kt)): a **service account** on the backend calls `POST /api/rider/login/`, then `GET /api/rider/bootstrap/` and `GET /api/rider/profile/`, and applies that JSON into the device SQLite via `POST /api/embedded/import-bootstrap/` (protected by a shared secret). Bootstrap scope follows **that service rider’s district**, not every user on the server.
+The app launcher is **Sync data** ([`LandingActivity`](../android/app/src/main/java/com/operations/rider/LandingActivity.kt)): a **service account** on the backend calls `POST /api/rider/login/`, then `GET /api/rider/bootstrap/` and `GET /api/rider/profile/`, and applies that JSON into the device SQLite via `POST /api/embedded/import-bootstrap/` (protected by a shared secret). If the service username is in **`OPS_MOBILE_SYNC_USERNAMES`** (default `emmanuel_takawengwa,mobile_sync`), bootstrap includes **all facilities**; other riders still get district/province scope. Rider From/To dropdowns on the phone still filter to **that logged-in rider’s district**.
 
 Optionally you can replace those three GETs with **`GET /api/rider/sync-bundle/`** (same JWT) to fetch bootstrap, profile, and district user list in one response; the embedded import steps stay the same.
 
@@ -131,10 +131,24 @@ Open the `android` folder in Android Studio, let Gradle sync, then:
 
 ```bash
 cd android
-./gradlew :app:assembleDebug
+./gradlew :app:assembleEcollectAbi32Debug :app:assembleEcollectAbi64Debug
 ```
 
-APK output: `android/app/build/outputs/apk/debug/app-debug.apk`.
+There are two E-Collect apps (different package names, so both can be installed on one phone):
+
+| Flavor | Launcher name | Package | Python | ABIs | Typical phones |
+|--------|---------------|---------|--------|------|----------------|
+| **abi32** | E-Collect 32 | `com.ecollect.app.bit32` | 3.11 | `armeabi-v7a` | Samsung F13/A03, Tecno, itel, Lenovo Tab M7 |
+| **abi64** | E-Collect 64 | `com.ecollect.app.bit64` | 3.13 | `arm64-v8a`, `x86_64` | ZTE Blade A36 and other 64-bit Android |
+
+APK output (debug):
+
+- `android/app/build/outputs/apk/ecollect/abi32/debug/E-Collect-32-debug.apk`
+- `android/app/build/outputs/apk/ecollect/abi64/debug/E-Collect-64-debug.apk`
+
+The 32-bit flavor needs **Python 3.11** on the build machine (`py -3.11` on Windows). The 64-bit flavor needs **Python 3.13**. Override with `CHAQUOPY_BUILD_PYTHON_32` / `CHAQUOPY_BUILD_PYTHON_64` if needed.
+
+Uninstall any older APK named **E-Collect** (`com.ecollect.app` or `com.operations.rider`) before installing these; it will not update in place.
 
 ## Release signing
 
@@ -181,18 +195,24 @@ android {
 4. Build:
 
 ```bash
-./gradlew :app:assembleRelease
+./gradlew :app:assembleEcollectAbi32Release :app:assembleEcollectAbi64Release
 ```
 
-Release APK: `android/app/build/outputs/apk/release/app-release.apk`.
+Release APKs:
+
+- `android/app/build/outputs/apk/ecollect/abi32/release/E-Collect-32-release.apk`
+- `android/app/build/outputs/apk/ecollect/abi64/release/E-Collect-64-release.apk`
 
 ## Google Play App Bundle (AAB)
 
 ```bash
-./gradlew :app:bundleRelease
+./gradlew :app:bundleEcollectAbi32Release :app:bundleEcollectAbi64Release
 ```
 
-Output: `android/app/build/outputs/bundle/release/app-release.aab`.
+Output:
+
+- `android/app/build/outputs/bundle/ecollectAbi32Release/app-ecollect-abi32-release.aab`
+- `android/app/build/outputs/bundle/ecollectAbi64Release/app-ecollect-abi64-release.aab`
 
 ## Internal distribution
 
@@ -206,7 +226,9 @@ From `android/` (PowerShell):
 
 ```powershell
 $env:JAVA_HOME = "C:\Program Files\Java\jdk-17"
-.\gradlew.bat :app:installDebug
+.\gradlew.bat :app:installEcollectAbi32Debug
+# or
+.\gradlew.bat :app:installEcollectAbi64Debug
 ```
 
 Requires [USB debugging](https://developer.android.com/studio/run/device) enabled. The wrapper uses Gradle **8.9** ([`gradle-wrapper.properties`](../android/gradle/wrapper/gradle-wrapper.properties)); Android Gradle Plugin 8.7.x requires it.
@@ -234,7 +256,7 @@ adb logcat -v time | Select-String "operations.rider|python\.|FATAL"
 ## Troubleshooting
 
 - **“Server Error (500)” / `ZoneInfoNotFoundError` / `No module named 'tzdata'`**: Embedded Python on Android has no system IANA timezone database. The app depends on the **`tzdata`** package ([`requirements-android.txt`](../requirements-android.txt)); [`server.py`](../android/app/src/main/python/server.py) imports it before Django starts so `TIME_ZONE = UTC` works.
-- **Other 500s in the WebView**: Debug builds turn on Django **`DEBUG`** (`BuildConfig.DEBUG` → `server.py`), so you often get the **yellow error page** with a traceback. Check logcat: `adb logcat --pid=$(adb shell pidof -s com.operations.rider) python.stderr:V *:S`. Also: run `collectstatic`, SQLite (busy timeout / WAL / threaded WSGI) as documented elsewhere.
+- **Other 500s in the WebView**: Debug builds turn on Django **`DEBUG`** (`BuildConfig.DEBUG` → `server.py`), so you often get the **yellow error page** with a traceback. Check logcat: `adb logcat --pid=$(adb shell pidof -s com.ecollect.app.bit64) python.stderr:V *:S`. Also: run `collectstatic`, SQLite (busy timeout / WAL / threaded WSGI) as documented elsewhere.
 - **`JAVA_HOME` is set to an invalid directory** (e.g. literally `%JAVA_HOME%\bin`): fix the system/user `JAVA_HOME` to your JDK 17 root, or set `$env:JAVA_HOME = "C:\Program Files\Java\jdk-17"` for the session before `gradlew`. [`gradle.properties`](../android/gradle.properties) also sets `org.gradle.java.home` for Gradle itself; `gradlew.bat` still checks `JAVA_HOME` first.
 - **White / unstyled UI**: run `collectstatic` (see above) so `staticfiles/` exists under `android/app/src/main/python/`.
 - **Port already in use**: the app uses port `8765` by default ([`MainActivity.kt`](../android/app/src/main/java/com/operations/rider/MainActivity.kt)); change `PORT` if another tool conflicts during development.

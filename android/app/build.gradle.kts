@@ -1,3 +1,4 @@
+import java.io.File
 import java.util.Properties
 
 plugins {
@@ -33,12 +34,39 @@ fun buildConfigProp(key: String): String {
     return rootEnvProperties.getProperty(key)?.trim().orEmpty()
 }
 
+/** Host Python for Chaquopy. 32-bit APK needs 3.11; 64-bit APK needs 3.13. */
+fun chaquopyBuildPythonArgs(bit: String): Array<String> {
+    val envName = if (bit == "32") "CHAQUOPY_BUILD_PYTHON_32" else "CHAQUOPY_BUILD_PYTHON_64"
+    var fromEnv = System.getenv(envName)?.trim().orEmpty()
+    if (fromEnv.isEmpty() && bit == "64") {
+        fromEnv = System.getenv("CHAQUOPY_BUILD_PYTHON")?.trim().orEmpty()
+    }
+    if (fromEnv.isNotEmpty()) {
+        return fromEnv.split(Regex("\\s+")).filter { it.isNotEmpty() }.toTypedArray()
+    }
+    if (bit == "64") {
+        return arrayOf("python")
+    }
+    val localAppData = System.getenv("LOCALAPPDATA").orEmpty()
+    val python311Candidates = listOf(
+        "${System.getProperty("user.home")}/.conda/envs/chaquopy311/python.exe",
+        "C:/Anaconda/envs/chaquopy311/python.exe",
+        "$localAppData/Programs/Python/Python311/python.exe",
+        "C:/Python311/python.exe",
+    )
+    val found311 = python311Candidates.firstOrNull { File(it).isFile }
+    if (found311 != null) {
+        return arrayOf(found311)
+    }
+    val isWindows = System.getProperty("os.name").orEmpty().lowercase().contains("win")
+    return if (isWindows) arrayOf("py", "-3.11") else arrayOf("python3.11")
+}
+
 android {
     namespace = "com.operations.rider"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.operations.rider"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
@@ -53,10 +81,35 @@ android {
         buildConfigField("String", "OPS_SYNC_USERNAME", "\"$syncUser\"")
         buildConfigField("String", "OPS_SYNC_PASSWORD", "\"$syncPassword\"")
         buildConfigField("String", "OPS_EMBEDDED_IMPORT_SECRET", "\"$embeddedSecret\"")
+    }
 
-        // Python 3.12+ (incl. 3.13) supports only 64-bit ABIs in Chaquopy
-        ndk {
-            abiFilters += listOf("arm64-v8a", "x86_64")
+    flavorDimensions += listOf("brand", "abi")
+    productFlavors {
+        create("rider") {
+            dimension = "brand"
+            applicationId = "com.operations.rider"
+        }
+        create("ecollect") {
+            dimension = "brand"
+            isDefault = true
+            applicationId = "com.ecollect.app"
+        }
+        create("abi32") {
+            dimension = "abi"
+            applicationIdSuffix = ".bit32"
+            versionNameSuffix = "-32"
+            ndk {
+                abiFilters += listOf("armeabi-v7a")
+            }
+        }
+        create("abi64") {
+            dimension = "abi"
+            isDefault = true
+            applicationIdSuffix = ".bit64"
+            versionNameSuffix = "-64"
+            ndk {
+                abiFilters += listOf("arm64-v8a", "x86_64")
+            }
         }
     }
 
@@ -92,15 +145,24 @@ android {
 
 chaquopy {
     defaultConfig {
-        // Must match a Python interpreter on the build machine (major.minor).
-        version = "3.13"
-        buildPython(System.getenv("CHAQUOPY_BUILD_PYTHON") ?: "python")
         pip {
             // app/ -> android/ -> repo root (requirements-android.txt)
             install("-r", "../../requirements-android.txt")
         }
         // tzdata ships zone files; extract so importlib.resources can load them from disk on Android.
         extractPackages("tzdata")
+    }
+    productFlavors {
+        getByName("abi32") {
+            // Python 3.11 is the newest Chaquopy runtime that still builds armeabi-v7a.
+            version = "3.11"
+            buildPython(*chaquopyBuildPythonArgs("32"))
+        }
+        getByName("abi64") {
+            // Python 3.13: 64-bit only, including Android 15 16 KB page devices.
+            version = "3.13"
+            buildPython(*chaquopyBuildPythonArgs("64"))
+        }
     }
 }
 
@@ -146,6 +208,16 @@ tasks.named("preBuild") {
 tasks.configureEach {
     if (name.startsWith("merge") && name.endsWith("PythonSources")) {
         dependsOn("syncDjangoProject", "bundleSeedDatabase")
+    }
+}
+
+android.applicationVariants.configureEach {
+    val bit = if (flavorName.contains("abi32", ignoreCase = true)) "32" else "64"
+    val brand = if (flavorName.contains("ecollect", ignoreCase = true)) "E-Collect" else "Operations-Rider"
+    val typeName = buildType.name
+    outputs.configureEach {
+        (this as com.android.build.gradle.internal.api.BaseVariantOutputImpl).outputFileName =
+            "$brand-$bit-$typeName.apk"
     }
 }
 

@@ -4,6 +4,7 @@ JWT auth, profile, bootstrap, device registration, and idempotent sync (same sem
 """
 from datetime import datetime
 
+from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 
@@ -407,6 +408,48 @@ class RiderReportUserAppsView(APIView):
 # --- Bootstrap (reference data for offline) ---
 
 
+def _mobile_sync_usernames() -> set[str]:
+    raw = getattr(settings, "OPS_MOBILE_SYNC_USERNAMES", frozenset())
+    if isinstance(raw, str):
+        return {p.strip().lower() for p in raw.split(",") if p.strip()}
+    return {str(x).strip().lower() for x in raw if str(x).strip()}
+
+
+def _is_mobile_sync_user(user) -> bool:
+    name = (getattr(user, "get_username", lambda: "")() or "").strip().lower()
+    return bool(name) and name in _mobile_sync_usernames()
+
+
+def _serialize_facilities(qs, *, with_geo: bool = False) -> list[dict]:
+    if with_geo:
+        rows = list(
+            qs.select_related("district", "district__province").values(
+                "id",
+                "name",
+                "district_id",
+                "district__name",
+                "district__province_id",
+                "district__province__name",
+                "kind",
+                "support_type",
+            )
+        )
+        return [
+            {
+                "id": f["id"],
+                "name": f["name"],
+                "district_id": f["district_id"],
+                "district_name": f["district__name"] or "",
+                "province_id": f["district__province_id"],
+                "province_name": f["district__province__name"] or "",
+                "kind": f["kind"],
+                "support_type": f["support_type"],
+            }
+            for f in rows
+        ]
+    return list(qs.values("id", "name", "district_id", "kind", "support_type"))
+
+
 def _parse_since_param(since_str):
     """Parse ?since= (epoch ms or ISO datetime)."""
     if not since_str or not str(since_str).strip():
@@ -447,25 +490,21 @@ class RiderBootstrapView(APIView):
         facilities_district = []
         facilities_province = []
         hubs = []
-        if district_id:
-            qs_district = Facility.objects.filter(district_id=district_id)
-            facilities_district = list(
-                qs_district.values("id", "name", "district_id", "kind", "support_type")
-            )
-            qs_hubs = Facility.objects.filter(district_id=district_id, kind=Facility.Kind.HUB)
-            hubs = list(
-                qs_hubs.values("id", "name", "district_id", "kind", "support_type")
-            )
-        if province_id:
-            qs_province = Facility.objects.filter(district__province_id=province_id).select_related(
-                "district"
-            )
-            facilities_province = list(
-                qs_province.values("id", "name", "district_id", "district__name", "kind", "support_type")
-            )
-            facilities_province = [
-                {**f, "district_name": f.pop("district__name", "")} for f in facilities_province
-            ]
+        all_facilities = _is_mobile_sync_user(request.user)
+        if all_facilities:
+            qs_all = Facility.objects.all()
+            facilities_district = _serialize_facilities(qs_all)
+            facilities_province = _serialize_facilities(qs_all, with_geo=True)
+            hubs = _serialize_facilities(qs_all.filter(kind=Facility.Kind.HUB), with_geo=True)
+        else:
+            if district_id:
+                qs_district = Facility.objects.filter(district_id=district_id)
+                facilities_district = _serialize_facilities(qs_district)
+                qs_hubs = Facility.objects.filter(district_id=district_id, kind=Facility.Kind.HUB)
+                hubs = _serialize_facilities(qs_hubs)
+            if province_id:
+                qs_province = Facility.objects.filter(district__province_id=province_id)
+                facilities_province = _serialize_facilities(qs_province, with_geo=True)
 
         qs_labs = Lab.objects.all()
         if since is not None:
@@ -504,6 +543,7 @@ class RiderBootstrapView(APIView):
                 "bikes": bikes,
                 "district_id": district_id,
                 "province_id": province_id,
+                "bootstrap_scope": "all" if all_facilities else "province",
                 "server_time": server_time.isoformat(),
             },
             status=status.HTTP_200_OK,

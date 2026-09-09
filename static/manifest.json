@@ -1,6 +1,6 @@
 {
-  "name": "Operations Rider",
-  "short_name": "Ops Rider",
+  "name": "E-Collect",
+  "short_name": "E-Collect",
   "start_url": "/reports/",
   "display": "standalone",
   "background_color": "#0f172a",

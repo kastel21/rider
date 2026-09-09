@@ -10,8 +10,8 @@ Branded **Cooler Sync** icon (3D specimen transport cooler with orbital sync arr
 
 Referenced by [`static/manifest.json`](../manifest.json).
 
-Regenerate Android mipmaps after editing the master:
+E-Collect launcher mipmaps (bike + specimen cooler, app `com.ecollect.app`):
 
 ```bash
-python scripts/generate_app_icons.py
+python scripts/generate_app_icons.py --src static/icons/app-icon-ecollect.png --res android/app/src/ecollect/res --skip-pwa
 ```

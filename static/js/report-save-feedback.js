@@ -185,8 +185,17 @@
         (form && form.getAttribute("data-report-pk")) ||
         "";
       if (!pk && resUrl) {
-        var m = String(resUrl).match(/\/reports\/(\d+)(?:\/|$)/);
-        if (m) pk = m[1];
+        try {
+          var parsed = new URL(resUrl, window.location.origin);
+          pk = parsed.searchParams.get("remote_sync_report") || "";
+          if (!pk) {
+            var pathMatch = parsed.pathname.match(/\/reports\/(\d+)(?:\/|$)/);
+            if (pathMatch) pk = pathMatch[1];
+          }
+        } catch (e) {
+          var m = String(resUrl).match(/[?&]remote_sync_report=(\d+)/);
+          if (m) pk = m[1];
+        }
       }
       if (pk) qs += "&remote_sync_report=" + encodeURIComponent(pk);
     }

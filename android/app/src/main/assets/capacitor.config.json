@@ -1,6 +1,6 @@
 {
-	"appId": "com.example.riderops",
-	"appName": "Rider Ops",
+	"appId": "com.ecollect.app",
+	"appName": "E-Collect",
 	"webDir": "www",
 	"server": {
 		"androidScheme": "https",

@@ -20,8 +20,8 @@ import java.util.concurrent.TimeUnit
 
 /**
  * Landing: online sync (service account) into local SQLite via POST /api/embedded/import-bootstrap/,
- * then user may continue to local WebView login. Service account bootstrap is scoped to that rider's
- * district; see `operations.services.embedded_bootstrap_import` module docstring.
+ * then user may continue to local WebView login. Cloud bootstrap for OPS_SYNC_USERNAME includes
+ * all facilities when that username is in OPS_MOBILE_SYNC_USERNAMES.
  */
 class LandingActivity : AppCompatActivity() {
 

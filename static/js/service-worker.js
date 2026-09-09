@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-globals */
-const CACHE = "ops-rider-v9";
+const CACHE = "ops-rider-v10";
 const PRECACHE = [
   "/static/css/standalone-shell.css",
   "/static/css/dashboard-record.css",

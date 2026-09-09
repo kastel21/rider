@@ -6,7 +6,7 @@
     "android:sync": "npx cap sync android",
     "android:open": "npx cap open android",
     "android:install:debug": "npx cap run android",
-    "android:bundle": "cd android && .\\gradlew.bat bundleRelease",
+    "android:bundle": "cd android && .\\gradlew.bat bundleEcollectAbi32Release bundleEcollectAbi64Release",
     "cap:copy": "npx cap copy",
     "desktop:start": "electron .",
     "desktop:dist": "electron-builder --win --linux --mac"

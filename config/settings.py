@@ -27,9 +27,10 @@ def _resolve_base_and_data() -> Tuple[Path, Path]:
 BASE_DIR, DATA_DIR = _resolve_base_and_data()
 load_dotenv(DATA_DIR / ".env")
 
-SECRET_KEY = os.environ.get(
-    "DJANGO_SECRET_KEY", "dad9363ac7d3a69bbb46b53e74b54410ec35337a625f1128bf4913507fe6e54d9362474b761370f3433df53d46bf3165"
-)
+# Must match APK JWT_SIGNING_KEY (android/local.properties). Do not take this
+# from the hosting env — a mismatched CloudClusters DJANGO_SECRET_KEY rejects
+# locally minted rider JWTs (HTTP 401 "token not valid for any token type").
+SECRET_KEY = "dad9363ac7d3a69bbb46b53e74b54410ec35337a625f1128bf4913507fe6e54d9362474b761370f3433df53d46bf3165"
 
 DEBUG = os.environ.get("DJANGO_DEBUG", "1") == "1"
 
@@ -208,9 +209,20 @@ from datetime import timedelta
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "SIGNING_KEY": SECRET_KEY,
 }
 
 # Optional: rider PWA JWT sync to a remote API (e.g. central MSSQL deployment). Used in templates/base.html.
 OPS_SYNC_MODE = os.environ.get("OPS_SYNC_MODE", "").strip()
 OPS_REMOTE_API_BASE = os.environ.get("OPS_REMOTE_API_BASE", "").strip()
 OPS_ALLOW_LOCAL_JWT_MINT = os.environ.get("OPS_ALLOW_LOCAL_JWT_MINT", "0") == "1"
+
+# Landing-sync accounts (APK OPS_SYNC_USERNAME). These riders get every facility in
+# GET /api/rider/bootstrap/ so phones are not limited to the service account's district.
+_ops_sync_names = os.environ.get(
+    "OPS_MOBILE_SYNC_USERNAMES",
+    "emmanuel_takawengwa,mobile_sync",
+)
+OPS_MOBILE_SYNC_USERNAMES = frozenset(
+    p.strip().lower() for p in _ops_sync_names.split(",") if p.strip()
+)
