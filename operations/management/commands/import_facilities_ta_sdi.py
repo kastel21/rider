@@ -19,7 +19,9 @@ from pathlib import Path
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from operations.models import District, Facility, Province, SupportType
+from operations.geo_names import canon_district_name, canon_province_name
+from operations.models import Facility, Province, SupportType
+from operations.services.district_merge import get_or_create_district
 
 
 def _infer_kind(name: str) -> str:
@@ -109,8 +111,8 @@ class Command(BaseCommand):
                     self.stderr.write(self.style.WARNING(f"Line {line_no}: expected 3+ tab columns, skipping"))
                     skipped += 1
                     continue
-                prov_name = parts[0].strip()
-                dist_name = parts[1].strip()
+                prov_name = canon_province_name(parts[0].strip())
+                dist_name = canon_district_name(parts[1].strip())
                 fac_name = "\t".join(parts[2:]).strip()
                 if not prov_name or not dist_name or not fac_name:
                     skipped += 1
@@ -121,16 +123,13 @@ class Command(BaseCommand):
                     created_p += 1
 
                 if options["update_districts"] and not blank_support:
-                    district, d_created = District.objects.get_or_create(
-                        province=province,
-                        name=dist_name,
+                    district, d_created = get_or_create_district(
+                        province,
+                        dist_name,
                         defaults={"support_type": support},
                     )
                 else:
-                    district, d_created = District.objects.get_or_create(
-                        province=province,
-                        name=dist_name,
-                    )
+                    district, d_created = get_or_create_district(province, dist_name)
                 if d_created:
                     created_d += 1
                 elif options["update_districts"] and not blank_support and district.support_type != support:

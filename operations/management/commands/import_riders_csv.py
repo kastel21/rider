@@ -17,27 +17,19 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.utils.text import slugify
 
-from operations.models import Bike, District, Province, RiderProfile, SupportType, UserProfile
+from operations.geo_names import canon_district_name, canon_province_name, norm_text
+from operations.models import Bike, Province, RiderProfile, SupportType, UserProfile
+from operations.services.district_merge import get_or_create_district
 
 DEFAULT_PASSWORD = "Test123?"
 
-# Shorthand → full province name (same as import_drivers_csv).
-PROVINCE_ALIASES = {
-    "mat north": "Matabeleland North",
-    "mat south": "Matabeleland South",
-    "mash east": "Mashonaland East",
-    "mash west": "Mashonaland West",
-    "mash central": "Mashonaland Central",
-}
-
 
 def _norm_text(v):
-    return " ".join((v or "").strip().split())
+    return norm_text(v)
 
 
 def _canon_province(name):
-    n = _norm_text(name)
-    return PROVINCE_ALIASES.get(n.lower(), n)
+    return canon_province_name(name)
 
 
 def _canon_support(v):
@@ -113,7 +105,7 @@ class Command(BaseCommand):
                 rider_name = _norm_text(row.get(headers.get("Name of Rider", "Name of Rider"), ""))
                 bike_code = _norm_text(row.get(headers.get("Bike Registration Number", "Bike Registration Number"), "")).upper()
                 province_name = _canon_province(row.get(headers.get("Province", "Province "), ""))
-                district_name = _norm_text(row.get(headers.get("District", "District "), ""))
+                district_name = canon_district_name(row.get(headers.get("District", "District "), ""))
                 support_type = _canon_support(row.get(support_col_key, ""))
                 rider_type = _norm_text(row.get(headers.get("Rider Type", "Rider Type"), "rider")).lower()
 
@@ -129,10 +121,7 @@ class Command(BaseCommand):
 
                 with transaction.atomic():
                     province, _ = Province.objects.get_or_create(name=province_name)
-                    district, _ = District.objects.get_or_create(
-                        province=province,
-                        name=district_name,
-                    )
+                    district, _ = get_or_create_district(province, district_name)
                     if support_type and district.support_type != support_type:
                         district.support_type = support_type
                         district.save(update_fields=["support_type"])

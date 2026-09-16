@@ -14,27 +14,19 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.utils.text import slugify
 
-from operations.models import Car, District, Province, RiderProfile, UserProfile
+from operations.geo_names import canon_district_name, canon_province_name, norm_text
+from operations.models import Car, Province, RiderProfile, UserProfile
+from operations.services.district_merge import get_or_create_district
 
 DEFAULT_PASSWORD = "Test123?"
 
-# Shorthand in CSV → full province name (also used by import_riders_csv).
-PROVINCE_ALIASES = {
-    "mat north": "Matabeleland North",
-    "mat south": "Matabeleland South",
-    "mash east": "Mashonaland East",
-    "mash west": "Mashonaland West",
-    "mash central": "Mashonaland Central",
-}
-
 
 def _norm_text(v):
-    return " ".join((v or "").strip().split())
+    return norm_text(v)
 
 
 def _canon_province(name):
-    n = _norm_text(name)
-    return PROVINCE_ALIASES.get(n.lower(), n)
+    return canon_province_name(name)
 
 
 def _username_base(name):
@@ -102,7 +94,9 @@ class Command(BaseCommand):
                 ).upper()
                 province_name = _canon_province(row.get(headers["Province"], ""))
                 district_header = headers.get("District") or headers.get("District ")
-                district_name = _norm_text(row.get(district_header, "")) if district_header else ""
+                district_name = (
+                    canon_district_name(row.get(district_header, "")) if district_header else ""
+                )
 
                 if not driver_name or not province_name or not vehicle_code:
                     skipped += 1
@@ -115,10 +109,7 @@ class Command(BaseCommand):
 
                     district = None
                     if district_name:
-                        district, _ = District.objects.get_or_create(
-                            province=province,
-                            name=district_name,
-                        )
+                        district, _ = get_or_create_district(province, district_name)
 
                     car, _ = Car.objects.get_or_create(
                         code=vehicle_code,
