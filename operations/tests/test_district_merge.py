@@ -28,6 +28,12 @@ class DistrictAliasTests(TestCase):
         self.assertEqual(canon_district_name("UMP"), "Uzumba Maramba Pfungwe")
         self.assertEqual(canon_district_name("ump"), "Uzumba Maramba Pfungwe")
 
+    def test_spelling_aliases(self):
+        self.assertEqual(canon_district_name("Murehwa"), "Murewa")
+        self.assertEqual(canon_district_name("Mt. Darwin"), "Mount Darwin")
+        self.assertEqual(canon_district_name("mt darwin"), "Mount Darwin")
+        self.assertEqual(canon_district_name("Kadoma"), "Kadoma Sanyati")
+
     def test_get_or_create_reuses_ump_row_and_renames(self):
         ump = District.objects.create(province=self.province, name="UMP", support_type="TA-SDI")
         district, created = get_or_create_district(self.province, "Uzumba Maramba Pfungwe")
@@ -146,3 +152,57 @@ class MergeUmpDistrictTests(TestCase):
         self.assertIn("Maramba Clinic", district_names)
         self.assertIn("Mutawatawa District Hospital", district_names)
         self.assertIn("Mutawatawa District Hospital", hub_names)
+
+
+class MergeMurewaDistrictTests(TestCase):
+    databases = {"default"}
+
+    def setUp(self):
+        self.province = Province.objects.create(name="Mashonaland East Merge")
+        self.murewa = District.objects.create(province=self.province, name="Murewa", support_type="DSD")
+        self.murehwa = District.objects.create(province=self.province, name="Murehwa", support_type="DSD")
+        self.clinic = Facility.objects.create(
+            name="Macheke Clinic",
+            district=self.murehwa,
+            kind=Facility.Kind.CLINIC,
+            support_type="DSD",
+        )
+        self.hospital = Facility.objects.create(
+            name="Murewa District Hospital",
+            district=self.murehwa,
+            kind=Facility.Kind.CLINIC,
+            support_type="DSD",
+        )
+        self.user = User.objects.create_user(username="murewa_merge_rider_test", password="x")
+        UserProfile.objects.update_or_create(
+            user=self.user, defaults={"role": UserProfile.Role.RIDER}
+        )
+        self.profile = RiderProfile.objects.update_or_create(
+            user=self.user,
+            defaults={"province": self.province, "district": self.murewa},
+        )[0]
+
+    def test_merge_keeps_murewa_id_and_moves_clinics(self):
+        murewa_id = self.murewa.pk
+        merge_aliased_districts()
+        kept = District.objects.get(pk=murewa_id)
+        self.assertEqual(kept.name, "Murewa")
+        self.assertFalse(District.objects.filter(pk=self.murehwa.pk).exists())
+        self.clinic.refresh_from_db()
+        self.hospital.refresh_from_db()
+        self.profile.refresh_from_db()
+        self.assertEqual(self.clinic.district_id, murewa_id)
+        self.assertEqual(self.hospital.district_id, murewa_id)
+        self.assertEqual(self.profile.district_id, murewa_id)
+
+    def test_murewa_rider_bootstrap_includes_clinics(self):
+        merge_aliased_districts()
+        client = APIClient()
+        client.force_authenticate(user=self.user)
+        res = client.get("/api/rider/bootstrap/")
+        self.assertEqual(res.status_code, 200, res.content)
+        body = res.json()
+        self.assertEqual(body["district_id"], self.murewa.pk)
+        names = {row["name"] for row in body["facilities_district"]}
+        self.assertIn("Macheke Clinic", names)
+        self.assertIn("Murewa District Hospital", names)

@@ -8,9 +8,13 @@ PROVINCE_ALIASES = {
     "mash central": "Mashonaland Central",
 }
 
-# Shorthand / alternate spelling → official district name (case-insensitive keys).
+# Shorthand / alternate spelling → name used on rider profiles (case-insensitive keys).
 DISTRICT_ALIASES = {
     "ump": "Uzumba Maramba Pfungwe",
+    "murehwa": "Murewa",
+    "mt. darwin": "Mount Darwin",
+    "mt darwin": "Mount Darwin",
+    "kadoma": "Kadoma Sanyati",
 }
 
 

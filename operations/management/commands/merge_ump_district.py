@@ -8,8 +8,8 @@ from operations.services.district_merge import merge_aliased_districts
 
 class Command(BaseCommand):
     help = (
-        "Merge alias districts (e.g. UMP) into the official name (Uzumba Maramba Pfungwe), "
-        "keeping the district id that already has riders."
+        "Merge alias districts (UMP, Murehwa, Mt. Darwin, Kadoma, …) into the rider "
+        "canonical name, keeping the older district id so mobile district_id stays stable."
     )
 
     def add_arguments(self, parser):
