@@ -218,7 +218,8 @@ OPS_REMOTE_API_BASE = os.environ.get("OPS_REMOTE_API_BASE", "").strip()
 OPS_ALLOW_LOCAL_JWT_MINT = os.environ.get("OPS_ALLOW_LOCAL_JWT_MINT", "0") == "1"
 
 # Landing-sync accounts (APK OPS_SYNC_USERNAME). These riders get every facility in
-# GET /api/rider/bootstrap/ so phones are not limited to the service account's district.
+# GET /api/rider/bootstrap/ and every rider user in GET /api/rider/mobile-user-export/
+# so phones are not limited to the service account's district.
 _ops_sync_names = os.environ.get(
     "OPS_MOBILE_SYNC_USERNAMES",
     "emmanuel_takawengwa,mobile_sync",

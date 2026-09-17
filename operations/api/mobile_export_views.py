@@ -1,8 +1,10 @@
 """
-Mobile / embedded: export user rows (incl. password hash) for district-scoped SQLite replica.
+Mobile / embedded: export user rows (incl. password hash) for SQLite replica.
 
 HIGH RISK: compromise of this response compromises those accounts on offline devices.
-Use HTTPS, least privilege, and district scope only.
+Use HTTPS and least privilege. Regular riders stay district-scoped; landing-sync
+accounts (OPS_MOBILE_SYNC_USERNAMES) receive every rider so phones can pick up
+district moves after Clear data restores the bundled seed.
 """
 
 from django.contrib.auth import get_user_model
@@ -12,6 +14,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from operations.models import District
+from operations.services.mobile_sync import is_mobile_sync_user
 
 User = get_user_model()
 
@@ -20,7 +23,9 @@ class MobileUserExportView(APIView):
     """
     GET /api/rider/mobile-user-export/?district_id=<id>
 
-    - Staff/superuser: must pass district_id (any district).
+    - Staff/superuser: must pass district_id (any district); users for that district only.
+    - Landing-sync account: same district_id rules as a rider, but the user list is
+      every rider so district moves apply on any phone that landing-syncs.
     - Rider/driver: may omit district_id (defaults to their rider_profile.district_id) or pass
       district_id equal to their district (cannot export other districts).
 
@@ -41,11 +46,18 @@ class MobileUserExportView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        qs = (
-            User.objects.filter(rider_profile__district_id=district_id)
-            .select_related("profile", "rider_profile")
-            .order_by("id")
-        )
+        if is_mobile_sync_user(request.user):
+            qs = (
+                User.objects.filter(rider_profile__isnull=False)
+                .select_related("profile", "rider_profile")
+                .order_by("id")
+            )
+        else:
+            qs = (
+                User.objects.filter(rider_profile__district_id=district_id)
+                .select_related("profile", "rider_profile")
+                .order_by("id")
+            )
 
         users_out = []
         for u in qs:

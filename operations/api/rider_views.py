@@ -4,7 +4,6 @@ JWT auth, profile, bootstrap, device registration, and idempotent sync (same sem
 """
 from datetime import datetime
 
-from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 
@@ -36,6 +35,7 @@ from operations.models import (
     UserProfile,
 )
 from operations.services.accessible_apps_service import allowed_package_names, upsert_reported_user_apps
+from operations.services.mobile_sync import is_mobile_sync_user as _is_mobile_sync_user
 from operations.services.sync_service import apply_sync_batch
 
 
@@ -406,18 +406,6 @@ class RiderReportUserAppsView(APIView):
 
 
 # --- Bootstrap (reference data for offline) ---
-
-
-def _mobile_sync_usernames() -> set[str]:
-    raw = getattr(settings, "OPS_MOBILE_SYNC_USERNAMES", frozenset())
-    if isinstance(raw, str):
-        return {p.strip().lower() for p in raw.split(",") if p.strip()}
-    return {str(x).strip().lower() for x in raw if str(x).strip()}
-
-
-def _is_mobile_sync_user(user) -> bool:
-    name = (getattr(user, "get_username", lambda: "")() or "").strip().lower()
-    return bool(name) and name in _mobile_sync_usernames()
 
 
 def _serialize_facilities(qs, *, with_geo: bool = False) -> list[dict]:

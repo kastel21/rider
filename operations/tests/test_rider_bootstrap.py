@@ -4,6 +4,7 @@ from rest_framework.test import APIClient
 
 from operations.models import District, Facility, Province, RiderProfile, UserProfile
 from operations.services.embedded_bootstrap_import import apply_embedded_bootstrap
+from operations.services.embedded_user_import import apply_embedded_user_import
 
 User = get_user_model()
 
@@ -111,3 +112,105 @@ class EmbeddedBootstrapImportGeoTests(TestCase):
         self.assertEqual(fac.name, "Chingwena Clinic")
         self.assertEqual(fac.district_id, 22)
         self.assertEqual(fac.kind, Facility.Kind.HUB)
+
+
+class MobileUserExportScopeTests(TestCase):
+    def setUp(self):
+        self.harare = Province.objects.create(name="Harare", code="")
+        self.midlands = Province.objects.create(name="Midlands", code="")
+        self.harare_dist = District.objects.create(province=self.harare, name="Harare", support_type="")
+        self.zvishavane = District.objects.create(
+            province=self.midlands, name="Zvishavane", support_type=""
+        )
+
+        self.sync_user = User.objects.create_user(username="emmanuel_takawengwa", password="x")
+        UserProfile.objects.update_or_create(
+            user=self.sync_user, defaults={"role": UserProfile.Role.RIDER}
+        )
+        RiderProfile.objects.update_or_create(
+            user=self.sync_user,
+            defaults={"district": self.harare_dist, "province": self.harare},
+        )
+
+        self.moved = User.objects.create_user(username="james_shoko", password="x")
+        UserProfile.objects.update_or_create(
+            user=self.moved, defaults={"role": UserProfile.Role.RIDER}
+        )
+        RiderProfile.objects.update_or_create(
+            user=self.moved,
+            defaults={"district": self.zvishavane, "province": self.midlands},
+        )
+
+        self.client = APIClient()
+
+    def _usernames(self, res):
+        return {row["username"] for row in res.json().get("users", [])}
+
+    @override_settings(OPS_MOBILE_SYNC_USERNAMES=frozenset({"emmanuel_takawengwa"}))
+    def test_sync_user_export_includes_other_district_riders(self):
+        self.client.force_authenticate(user=self.sync_user)
+        res = self.client.get(
+            "/api/rider/mobile-user-export/",
+            {"district_id": self.harare_dist.id},
+        )
+        self.assertEqual(res.status_code, 200, res.content)
+        names = self._usernames(res)
+        self.assertIn("emmanuel_takawengwa", names)
+        self.assertIn("james_shoko", names)
+        james = next(r for r in res.json()["users"] if r["username"] == "james_shoko")
+        self.assertEqual(james["riderprofile"]["district_id"], self.zvishavane.id)
+
+    @override_settings(OPS_MOBILE_SYNC_USERNAMES=frozenset({"emmanuel_takawengwa"}))
+    def test_normal_rider_export_stays_district_scoped(self):
+        self.client.force_authenticate(user=self.moved)
+        res = self.client.get(
+            "/api/rider/mobile-user-export/",
+            {"district_id": self.zvishavane.id},
+        )
+        self.assertEqual(res.status_code, 200, res.content)
+        names = self._usernames(res)
+        self.assertIn("james_shoko", names)
+        self.assertNotIn("emmanuel_takawengwa", names)
+
+
+class EmbeddedUserImportDistrictTests(TestCase):
+    def test_import_updates_existing_rider_district(self):
+        midlands = Province.objects.create(id=8, name="Midlands", code="")
+        mberengwa = District.objects.create(
+            id=40, province=midlands, name="Mberengwa", support_type=""
+        )
+        zvishavane = District.objects.create(
+            id=62, province=midlands, name="Zvishavane", support_type=""
+        )
+        user = User.objects.create_user(username="james_shoko", password="old")
+        UserProfile.objects.update_or_create(
+            user=user, defaults={"role": UserProfile.Role.RIDER}
+        )
+        RiderProfile.objects.update_or_create(
+            user=user, defaults={"district": mberengwa, "province": midlands}
+        )
+        apply_embedded_user_import(
+            {
+                "users": [
+                    {
+                        "id": user.pk,
+                        "username": "james_shoko",
+                        "email": "",
+                        "password": user.password,
+                        "is_active": True,
+                        "userprofile": {"role": UserProfile.Role.RIDER},
+                        "riderprofile": {
+                            "district_id": zvishavane.id,
+                            "province_id": midlands.id,
+                            "facility_id": None,
+                            "bike_id": None,
+                            "car_id": None,
+                            "support_type": "TA-SDI",
+                        },
+                    }
+                ]
+            }
+        )
+        user.rider_profile.refresh_from_db()
+        self.assertEqual(user.rider_profile.district_id, zvishavane.id)
+        self.assertEqual(user.rider_profile.support_type, "TA-SDI")
