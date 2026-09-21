@@ -9,9 +9,15 @@ from django.db.models import Count, IntegerField, Q, Sum
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 
-from ..models import Province, RiderWeeklyReport, UserProfile
+from ..models import Province, RiderTripEntry, RiderWeeklyReport, UserProfile
 from ..selectors import monday_of_local_today, sunday_of_week
-from .me_overview_analytics import extend_me_metrics_analytics
+from .me_overview_analytics import _week_start_key, extend_me_metrics_analytics
+from .trip_analysis import (
+    SPECIMEN_COUNT_FIELDS,
+    filter_primary_analysis_trips,
+    specimens_total_from_agg,
+    sum_specimen_counts,
+)
 
 
 def parse_weeks_param(raw: str | None, *, default: int = 1, max_weeks: int = 52) -> int:
@@ -83,7 +89,6 @@ def build_me_metrics(*, weeks: int) -> dict[str, Any]:
 
     all_agg = base.aggregate(
         total_reports=Count("id"),
-        samples_total=Sum("samples_collected"),
         n_draft=Count("id", filter=Q(status=st.DRAFT)),
         n_submitted=Count("id", filter=Q(status=st.SUBMITTED)),
         n_under_review=Count("id", filter=Q(status=st.UNDER_REVIEW)),
@@ -100,13 +105,18 @@ def build_me_metrics(*, weeks: int) -> dict[str, Any]:
             filter=Q(rider__profile__role=UserProfile.Role.DRIVER),
         ),
     )
+    samples_total = sum_specimen_counts(RiderTripEntry.objects.all())
 
     start_monday, end_monday = _window_bounds(weeks=weeks)
     window = base.filter(week_start__gte=start_monday, week_start__lte=end_monday)
+    window_trips = RiderTripEntry.objects.filter(
+        report__week_start__gte=start_monday,
+        report__week_start__lte=end_monday,
+    )
+    window_samples = sum_specimen_counts(window_trips)
 
     win_agg = window.aggregate(
         reports=Count("id"),
-        samples=Sum("samples_collected"),
         rider_reports=Count("id", filter=Q(rider__profile__role=UserProfile.Role.RIDER)),
         driver_reports=Count("id", filter=Q(rider__profile__role=UserProfile.Role.DRIVER)),
         distinct_riders=Count(
@@ -124,9 +134,18 @@ def build_me_metrics(*, weeks: int) -> dict[str, Any]:
     by_week = {
         row["week_start"]: row
         for row in window.values("week_start")
-        .annotate(report_count=Count("id"), samples_week=Sum("samples_collected"))
+        .annotate(report_count=Count("id"))
         .order_by("week_start")
     }
+    by_week_samples: dict = {}
+    for row in (
+        filter_primary_analysis_trips(window_trips)
+        .values("report__week_start")
+        .annotate(**{field: Sum(field) for field in SPECIMEN_COUNT_FIELDS})
+    ):
+        key = _week_start_key(row["report__week_start"])
+        if key is not None:
+            by_week_samples[key] = specimens_total_from_agg(row)
 
     labels: list[str] = []
     report_counts: list[int] = []
@@ -135,12 +154,8 @@ def build_me_metrics(*, weeks: int) -> dict[str, Any]:
     while d <= end_monday:
         labels.append(d.isoformat())
         row = by_week.get(d)
-        if row:
-            report_counts.append(int(row["report_count"] or 0))
-            sample_counts.append(int(row["samples_week"] or 0))
-        else:
-            report_counts.append(0)
-            sample_counts.append(0)
+        report_counts.append(int(row["report_count"] or 0) if row else 0)
+        sample_counts.append(int(by_week_samples.get(d) or 0))
         d += timedelta(days=7)
 
     prov_all = _province_rows(base)
@@ -167,7 +182,7 @@ def build_me_metrics(*, weeks: int) -> dict[str, Any]:
         ),
         "all_time": {
             "total_reports": all_agg["total_reports"] or 0,
-            "samples_total": int(all_agg["samples_total"] or 0),
+            "samples_total": samples_total,
             "by_status": [
                 {"key": "draft", "label": "Draft", "count": all_agg["n_draft"] or 0},
                 {"key": "submitted", "label": "Submitted", "count": all_agg["n_submitted"] or 0},
@@ -180,7 +195,7 @@ def build_me_metrics(*, weeks: int) -> dict[str, Any]:
         },
         "window": {
             "reports": win_agg["reports"] or 0,
-            "samples": int(win_agg["samples"] or 0),
+            "samples": window_samples,
             "rider_reports": win_agg["rider_reports"] or 0,
             "driver_reports": win_agg["driver_reports"] or 0,
             "distinct_riders": win_agg["distinct_riders"] or 0,

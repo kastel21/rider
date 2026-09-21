@@ -134,17 +134,29 @@ class BuildMeMetricsOverviewTests(TestCase):
             specimens_non_ist_total=7,
             specimens_ambulance=7,
         )
+        RiderTripEntry.objects.create(
+            report=report,
+            sequence=3,
+            transport_kind=TripTransportKind.RELAYED,
+            visit_purpose=TripVisitPurpose.SPECIMENS_RESULTS_TRANSPORT,
+            route_kind=TripRouteKind.HUB_TO_HUB,
+            vl_blood_plasma=100,
+            results_vl_dbs=40,
+            hpv=7,
+        )
 
         m = build_me_metrics(weeks=2)
 
         self.assertEqual(m["window_start"], date(2026, 6, 29))
         self.assertEqual(m["window_end"], date(2026, 7, 6))
+        self.assertEqual(m["all_time"]["samples_total"], 5)
+        self.assertEqual(m["window"]["samples"], 5)
         self.assertEqual(m["delivery"]["specimens_by_type"]["total"], 5)
         self.assertEqual(m["delivery"]["results_by_type"]["vl_dbs"], 5)
         self.assertEqual(m["rejections_window"]["rejected_total"], 4)
         self.assertEqual(m["fuel_distance"]["period_fuel_allocated"], 100.0)
         self.assertEqual(m["fuel_distance"]["period_distance_km"], 20.0)
-        self.assertEqual(m["fuel_distance"]["samples_per_km_in_period"], 2.5)
+        self.assertEqual(m["fuel_distance"]["samples_per_km_in_period"], 0.25)
         self.assertEqual(m["referred_window"]["referral_records"], 1)
         self.assertEqual(m["referred_window"]["samples_referred_out"], 11)
         self.assertEqual(m["pc_transport_window"]["rider_accidents"], 2)

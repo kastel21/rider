@@ -63,6 +63,7 @@ from .me_views import (
     MEMetricsRidersView,
 )
 from .weekly_report_views import WeeklyReportView
+from .rider_week_submission_views import RiderWeekSubmissionsCsvView, RiderWeekSubmissionsView
 
 __all__ = [
     "LoginView",
@@ -124,4 +125,6 @@ __all__ = [
     "MEAccidentsIncompleteView",
     "METableExportView",
     "WeeklyReportView",
+    "RiderWeekSubmissionsView",
+    "RiderWeekSubmissionsCsvView",
 ]

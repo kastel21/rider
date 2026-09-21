@@ -1,0 +1,813 @@
+province,district,name,kind,support_type,pk
+Harare,Harare,Beatrice Infectious Hospital,clinic,DSD,495
+Harare,Harare,Belvedere Poly clinic,clinic,DSD,496
+Harare,Harare,Braeside Clinic,clinic,DSD,498
+Harare,Harare,Budiriro Poly Clinic,clinic,DSD,499
+Harare,Harare,Budiriro Satelite Clinic,clinic,DSD,500
+Harare,Harare,Caledonia Clinic,clinic,DSD,501
+Harare,Harare,Chitungwiza General Hospital,clinic,DSD,502
+Harare,Harare,Eastly Clinic,clinic,DSD,503
+Harare,Harare,Epworth Mission Clinic,clinic,DSD,504
+Harare,Harare,Epworth Poly Clinic,clinic,DSD,505
+Harare,Harare,Glen View Poly clinic,clinic,DSD,508
+Harare,Harare,Greendale Clinic,clinic,DSD,509
+Harare,Harare,Harare Hospital,clinic,DSD,510
+Harare,Harare,Hatcliffe Poly clinic,clinic,DSD,511
+Harare,Harare,Highfield Poly Clinic,clinic,DSD,513
+Harare,Harare,Highlands Clinic,clinic,DSD,514
+Harare,Harare,Highlands Private Clinic,clinic,DSD,515
+Harare,Harare,Hopley Clinic,clinic,DSD,516
+Harare,Harare,Kambuzuma Poly clinic,clinic,DSD,517
+Harare,Harare,Kuwadzana Poly Clinic,clinic,DSD,519
+Harare,Harare,Mabvuku Clinic,clinic,DSD,521
+Harare,Harare,Mabvuku Poly Clinic,clinic,DSD,522
+Harare,Harare,Malborough Council Clinic,clinic,DSD,523
+Harare,Harare,Mbare Poly clinic,clinic,DSD,526
+Harare,Harare,Mt. Pleasant Clinic,clinic,DSD,527
+Harare,Harare,Mufakose Poly clinic,clinic,DSD,528
+Harare,Harare,New Africa House New Start Centre,clinic,DSD,529
+Harare,Harare,Overspill Satellite Clinic,clinic,DSD,530
+Harare,Harare,Parirenyatwa Central Hospital,clinic,DSD,531
+Harare,Harare,Parirenyatwa Primary Care Clinic,clinic,DSD,532
+Harare,Harare,Rujeko  Poly clinic,clinic,DSD,533
+Harare,Harare,Rutsanana Clinic,clinic,DSD,534
+Harare,Harare,Seke North Clinic,clinic,DSD,535
+Harare,Harare,Seke South Clinic,clinic,DSD,536
+Harare,Harare,St. Mary's Clinic,clinic,DSD,538
+Harare,Harare,Sunningdale Satellite Clinic,clinic,DSD,539
+Harare,Harare,Tafara Clinic,clinic,DSD,540
+Harare,Harare,Wilkins Infectious Disease Hospital Infectious Disease Hospital,clinic,DSD,544
+Harare,Harare,Zengeza Clinic Council Clinic,clinic,DSD,545
+Manicaland,Buhera,Berenyazvidzi Clinic,clinic,DSD,547
+Manicaland,Buhera,Birchenough Rural Hospital,clinic,DSD,549
+Manicaland,Buhera,Chawatama Rural Health Centre,clinic,DSD,554
+Manicaland,Buhera,Chiweshe Clinic,clinic,DSD,558
+Manicaland,Buhera,Garamwera Clinic,clinic,DSD,559
+Manicaland,Buhera,Murambinda District Hospital,clinic,DSD,567
+Manicaland,Buhera,Nyashanu Rural Hospital,clinic,DSD,573
+Manicaland,Buhera,Rambanapasi Clinic,clinic,DSD,574
+Manicaland,Chimanimani,Cashel Clinic,clinic,TA-SDI,1709
+Manicaland,Chimanimani,Charleswood Clinic,clinic,TA-SDI,1720
+Manicaland,Chimanimani,Chiramba Clinic,clinic,TA-SDI,1713
+Manicaland,Chimanimani,Hangani Clinic,clinic,TA-SDI,1718
+Manicaland,Chimanimani,Hotsprings Clinic,clinic,TA-SDI,1711
+Manicaland,Chimanimani,Manase Clinic,clinic,TA-SDI,1721
+Manicaland,Chimanimani,Martin Clinic,clinic,TA-SDI,1719
+Manicaland,Chimanimani,Thornton Clinic,clinic,TA-SDI,1717
+Manicaland,Chimanimani,Vhimba Clinic,clinic,TA-SDI,1724
+Manicaland,Chipinge,ARDA Estates Clinic,clinic,DSD,576
+Manicaland,Chipinge,ARDA Mid-Save Clinic,clinic,DSD,577
+Manicaland,Chipinge,Avontour Tingamire Clinic,clinic,DSD,578
+Manicaland,Chipinge,Chinyamukwaka Clinic,clinic,DSD,582
+Manicaland,Chipinge,Chipinge District Hospital,clinic,DSD,584
+Manicaland,Chipinge,Chiriga Rural Health Centre,clinic,DSD,586
+Manicaland,Chipinge,Clear Water Clinic,clinic,DSD,588
+Manicaland,Chipinge,Gaza Council Clinic,clinic,DSD,589
+Manicaland,Chipinge,Hwakata Clinic,clinic,DSD,592
+Manicaland,Chipinge,Kopera Clinic,clinic,DSD,596
+Manicaland,Chipinge,Mabeye Clinic,clinic,DSD,597
+Manicaland,Chipinge,Madhuka Rural Health Centre,clinic,DSD,598
+Manicaland,Chipinge,Mahenye Clinic,clinic,DSD,599
+Manicaland,Chipinge,Mt. Selinda Mission Hospital,clinic,DSD,601
+Manicaland,Chipinge,Muparadze Clinic,clinic,DSD,602
+Manicaland,Chipinge,Musirwizi Clinic,clinic,DSD,604
+Manicaland,Chipinge,Muswera Clinic,clinic,DSD,605
+Manicaland,Chipinge,New Year Gift Clinic,clinic,DSD,608
+Manicaland,Chipinge,Ngaome Clinic,clinic,DSD,609
+Manicaland,Chipinge,Paidamoyo Clinic,clinic,DSD,611
+Manicaland,Chipinge,Silverstream Clinic,clinic,DSD,614
+Manicaland,Chipinge,Southdowns Clinic,clinic,DSD,615
+Manicaland,Chipinge,St. Peters Mission Hospital,clinic,DSD,616
+Manicaland,Chipinge,Tamandai Clinic,clinic,DSD,617
+Manicaland,Chipinge,Tanganda Clinic,clinic,DSD,618
+Manicaland,Chipinge,Tongogara Clinic,clinic,DSD,619
+Manicaland,Chipinge,Tuzuka Rural Health Centre,clinic,DSD,620
+Manicaland,Chipinge,Vheneka Clinic,clinic,DSD,621
+Manicaland,Chipinge,Zamchiya Clinic,clinic,DSD,622
+Manicaland,Makoni,Anorldine Clinic,clinic,DSD,624
+Manicaland,Makoni,Dumbamwe Clinic,clinic,DSD,636
+Manicaland,Makoni,Era Mine Mine Clinic,clinic,DSD,637
+Manicaland,Makoni,Gorubi Springs Rural Health Centre,clinic,DSD,638
+Manicaland,Makoni,Matotwe Clinic,clinic,DSD,645
+Manicaland,Makoni,Mukuwapasi Clinic,clinic,DSD,653
+Manicaland,Makoni,Nasmie Clinic,clinic,DSD,654
+Manicaland,Makoni,Nedevedzo Rural Hospital,clinic,DSD,655
+Manicaland,Makoni,Rusape District Hospital,clinic,DSD,666
+Manicaland,Makoni,St. Michael's Mission Hospital,clinic,DSD,668
+Manicaland,Makoni,St. Theresa Mission Hospital,clinic,DSD,669
+Manicaland,Makoni,Tariro Clinic,clinic,DSD,671
+Manicaland,Makoni,Zunidza Clinic,clinic,DSD,675
+Manicaland,Mutare,ARDA Transau  Clinic,clinic,DSD,677
+Manicaland,Mutare,Berzerly Bridge Clinic,clinic,DSD,679
+Manicaland,Mutare,Bwizi Clinic,clinic,DSD,681
+Manicaland,Mutare,Chikanga Clinic,clinic,DSD,683
+Manicaland,Mutare,Chikwariro Mission Hospital,clinic,DSD,684
+Manicaland,Mutare,Chipendeke Rural Health Centre,clinic,DSD,685
+Manicaland,Mutare,Chiwere Rural Health Centre,clinic,DSD,691
+Manicaland,Mutare,Dangamvura Clinic,clinic,DSD,692
+Manicaland,Mutare,Fernvalley Clinic,clinic,DSD,694
+Manicaland,Mutare,Hob House  Clinic,clinic,DSD,698
+Manicaland,Mutare,Lee Kul Clinic,clinic,DSD,699
+Manicaland,Mutare,Matanda Rural Health Centre,clinic,DSD,703
+Manicaland,Mutare,Mt. Zuma Rural Health Centre,clinic,DSD,705
+Manicaland,Mutare,Mukwada Clinic,clinic,DSD,706
+Manicaland,Mutare,Mutare Council Clinic,clinic,DSD,710
+Manicaland,Mutare,Mutare New Start Centre,clinic,DSD,711
+Manicaland,Mutare,Mutare Provincial Hospital,clinic,DSD,712
+Manicaland,Mutare,Odzi Rural Hospital,clinic,DSD,716
+Manicaland,Mutare,Sakubva District Hospital,clinic,DSD,718
+Manicaland,Mutare,Sakubva Health Centre Hospital,clinic,DSD,719
+Manicaland,Mutare,St. Joseph's T.B Hospital,clinic,DSD,721
+Manicaland,Mutare,St. Welburgh Mission Clinic,clinic,DSD,722
+Manicaland,Mutare,Zvipiripiri Clinic,clinic,DSD,726
+Manicaland,Mutasa,Chinamasa Rural Health Centre,clinic,DSD,729
+Manicaland,Mutasa,Chisuko Council Clinic,clinic,DSD,730
+Manicaland,Mutasa,Chitombo Council Clinic,clinic,DSD,731
+Manicaland,Mutasa,Drenane Timbers Private Clinic,clinic,DSD,732
+Manicaland,Mutasa,Eastern Highlands 1 Private Tanganda,clinic,DSD,733
+Manicaland,Mutasa,Guta Council Clinic,clinic,DSD,735
+Manicaland,Mutasa,Haparare Council Clinic,clinic,DSD,736
+Manicaland,Mutasa,Hauna District Hospital,clinic,DSD,738
+Manicaland,Mutasa,Honde Mission Hospital,clinic,DSD,739
+Manicaland,Mutasa,Katiyo Private-Tanganda,clinic,DSD,741
+Manicaland,Mutasa,Magadzire Clinic,clinic,DSD,1701
+Manicaland,Mutasa,Mandeya 11 Clinic,clinic,DSD,742
+Manicaland,Mutasa,Moyoweshumba Council Clinic,clinic,DSD,744
+Manicaland,Mutasa,Mt. Jenya Council Clinic,clinic,DSD,745
+Manicaland,Mutasa,Mupotedzi Gvt Clinic,clinic,DSD,746
+Manicaland,Mutasa,Mutasa Council Clinic,clinic,DSD,747
+Manicaland,Mutasa,Ngarura Council Clinic,clinic,DSD,748
+Manicaland,Mutasa,Nyanga Pines Clinic,clinic,DSD,749
+Manicaland,Mutasa,Premier Clinic,clinic,DSD,751
+Manicaland,Mutasa,Red Wing Private-Mine,clinic,DSD,752
+Manicaland,Mutasa,Sadziwa Council Clinic,clinic,DSD,755
+Manicaland,Mutasa,Sagambe Council Clinic,clinic,DSD,756
+Manicaland,Mutasa,Sahumani Council Clinic,clinic,DSD,757
+Manicaland,Mutasa,Sakupwanya Council Clinic,clinic,DSD,758
+Manicaland,Mutasa,Samanga Council clinic,clinic,DSD,759
+Manicaland,Mutasa,Samaringa Council clinic,clinic,DSD,760
+Manicaland,Mutasa,Selbourne Wattle Company Private Clinic,clinic,DSD,761
+Manicaland,Mutasa,Sheba Border Timbers Private Clinic,clinic,DSD,762
+Manicaland,Mutasa,St. Augustine's Mission Clinic,clinic,DSD,764
+Manicaland,Mutasa,St. Barbara's Mission Hospitals,clinic,DSD,765
+Manicaland,Mutasa,St. Peter's Mandeya Mission Hospital,clinic,DSD,766
+Manicaland,Mutasa,Zongoro Council Clinic,clinic,DSD,770
+Manicaland,Nyanga,Nyanga District Hospital,hub,TA-SDI,44
+Mashonaland Central,Bindura,Bindura Farm Health Scheme Clinic,clinic,TA-SDI,66
+Mashonaland Central,Bindura,Muyambuka,clinic,TA-SDI,1637
+Mashonaland Central,Bindura,Tarlington,clinic,TA-SDI,1636
+Mashonaland Central,Centenary,Always - 100007 - Clinic,clinic,TA-SDI,53
+Mashonaland Central,Centenary,Chadereka - 100123 - Clinic,clinic,TA-SDI,54
+Mashonaland Central,Centenary,Chawarura - 100147 - Clinic,clinic,TA-SDI,55
+Mashonaland Central,Centenary,Chidikamwedzi - 100171 - Clinic,clinic,TA-SDI,56
+Mashonaland Central,Centenary,Chinyani - 100241 - Clinic,clinic,TA-SDI,57
+Mashonaland Central,Centenary,Dambakurima - 100359 - Rural Health Centre,clinic,TA-SDI,59
+Mashonaland Central,Centenary,David Nelson - 100372 - Clinic,clinic,TA-SDI,60
+Mashonaland Central,Centenary,Hoya - 100612 - Clinic,clinic,TA-SDI,61
+Mashonaland Central,Centenary,Hwata - 100624 - Clinic,clinic,TA-SDI,62
+Mashonaland Central,Centenary,Machaya - 100798 - Clinic,clinic,TA-SDI,63
+Mashonaland Central,Centenary,Muzarabani - 101189 - Clinic,clinic,TA-SDI,64
+Mashonaland Central,Centenary,St. Albert's - 101623 - Mission Hospital,clinic,TA-SDI,65
+Mashonaland Central,Guruve,Angwa Clinic,clinic,DSD,771
+Mashonaland Central,Guruve,Birkdale Rural Health Centre,clinic,DSD,774
+Mashonaland Central,Guruve,Bvochora Clinic,clinic,DSD,776
+Mashonaland Central,Guruve,Chapoto Clinic,clinic,DSD,777
+Mashonaland Central,Guruve,Chidodo Clinic,clinic,DSD,778
+Mashonaland Central,Guruve,Chikafa Clinic,clinic,DSD,779
+Mashonaland Central,Guruve,Chirunya Rural Health Centre,clinic,DSD,781
+Mashonaland Central,Guruve,Chitsungo District Hospital,clinic,DSD,782
+Mashonaland Central,Guruve,Gonono Clinic,clinic,DSD,783
+Mashonaland Central,Guruve,Guruve Clinic,clinic,DSD,785
+Mashonaland Central,Guruve,Guruve District Hospital,clinic,DSD,786
+Mashonaland Central,Guruve,Kamusasa Clinic,clinic,DSD,788
+Mashonaland Central,Guruve,Kemutamba Rural Health Centre,clinic,DSD,789
+Mashonaland Central,Guruve,Mahuwe Clinic,clinic,DSD,790
+Mashonaland Central,Guruve,Masoka Clinic,clinic,DSD,791
+Mashonaland Central,Guruve,Masomo Clinic,clinic,DSD,792
+Mashonaland Central,Guruve,Msengezi Clinic,clinic,DSD,794
+Mashonaland Central,Guruve,Mugarakamwe Rural Health Centre,clinic,DSD,795
+Mashonaland Central,Guruve,Mushumbi Clinic,clinic,DSD,796
+Mashonaland Central,Guruve,Negomo Clinic,clinic,DSD,797
+Mashonaland Central,Guruve,Nyambudzi Rural Health Centre,clinic,DSD,799
+Mashonaland Central,Guruve,Nyamhondoro Clinic,clinic,DSD,800
+Mashonaland Central,Guruve,Shinje Clinic,clinic,DSD,802
+Mashonaland Central,Mazowe,Ardura Rural Health Centre,clinic,DSD,803
+Mashonaland Central,Mazowe,Belgone Clinic Clinic,clinic,DSD,805
+Mashonaland Central,Mazowe,Chinehasha Clinic,clinic,DSD,806
+Mashonaland Central,Mazowe,Concession  District Hospital,clinic,DSD,808
+Mashonaland Central,Mazowe,Dandamira Clinic,clinic,DSD,1670
+Mashonaland Central,Mazowe,Henderson Research Clinic,clinic,DSD,813
+Mashonaland Central,Mazowe,Holmeden Clinic,clinic,DSD,814
+Mashonaland Central,Mazowe,Mazowe Citrus Hosp. Rural Hospital,clinic,DSD,819
+Mashonaland Central,Mazowe,Mazowe Prison Clinic,clinic,DSD,1672
+Mashonaland Central,Mazowe,Nyakudya Clinic,clinic,DSD,822
+Mashonaland Central,Mazowe,Shutu Clinic,clinic,DSD,826
+Mashonaland Central,Mazowe,Suwoguru Clinic,clinic,DSD,1674
+Mashonaland Central,Mazowe,Vonabor Clinic,clinic,DSD,828
+Mashonaland Central,Mount Darwin,Bandimba Rural Health Centre,clinic,DSD,829
+Mashonaland Central,Mount Darwin,Bveke Clinic (New,clinic,DSD,830
+Mashonaland Central,Mount Darwin,Dotito Clinic,clinic,DSD,834
+Mashonaland Central,Mount Darwin,Kamutsenzere Clinic,clinic,DSD,836
+Mashonaland Central,Mount Darwin,Mt. Darwin District Hospital,clinic,DSD,839
+Mashonaland Central,Mount Darwin,Nembire Clinic,clinic,DSD,843
+Mashonaland Central,Mount Darwin,Nyamahobobo Clinic,clinic,DSD,844
+Mashonaland Central,Mount Darwin,Pfunyanguwo Clinic,clinic,DSD,846
+Mashonaland Central,Mount Darwin,Tsakare Clinic,clinic,DSD,847
+Mashonaland Central,Rushinga,Bopoma,clinic,TA-SDI,1644
+Mashonaland Central,Rushinga,Chimhanda District Hospital,hub,TA-SDI,101
+Mashonaland Central,Rushinga,Mukuhununu,clinic,TA-SDI,1645
+Mashonaland Central,Rushinga,Nhawa Rural Health Centre,clinic,TA-SDI,107
+Mashonaland Central,Rushinga,Nyatsato,clinic,TA-SDI,1643
+Mashonaland Central,Shamva,Chevakadzi,clinic,TA-SDI,1638
+Mashonaland Central,Shamva,CZA,clinic,TA-SDI,1642
+Mashonaland Central,Shamva,Matanda,clinic,TA-SDI,1641
+Mashonaland Central,Shamva,Mhokore,clinic,TA-SDI,1639
+Mashonaland Central,Shamva,Mupfure,clinic,TA-SDI,1640
+Mashonaland Central,Shamva,Shamva District Hospital,hub,TA-SDI,123
+Mashonaland East,Chikomba,Gamanya,clinic,TA-SDI,1648
+Mashonaland East,Chikomba,Gamanya Clinic,clinic,TA-SDI,1770
+Mashonaland East,Chikomba,Kadungure,clinic,TA-SDI,1647
+Mashonaland East,Chikomba,Mashayamvura,clinic,TA-SDI,1649
+Mashonaland East,Chikomba,Matanga,clinic,TA-SDI,1654
+Mashonaland East,Chikomba,Mpatsi,clinic,TA-SDI,1653
+Mashonaland East,Chikomba,Sadza District Hospital,hub,TA-SDI,152
+Mashonaland East,Chikomba,St Francis Of Assis,clinic,TA-SDI,1652
+Mashonaland East,Chikomba,ZPCS Chivhu,clinic,TA-SDI,1651
+Mashonaland East,Chikomba,ZRP Chivhu,clinic,TA-SDI,1650
+Mashonaland East,Goromonzi,Arcturus Clinic,clinic,DSD,848
+Mashonaland East,Goromonzi,Bromley Rural Health Centre,clinic,DSD,850
+Mashonaland East,Goromonzi,Cranborne Clinic Clinic,clinic,DSD,854
+Mashonaland East,Goromonzi,Damafalls Poly Clinic,clinic,DSD,1807
+Mashonaland East,Goromonzi,Domboshava Clinic,clinic,DSD,855
+Mashonaland East,Goromonzi,Gazebo Clinic,clinic,DSD,1805
+Mashonaland East,Goromonzi,Gejo raRuby Rural Health Centre,clinic,DSD,856
+Mashonaland East,Goromonzi,Joan Rankini Rural Health Centre,clinic,DSD,857
+Mashonaland East,Goromonzi,John Reimer Clinic,clinic,DSD,858
+Mashonaland East,Goromonzi,Makumbe District Hospital,clinic,DSD,861
+Mashonaland East,Goromonzi,Masukandoro Clinic,clinic,DSD,862
+Mashonaland East,Goromonzi,Melfort Rural Health Centre,clinic,DSD,863
+Mashonaland East,Goromonzi,Ruwa Clinic,clinic,DSD,1806
+Mashonaland East,Goromonzi,Ruwa Poly Clinic,clinic,DSD,868
+Mashonaland East,Goromonzi,Ruwa Rehabilitation  Hospital,clinic,DSD,869
+Mashonaland East,Goromonzi,ZPCS Goromonzi Clinic,clinic,DSD,1808
+Mashonaland East,Marondera,Chiparawe Clinic,clinic,DSD,874
+Mashonaland East,Marondera,Dombotombo Clinic,clinic,DSD,876
+Mashonaland East,Marondera,Igava Clinic,clinic,DSD,877
+Mashonaland East,Marondera,Kushinga Phikelela Clinic,clinic,DSD,878
+Mashonaland East,Marondera,Lustliegh Clinic,clinic,DSD,879
+Mashonaland East,Marondera,Marondera Rural Clinic,clinic,DSD,882
+Mashonaland East,Marondera,Masikana Clinic,clinic,DSD,883
+Mashonaland East,Marondera,Mudzimuirema Rural Health Centre,clinic,DSD,884
+Mashonaland East,Marondera,Nyameni Clinic,clinic,DSD,885
+Mashonaland East,Marondera,Nyembanzvere Clinic,clinic,DSD,886
+Mashonaland East,Marondera,Ridigita Clinic,clinic,DSD,1754
+Mashonaland East,Marondera,Wenimbe Rural Health Centre,clinic,DSD,887
+Mashonaland East,Mudzi,Chimango,clinic,TA-SDI,1655
+Mashonaland East,Mudzi,Chinamano Clinic,hub,TA-SDI,1676
+Mashonaland East,Mudzi,Chingwena,clinic,TA-SDI,1656
+Mashonaland East,Mudzi,Kotwa District Hospital,hub,TA-SDI,185
+Mashonaland East,Mudzi,Mazezuru Grace Life Clinic,hub,TA-SDI,1678
+Mashonaland East,Mudzi,Muzezuru Grace Life,clinic,TA-SDI,1657
+Mashonaland East,Murewa,Dandara Clinic,clinic,DSD,892
+Mashonaland East,Murewa,Goso Clinic,clinic,DSD,894
+Mashonaland East,Murewa,Kadzere Clinic,clinic,DSD,897
+Mashonaland East,Murewa,Kambarami Clinic,clinic,DSD,898
+Mashonaland East,Murewa,Matututu Rural Health Centre,clinic,DSD,901
+Mashonaland East,Murewa,Murewa Poly Clinic,clinic,DSD,905
+Mashonaland East,Murewa,Ngwerume Clinic,clinic,DSD,906
+Mashonaland East,Murewa,Nyamutumbu Clinic,clinic,DSD,908
+Mashonaland East,Murewa,Shambamuto Clinic,clinic,DSD,909
+Mashonaland East,Murewa,St. Clare's Clinic,clinic,DSD,1681
+Mashonaland East,Murewa,Virginia Clinic Clinic,clinic,DSD,911
+Mashonaland East,Murewa,Welcome Home Liden Clinic,clinic,DSD,913
+Mashonaland East,Murewa,Wuyuwuyu Clinic,clinic,DSD,1682
+Mashonaland East,Mutoko,Bepeta,clinic,TA-SDI,1666
+Mashonaland East,Mutoko,Bondamakara,clinic,TA-SDI,1663
+Mashonaland East,Mutoko,Chisambiro,clinic,TA-SDI,1664
+Mashonaland East,Mutoko,Gurure,clinic,TA-SDI,1665
+Mashonaland East,Mutoko,Mutoko District Hospital,hub,TA-SDI,220
+Mashonaland East,Mutoko,ZNA Mutoko,clinic,TA-SDI,1668
+Mashonaland East,Mutoko,ZPCS Mutoko,clinic,TA-SDI,1667
+Mashonaland East,Seke,Bwoni,clinic,TA-SDI,1661
+Mashonaland East,Seke,Derbyshire,clinic,TA-SDI,1659
+Mashonaland East,Seke,Epworth Mission Clinic,clinic,TA-SDI,229
+Mashonaland East,Seke,Epworth Polyclinic,hub,TA-SDI,230
+Mashonaland East,Seke,Mabvazuva,clinic,TA-SDI,1660
+Mashonaland East,Seke,Overspill Clinic,clinic,TA-SDI,238
+Mashonaland East,Seke,Wheelerdale Clinic,clinic,TA-SDI,240
+Mashonaland East,Uzumba Maramba Pfungwe,Mutawatawa District Hospital,hub,TA-SDI,1631
+Mashonaland West,Chegutu,Beersheba Clinic,clinic,DSD,914
+Mashonaland West,Chegutu,Bevking Clinic,clinic,DSD,1748
+Mashonaland West,Chegutu,Chegutu District Hospital,clinic,DSD,916
+Mashonaland West,Chegutu,Chegutu Rural District Clinic,clinic,DSD,1794
+Mashonaland West,Chegutu,Chegutu Urban Council Clinic,clinic,DSD,917
+Mashonaland West,Chegutu,Chikara Council Clinic,clinic,DSD,918
+Mashonaland West,Chegutu,Chivero Council Clinic,clinic,DSD,920
+Mashonaland West,Chegutu,Herbert Chitepo,clinic,DSD,1669
+Mashonaland West,Chegutu,Katanga utano Municipality,clinic,DSD,924
+Mashonaland West,Chegutu,Lizmore Clinic,clinic,DSD,925
+Mashonaland West,Chegutu,Mhondoro North Council Clinic,clinic,DSD,928
+Mashonaland West,Chegutu,Monera Council Clinic,clinic,DSD,930
+Mashonaland West,Chegutu,Mupawose Council Clinic,clinic,DSD,931
+Mashonaland West,Chegutu,Musengezi Clinic,clinic,DSD,1752
+Mashonaland West,Chegutu,Pfupajena Council Clinic,clinic,DSD,934
+Mashonaland West,Chegutu,Rasper Clinic,clinic,DSD,1753
+Mashonaland West,Chegutu,Rwizi Council Clinic,clinic,DSD,936
+Mashonaland West,Chegutu,Sandringham Mission Clinic,clinic,DSD,937
+Mashonaland West,Chegutu,Santa Barbra Clinic,clinic,DSD,938
+Mashonaland West,Chegutu,Selous Council Clinic,clinic,DSD,939
+Mashonaland West,Chegutu,Shamrock Clinic (Not Yet Open),clinic,DSD,940
+Mashonaland West,Chegutu,Watyoka Council Clinic,clinic,DSD,941
+Mashonaland West,Hurungwe,Chinhere Council Clinic,clinic,DSD,944
+Mashonaland West,Hurungwe,Chirundu Clinic,clinic,DSD,945
+Mashonaland West,Hurungwe,Chivende Clinic,clinic,DSD,946
+Mashonaland West,Hurungwe,Chundu Council Clinic,clinic,DSD,947
+Mashonaland West,Hurungwe,Dete Council Clinic,clinic,DSD,948
+Mashonaland West,Hurungwe,Deve Clinic (New,clinic,DSD,949
+Mashonaland West,Hurungwe,Hesketh Council Clinic,clinic,DSD,951
+Mashonaland West,Hurungwe,Hewiyai Council Clinic,clinic,DSD,952
+Mashonaland West,Hurungwe,Kapfunde Council Clinic,clinic,DSD,954
+Mashonaland West,Hurungwe,Karoi District Hospital,clinic,DSD,955
+Mashonaland West,Hurungwe,Karuru Council Clinic,clinic,DSD,957
+Mashonaland West,Hurungwe,Kasimube Rural Health Centre,clinic,DSD,958
+Mashonaland West,Hurungwe,Kazangarare Gvt Council,clinic,DSD,959
+Mashonaland West,Hurungwe,Lan Lorry Clinic,clinic,DSD,960
+Mashonaland West,Hurungwe,Lynx Clinic Private Clinic,clinic,DSD,961
+Mashonaland West,Hurungwe,Makuti Clinic,clinic,DSD,962
+Mashonaland West,Hurungwe,Masanga Gvt Clinic,clinic,DSD,963
+Mashonaland West,Hurungwe,Mashongwe Council Clinic,clinic,DSD,964
+Mashonaland West,Hurungwe,Murambi Clinic,clinic,DSD,965
+Mashonaland West,Hurungwe,Mwami Hospital,clinic,DSD,966
+Mashonaland West,Hurungwe,Nyama Council,clinic,DSD,967
+Mashonaland West,Hurungwe,Nyamakaze Clinic,clinic,DSD,968
+Mashonaland West,Hurungwe,Nyamhunga Council Clinic,clinic,DSD,969
+Mashonaland West,Hurungwe,Nyangoma Council Clinic,clinic,DSD,970
+Mashonaland West,Hurungwe,Zvipani Clinic,clinic,DSD,973
+Mashonaland West,Kadoma Sanyati,Black Movale Clinic,clinic,DSD,974
+Mashonaland West,Kadoma Sanyati,Bumbe Rural Health Centre,clinic,DSD,975
+Mashonaland West,Kadoma Sanyati,Bururu Council Clinic,clinic,DSD,976
+Mashonaland West,Kadoma Sanyati,Chemukute Clinic,clinic,DSD,979
+Mashonaland West,Kadoma Sanyati,Chingondo Clinic,clinic,DSD,980
+Mashonaland West,Kadoma Sanyati,Chirikiti Council Clinic,clinic,DSD,981
+Mashonaland West,Kadoma Sanyati,Donain Rural Health Centre,clinic,DSD,982
+Mashonaland West,Kadoma Sanyati,Dondoshava Clinic,clinic,DSD,983
+Mashonaland West,Kadoma Sanyati,Gavhunga Clinic,clinic,DSD,984
+Mashonaland West,Kadoma Sanyati,Golden Valley Private Mine Clinic,clinic,DSD,985
+Mashonaland West,Kadoma Sanyati,Kadoma District Hosp,clinic,DSD,987
+Mashonaland West,Kadoma Sanyati,Mafindifindi Council Clinic,clinic,DSD,988
+Mashonaland West,Kadoma Sanyati,Manyewe Council Clinic,clinic,DSD,989
+Mashonaland West,Kadoma Sanyati,Manyoni Council Clinic,clinic,DSD,990
+Mashonaland West,Kadoma Sanyati,Mukarati Council Clinic,clinic,DSD,991
+Mashonaland West,Kadoma Sanyati,Murambwa Council clinic,clinic,DSD,992
+Mashonaland West,Kadoma Sanyati,Muuyu Council Clinic,clinic,DSD,993
+Mashonaland West,Kadoma Sanyati,Muzvezve Gvt Clinic,clinic,DSD,994
+Mashonaland West,Kadoma Sanyati,Ngezi Rural Hosp,clinic,DSD,996
+Mashonaland West,Kadoma Sanyati,Ngezi Trauma Centre,clinic,DSD,997
+Mashonaland West,Kadoma Sanyati,Ordoff Council Clinic,clinic,DSD,1001
+Mashonaland West,Kadoma Sanyati,Patchway Mine Clinic,clinic,DSD,1002
+Mashonaland West,Kadoma Sanyati,Rimuka Clinic,clinic,DSD,1003
+Mashonaland West,Kadoma Sanyati,Sanyati Area Council Clinic,clinic,DSD,1004
+Mashonaland West,Kadoma Sanyati,St. Michaels Mission Hospital,clinic,DSD,1006
+Mashonaland West,Kadoma Sanyati,Turf Council Clinic,clinic,DSD,1007
+Mashonaland West,Kadoma Sanyati,Twin Tops Clinic,clinic,DSD,1008
+Mashonaland West,Kadoma Sanyati,Waverly Clinic,clinic,DSD,1010
+Mashonaland West,Kadoma Sanyati,Zimplats Ngezi Private Clinic,clinic,DSD,1011
+Mashonaland West,Kariba,Kariba District Hospital,hub,TA-SDI,285
+Mashonaland West,Makonde,Alaska Clinic,clinic,DSD,1012
+Mashonaland West,Makonde,Chikonohono Clinic,clinic,DSD,1013
+Mashonaland West,Makonde,Chinhoyi  Provincial Hospital,clinic,DSD,1014
+Mashonaland West,Makonde,Chinhoyi Clinic Clinic,clinic,DSD,1015
+Mashonaland West,Makonde,Doma Clinic,clinic,DSD,1016
+Mashonaland West,Makonde,Gamanya Clinic,clinic,DSD,1017
+Mashonaland West,Makonde,Godzi Clinic,clinic,DSD,1018
+Mashonaland West,Makonde,Green Valley Clinic,clinic,DSD,1019
+Mashonaland West,Makonde,Gudubu Clinic,clinic,DSD,1020
+Mashonaland West,Makonde,Hombwe Clinic,clinic,DSD,1021
+Mashonaland West,Makonde,Kamonde Clinic,clinic,DSD,1022
+Mashonaland West,Makonde,Kanyanga Clinic,clinic,DSD,1023
+Mashonaland West,Makonde,Kenzamba Clinic,clinic,DSD,1024
+Mashonaland West,Makonde,Kosana Clinic,clinic,DSD,1025
+Mashonaland West,Makonde,Long Valley Clinic,clinic,DSD,1026
+Mashonaland West,Makonde,Makonde Christian Mission Hospital,clinic,DSD,1027
+Mashonaland West,Makonde,Manyamba Clinic,clinic,DSD,1028
+Mashonaland West,Makonde,Matorangera Clinic,clinic,DSD,1029
+Mashonaland West,Makonde,Mukohwe Clinic,clinic,DSD,1030
+Mashonaland West,Makonde,Murereka Clinic,clinic,DSD,1031
+Mashonaland West,Makonde,Nyamugomba Clinic,clinic,DSD,1032
+Mashonaland West,Makonde,Obva Clinic,clinic,DSD,1033
+Mashonaland West,Makonde,Portlet Clinic,clinic,DSD,1034
+Mashonaland West,Makonde,River Ranch Clinic,clinic,DSD,1035
+Mashonaland West,Makonde,Runene  Council Clinic,clinic,DSD,1036
+Mashonaland West,Makonde,Sadoma Clinic,clinic,DSD,1037
+Mashonaland West,Makonde,Shackleton Clinic,clinic,DSD,1038
+Mashonaland West,Makonde,Umboe Clinic,clinic,DSD,1040
+Mashonaland West,Makonde,Zumbara Clinic,clinic,DSD,1041
+Mashonaland West,Mhondoro,Bumbe - 100101 - Rural Health Centre,clinic,TA-SDI,264
+Mashonaland West,Mhondoro,Bururu - 100105 - Council Clinic,clinic,TA-SDI,265
+Mashonaland West,Mhondoro,Chingondo - 100229 - Clinic,clinic,TA-SDI,266
+Mashonaland West,Mhondoro,Donain - 100405 - Rural Health Centre,clinic,TA-SDI,268
+Mashonaland West,Mhondoro,Dondoshava - 100406 - Clinic,clinic,TA-SDI,269
+Mashonaland West,Mhondoro,Gavhunga - 100496 - Clinic,clinic,TA-SDI,270
+Mashonaland West,Mhondoro,Mafindifindi - 100818 - Council Clinic,clinic,TA-SDI,271
+Mashonaland West,Mhondoro,Manyewe - 100878 - Council Clinic,clinic,TA-SDI,272
+Mashonaland West,Mhondoro,Manyoni - 100881 - Council Clinic,clinic,TA-SDI,273
+Mashonaland West,Mhondoro,Mukarati - 101092 - Council Clinic,clinic,TA-SDI,274
+Mashonaland West,Mhondoro,Murambwa - 101125 - Council clinic,clinic,TA-SDI,275
+Mashonaland West,Mhondoro,Muzvezve - 101191 - Gvt Clinic,clinic,TA-SDI,276
+Mashonaland West,Mhondoro,Ngezi - 101251 - Rural Hosp,clinic,TA-SDI,277
+Mashonaland West,Mhondoro,Ngezi -101858 -Trauma Centre,clinic,TA-SDI,278
+Mashonaland West,Mhondoro,St. Michaels - 101646 - Mission Hospital,clinic,TA-SDI,279
+Mashonaland West,Mhondoro,St. Michaels Mission Hospital,hub,TA-SDI,1633
+Mashonaland West,Mhondoro,Turf - 101719 - Council Clinic,clinic,TA-SDI,280
+Mashonaland West,Mhondoro,Twin Tops - 101722 - Clinic,clinic,TA-SDI,281
+Mashonaland West,Zvimba,ARDA Sisi Clinic,clinic,DSD,1042
+Mashonaland West,Zvimba,Ayrshire Council Clinic,clinic,DSD,1043
+Mashonaland West,Zvimba,Banket District Hospital,clinic,DSD,1044
+Mashonaland West,Zvimba,Bevking  Private Clinic,clinic,DSD,1045
+Mashonaland West,Zvimba,Chirau Council Clinic,clinic,DSD,1046
+Mashonaland West,Zvimba,Chivhere Clinic,clinic,DSD,1047
+Mashonaland West,Zvimba,Dzivarasekwa Extension Clinic,clinic,DSD,1049
+Mashonaland West,Zvimba,Gwebi Clinic,clinic,DSD,1051
+Mashonaland West,Zvimba,Jari Council Clinic,clinic,DSD,1052
+Mashonaland West,Zvimba,Kemurara Rural Health Centre,clinic,DSD,1053
+Mashonaland West,Zvimba,Kutama Council Clinic,clinic,DSD,1054
+Mashonaland West,Zvimba,Kuwadzana Council Clinic,clinic,DSD,1055
+Mashonaland West,Zvimba,Lospen Clinic,clinic,DSD,1056
+Mashonaland West,Zvimba,Madzorera Clinic,clinic,DSD,1057
+Mashonaland West,Zvimba,Mapinga  Clinic,clinic,DSD,1058
+Mashonaland West,Zvimba,Masiyarwa Council Clinic,clinic,DSD,1059
+Mashonaland West,Zvimba,Mpumbu  Council Clinic,clinic,DSD,1060
+Mashonaland West,Zvimba,Mt. Hampden Clinic,clinic,DSD,1061
+Mashonaland West,Zvimba,Mutorashanga Council Clinic,clinic,DSD,1063
+Mashonaland West,Zvimba,Nyabika Council Clinic,clinic,DSD,1064
+Mashonaland West,Zvimba,Sutton Mine Clinic,clinic,DSD,1066
+Mashonaland West,Zvimba,TRBC Council Clinic,clinic,DSD,1067
+Mashonaland West,Zvimba,Trelawney Council Clinic,clinic,DSD,1068
+Mashonaland West,Zvimba,Vanad Mine Clinic,clinic,DSD,1069
+Mashonaland West,Zvimba,Zowa Council Clinic,clinic,DSD,1070
+Masvingo,Chiredzi,Chikombedzi Hospital,clinic,DSD,1073
+Masvingo,Chiredzi,Chikwirire Clinic,clinic,DSD,1726
+Masvingo,Chiredzi,Chilonga Clinic,clinic,DSD,1074
+Masvingo,Chiredzi,Chimbwedziva Clinic,clinic,DSD,1075
+Masvingo,Chiredzi,Chingwizi Clinic,clinic,DSD,1732
+Masvingo,Chiredzi,Chizvirizvi Clinic,clinic,DSD,1080
+Masvingo,Chiredzi,Chomopani Clinic,clinic,DSD,1081
+Masvingo,Chiredzi,Crown Range Clinic,clinic,DSD,1736
+Masvingo,Chiredzi,Davata Clinic,clinic,DSD,1083
+Masvingo,Chiredzi,Gezani Clinic,clinic,DSD,1086
+Masvingo,Chiredzi,Gozonya Clinic,clinic,DSD,1738
+Masvingo,Chiredzi,Gudo Clinic,clinic,DSD,1728
+Masvingo,Chiredzi,Hippo Valley Clinic,clinic,DSD,1087
+Masvingo,Chiredzi,Masivamele Clinic,clinic,DSD,1731
+Masvingo,Chiredzi,Matedzi Clinic,clinic,DSD,1727
+Masvingo,Chiredzi,Muhlanguleni Clinic,clinic,DSD,1737
+Masvingo,Chiredzi,Muteyo Clinic,clinic,DSD,1091
+Masvingo,Chiredzi,Nyangambe Clinic,clinic,DSD,1092
+Masvingo,Chiredzi,Rapanguwana Clinic,clinic,DSD,1096
+Masvingo,Chiredzi,Samu Clinic,clinic,DSD,1098
+Masvingo,Chiredzi,Triangle Hospital,clinic,DSD,1100
+Masvingo,Chiredzi,Tsovani Clinic,clinic,DSD,1101
+Masvingo,Chiredzi,ZPCS Clinic,clinic,DSD,1735
+Masvingo,Chivi,Berejena Mission Clinic,clinic,DSD,1102
+Masvingo,Chivi,Chirongwe Clinic,clinic,DSD,1106
+Masvingo,Chivi,Chivi District Hospital,clinic,DSD,1107
+Masvingo,Chivi,Madamombe Rural Health Centre,clinic,DSD,1112
+Masvingo,Chivi,Mhandamabwe Rural Health Centre,clinic,DSD,1115
+Masvingo,Chivi,Nyahombe Clinic,clinic,DSD,1117
+Masvingo,Chivi,Shindi Clinic,clinic,DSD,1119
+Masvingo,Chivi,Utete Clinic,clinic,DSD,1121
+Masvingo,Chivi,Varanda Rural Health Centre,clinic,DSD,1122
+Masvingo,Chivi,Ziviku Clinic,clinic,DSD,1123
+Masvingo,Gutu,Chinyika Rural Health Centre,clinic,DSD,1127
+Masvingo,Gutu,Chiwore Clinic,clinic,DSD,1129
+Masvingo,Gutu,Devure Mission Clinic,clinic,DSD,1132
+Masvingo,Gutu,Gutu Rural  Clinic,clinic,DSD,1134
+Masvingo,Gutu,Majarada Rural Health Centre,clinic,DSD,1137
+Masvingo,Gutu,Matizha Clinic,clinic,DSD,1139
+Masvingo,Gutu,Mazura Clinic,clinic,DSD,1140
+Masvingo,Gutu,Mukaro Mission Clinic,clinic,DSD,1141
+Masvingo,Gutu,Munyikwa Rural Health Centre,clinic,DSD,1142
+Masvingo,Gutu,Mushaviri Clinic,clinic,DSD,1143
+Masvingo,Gutu,Mutema Clinic,clinic,DSD,1144
+Masvingo,Gutu,Mutero Mission Clinic,clinic,DSD,1145
+Masvingo,Gutu,Nemashakwe Clinic,clinic,DSD,1146
+Masvingo,Gutu,Rufaro Clinic,clinic,DSD,1700
+Masvingo,Gutu,Tirizi Clinic,clinic,DSD,1150
+Masvingo,Gutu,Zvavahera Clinic,clinic,DSD,1152
+Masvingo,Masvingo,Alvod Clinic,clinic,DSD,1153
+Masvingo,Masvingo,Bondolfi Rural Hospital,clinic,DSD,1155
+Masvingo,Masvingo,Gaths Mine Hospital,clinic,DSD,1158
+Masvingo,Masvingo,Gokomere Clinic,clinic,DSD,1159
+Masvingo,Masvingo,Gurajena Hospital,clinic,DSD,1161
+Masvingo,Masvingo,Guwa Clinic,clinic,DSD,1162
+Masvingo,Masvingo,Hwendedzo Clinic,clinic,DSD,1163
+Masvingo,Masvingo,Masvingo General Hospital,clinic,DSD,1165
+Masvingo,Masvingo,Masvingo New Start Centre,clinic,DSD,1166
+Masvingo,Masvingo,Mogenester Mission Hospital,clinic,DSD,1167
+Masvingo,Masvingo,Mucheke Clinic,clinic,DSD,1168
+Masvingo,Masvingo,Mukosi Clinic,clinic,DSD,1169
+Masvingo,Masvingo,Mushandike Clinic,clinic,DSD,1171
+Masvingo,Masvingo,Musvovi Clinic,clinic,DSD,1172
+Masvingo,Masvingo,Nemwanwa Clinic,clinic,DSD,1173
+Masvingo,Masvingo,Summerton Clinic,clinic,DSD,1184
+Masvingo,Masvingo,Zimuto Mission Hospital,clinic,DSD,1187
+Masvingo,Masvingo,Zvamahande Rural Health Centre,clinic,DSD,1188
+Masvingo,Mwenezi,Boterere Rural Health Centre,clinic,DSD,1189
+Masvingo,Mwenezi,Chimbudzi Clinic,clinic,DSD,1190
+Masvingo,Mwenezi,Chingwizi Satelite Clinic,clinic,DSD,1191
+Masvingo,Mwenezi,Chirindi Clinic,clinic,DSD,1192
+Masvingo,Mwenezi,Chizumba Clinic,clinic,DSD,1193
+Masvingo,Mwenezi,G&N Clinic Clinic,clinic,DSD,1194
+Masvingo,Mwenezi,Maranda Mission Hospital,clinic,DSD,1196
+Masvingo,Mwenezi,Marinda Rural Health Centre,clinic,DSD,1198
+Masvingo,Mwenezi,Mulelesi Clinic,clinic,DSD,1201
+Masvingo,Mwenezi,Munyanyi Clinic,clinic,DSD,1202
+Masvingo,Mwenezi,Nehanda Clinic,clinic,DSD,1207
+Masvingo,Mwenezi,Neshuro District Hospital,clinic,DSD,1208
+Masvingo,Mwenezi,Rutenga Railways Clinic,clinic,DSD,1210
+Masvingo,Zaka,Fuve Clinic,clinic,DSD,1216
+Masvingo,Zaka,Jerera Satelite Clinic,clinic,DSD,1218
+Masvingo,Zaka,Mageza Rural Health Centre,clinic,DSD,1221
+Masvingo,Zaka,Nemauku Clinic,clinic,DSD,1227
+Masvingo,Zaka,Rucors Clinic,clinic,DSD,1746
+Masvingo,Zaka,Svuvure Rural Health Hospital,clinic,DSD,1231
+Masvingo,Zaka,Zibwowa Private Clinic,clinic,DSD,1233
+Matabeleland North,Binga,Binga District Hospital,hub,TA-SDI,319
+Matabeleland North,Binga,Chinego RHC,clinic,DSD,1234
+Matabeleland North,Binga,Chunga,clinic,DSD,1235
+Matabeleland North,Binga,Kariyangwe,clinic,DSD,1236
+Matabeleland North,Binga,Lubimbi,clinic,DSD,1237
+Matabeleland North,Binga,Lusulu,clinic,DSD,1238
+Matabeleland North,Binga,Mucheso,clinic,DSD,1239
+Matabeleland North,Binga,Ngumija,clinic,DSD,1240
+Matabeleland North,Binga,Pashu,clinic,DSD,1241
+Matabeleland North,Binga,Siabuwa,clinic,DSD,1242
+Matabeleland North,Binga,Siabuzuba Clinic,clinic,TA-SDI,1785
+Matabeleland North,Binga,Siadindi,clinic,DSD,1243
+Matabeleland North,Binga,Siansundu,clinic,DSD,1244
+Matabeleland North,Binga,Sikajaya Andrew Clinic,clinic,TA-SDI,1791
+Matabeleland North,Binga,Simatelele,clinic,DSD,1245
+Matabeleland North,Binga,Sinakoma,clinic,DSD,1246
+Matabeleland North,Binga,Sinamusanga Clinic,clinic,TA-SDI,1784
+Matabeleland North,Binga,Sinansengwe,clinic,DSD,1247
+Matabeleland North,Binga,Tinde,clinic,DSD,1248
+Matabeleland North,Binga,ZPS Clinic,clinic,TA-SDI,1790
+Matabeleland North,Binga,ZRP Clinic,clinic,TA-SDI,1789
+Matabeleland North,Bubi,Balanda Rural Health Centre,clinic,DSD,1249
+Matabeleland North,Bubi,Inyathi District Hospital,clinic,DSD,1250
+Matabeleland North,Bubi,Kenilworth Rural Health Centre,clinic,DSD,1251
+Matabeleland North,Bubi,Madambe Clinic,clinic,DSD,1253
+Matabeleland North,Bubi,Mbembeswane,clinic,DSD,1255
+Matabeleland North,Bubi,Mdutshane Clinic,clinic,DSD,1256
+Matabeleland North,Bubi,Sicanda Rural Health Centre,clinic,DSD,1258
+Matabeleland North,Hwange,5 Miles,clinic,DSD,1260
+Matabeleland North,Hwange,BAPZ,clinic,DSD,1261
+Matabeleland North,Hwange,Breakfast,clinic,DSD,1262
+Matabeleland North,Hwange,Chibondo,clinic,DSD,1263
+Matabeleland North,Hwange,Chikandakubi,clinic,DSD,1264
+Matabeleland North,Hwange,Chinotimba,clinic,DSD,1265
+Matabeleland North,Hwange,Chisuma,clinic,DSD,1266
+Matabeleland North,Hwange,Colliery,clinic,DSD,1267
+Matabeleland North,Hwange,Dete,clinic,DSD,1268
+Matabeleland North,Hwange,Dinde,clinic,DSD,1269
+Matabeleland North,Hwange,Elephant Hills,clinic,DSD,1270
+Matabeleland North,Hwange,Empumalanga,clinic,DSD,1271
+Matabeleland North,Hwange,Ingagula,clinic,DSD,1272
+Matabeleland North,Hwange,Jabula,clinic,DSD,1273
+Matabeleland North,Hwange,Jambezi,clinic,DSD,1274
+Matabeleland North,Hwange,Kamativi,clinic,DSD,1275
+Matabeleland North,Hwange,Kanywambizi,clinic,DSD,1276
+Matabeleland North,Hwange,Lubangwe,clinic,DSD,1277
+Matabeleland North,Hwange,Lukosi,clinic,DSD,1278
+Matabeleland North,Hwange,Lukunguni,clinic,DSD,1279
+Matabeleland North,Hwange,Lupote,clinic,DSD,1280
+Matabeleland North,Hwange,Mabale,clinic,DSD,1281
+Matabeleland North,Hwange,Makwandara,clinic,DSD,1282
+Matabeleland North,Hwange,Matetsi,clinic,DSD,1283
+Matabeleland North,Hwange,Milonga,clinic,DSD,1284
+Matabeleland North,Hwange,Mwemba,clinic,DSD,1285
+Matabeleland North,Hwange,Ndimakule,clinic,DSD,1286
+Matabeleland North,Hwange,Ndlovu,clinic,DSD,1287
+Matabeleland North,Hwange,No. 5 Clinic,clinic,DSD,1289
+Matabeleland North,Hwange,NRZ Clinic,clinic,DSD,1290
+Matabeleland North,Hwange,Premier clinic,clinic,DSD,1291
+Matabeleland North,Hwange,PSMI Hwange,clinic,DSD,1292
+Matabeleland North,Hwange,Sidinda,clinic,DSD,1293
+Matabeleland North,Hwange,Simangani,clinic,DSD,1294
+Matabeleland North,Hwange,Songwe,clinic,DSD,1295
+Matabeleland North,Hwange,St Patricks,clinic,DSD,1296
+Matabeleland North,Hwange,THB,clinic,DSD,1297
+Matabeleland North,Hwange,V.F Hotel Clinic,clinic,DSD,1298
+Matabeleland North,Hwange,V.F Prison clinic,clinic,DSD,1299
+Matabeleland North,Hwange,Victoria Falls District Hospital,clinic,TA-SDI,361
+Matabeleland North,Hwange,Wilderness,clinic,DSD,1301
+Matabeleland North,Hwange,Woodlands,clinic,DSD,1302
+Matabeleland North,Lupane,Dandanda Clinic,clinic,DSD,1303
+Matabeleland North,Lupane,Dongamuzi Clinic,clinic,DSD,1304
+Matabeleland North,Lupane,Gwaai RHC,clinic,DSD,1307
+Matabeleland North,Lupane,Kanyandavu Clinic,clinic,DSD,1309
+Matabeleland North,Lupane,Mdlankunzi Clinic,clinic,DSD,1313
+Matabeleland North,Lupane,St. Lukes Mission Hospital,clinic,DSD,1314
+Matabeleland North,Lupane,St. Pauls Mission Hospital,clinic,DSD,1315
+Matabeleland North,Nkayi,Fanison Rural Health Centre,clinic,DSD,1317
+Matabeleland North,Nkayi,Guwe Rural Health Centre,clinic,DSD,1318
+Matabeleland North,Nkayi,Gwelutshena Rural Health Centre,clinic,DSD,1319
+Matabeleland North,Nkayi,Lutsha RHC,clinic,DSD,1320
+Matabeleland North,Nkayi,Nesigwe Rural Health Centre,clinic,DSD,1323
+Matabeleland North,Nkayi,Ngwaladi Rural Hospital,clinic,DSD,1324
+Matabeleland North,Nkayi,Nkayi District Hospital,clinic,DSD,1325
+Matabeleland North,Nkayi,Satelite clinic,clinic,DSD,1326
+Matabeleland North,Nkayi,Sebumane Clinic,clinic,DSD,1327
+Matabeleland North,Nkayi,Sesemba Rural Health Centre,clinic,DSD,1328
+Matabeleland North,Nkayi,Simbo Clinic,clinic,DSD,1792
+Matabeleland North,Nkayi,Vova RHC,clinic,DSD,1331
+Matabeleland North,Nkayi,Zinyangeni Rural Health Centre,clinic,DSD,1333
+Matabeleland North,Nkayi,ZPS Clinic,clinic,DSD,1793
+Matabeleland North,Tsholotsho,Bemba Council Clinic,clinic,DSD,1334
+Matabeleland North,Tsholotsho,Bubude RHC,clinic,DSD,1335
+Matabeleland North,Tsholotsho,Dlamini Council Clinic,clinic,DSD,1336
+Matabeleland North,Tsholotsho,Inala Clinic,clinic,DSD,1782
+Matabeleland North,Tsholotsho,Kapane RHC,clinic,DSD,1338
+Matabeleland North,Tsholotsho,Makaza Rural Health Centre,clinic,DSD,1340
+Matabeleland North,Tsholotsho,Mpilo Clinic,clinic,DSD,1779
+Matabeleland North,Tsholotsho,Mtshayeli Clinic,clinic,DSD,1343
+Matabeleland North,Tsholotsho,Nkunzi Rural Health Centre,clinic,DSD,1344
+Matabeleland North,Tsholotsho,Pumula Mission Hospital,clinic,DSD,1345
+Matabeleland North,Tsholotsho,Samahuru Mission clinic,clinic,DSD,1346
+Matabeleland North,Tsholotsho,Shaba Council Clinic,clinic,DSD,1347
+Matabeleland North,Tsholotsho,Sipepa Rural Hospital,clinic,DSD,1349
+Matabeleland North,Tsholotsho,Tshefunye,clinic,DSD,1351
+Matabeleland North,Tsholotsho,Tsholotsho District Hospital,clinic,DSD,1352
+Matabeleland North,Tsholotsho,ZPCS Clinic,clinic,DSD,1783
+Matabeleland North,Umguza,Anju,clinic,DSD,1354
+Matabeleland North,Umguza,Fairbridge ZRP Camp clinic,clinic,DSD,1355
+Matabeleland North,Umguza,Imbizo Barracks ZNA Hospital,clinic,DSD,1358
+Matabeleland North,Umguza,Nyamandlovu District Hospital,clinic,DSD,1362
+Matabeleland North,Umguza,Ross camp,clinic,DSD,1364
+Matabeleland North,Umguza,Siganda   Clinic,clinic,DSD,1365
+Matabeleland North,Umguza,Umguza RDC Clinic,clinic,DSD,1368
+Matabeleland South,Beitbridge,Beitbridge District Hospital,clinic,DSD,1370
+Matabeleland South,Beitbridge,Chamunangana Clinic,clinic,DSD,1371
+Matabeleland South,Beitbridge,Chasvingo Clinic,clinic,DSD,1372
+Matabeleland South,Beitbridge,Chikwarakwara Rural Health Centre,clinic,DSD,1373
+Matabeleland South,Beitbridge,Chituripasi Rural Health Centre,clinic,DSD,1374
+Matabeleland South,Beitbridge,Dumba Clinic,clinic,DSD,1757
+Matabeleland South,Beitbridge,Makakabule Rural Health Centre,clinic,DSD,1378
+Matabeleland South,Beitbridge,Malabe Clinic,clinic,DSD,1758
+Matabeleland South,Beitbridge,Satelite Clinic,clinic,DSD,1760
+Matabeleland South,Beitbridge,Wellness Clinic,clinic,DSD,1761
+Matabeleland South,Beitbridge,Zezane Clinic,clinic,DSD,1387
+Matabeleland South,Beitbridge,ZPCS Clinic,clinic,DSD,1762
+Matabeleland South,Beitbridge,ZRP Clinic,clinic,DSD,1763
+Matabeleland South,Bulilima,Gambo Clinic,clinic,DSD,1795
+Matabeleland South,Bulilima,Hingwe Clinic,clinic,DSD,1390
+Matabeleland South,Bulilima,Lady Barring Mission Hospital,clinic,DSD,1392
+Matabeleland South,Bulilima,Lady Stanley Mission Hospital,clinic,DSD,1393
+Matabeleland South,Bulilima,Madlambuzi Clinic,clinic,DSD,1394
+Matabeleland South,Bulilima,Makhuleka Clinic,clinic,DSD,1395
+Matabeleland South,Bulilima,Nyabane Clinic,clinic,DSD,1796
+Matabeleland South,Bulilima,Sikhatini Clinic,clinic,DSD,1400
+Matabeleland South,Bulilima,Solusi Clinic,clinic,DSD,1401
+Matabeleland South,Bulilima,Tematema Clinic,clinic,DSD,1799
+Matabeleland South,Gwanda,Gungwe Rural Health Centre,clinic,DSD,1406
+Matabeleland South,Gwanda,Makwe Rural Health Centre,clinic,DSD,1410
+Matabeleland South,Gwanda,Mapate Cliniclinic,clinic,DSD,1412
+Matabeleland South,Gwanda,Nhwali Rural Health Centre,clinic,DSD,1416
+Matabeleland South,Gwanda,Pakama Clinic,clinic,DSD,1418
+Matabeleland South,Gwanda,Selonga Rural Health Centre,clinic,DSD,1419
+Matabeleland South,Gwanda,Sengwezani Rural Health Centre,clinic,DSD,1420
+Matabeleland South,Gwanda,Silkwe Rural Health centre,clinic,DSD,1421
+Matabeleland South,Gwanda,Simbumbumbu Rural Health Centre,clinic,DSD,1422
+Matabeleland South,Gwanda,Stanmore Clinic,clinic,DSD,1424
+Matabeleland South,Gwanda,West Nicolson Clinic,clinic,DSD,1425
+Matabeleland South,Insiza,Gwanda State University Clinic (GSU),clinic,DSD,1766
+Matabeleland South,Insiza,Insiza PBS  Clinic,clinic,DSD,1429
+Matabeleland South,Insiza,Kombo Clinic,clinic,DSD,1430
+Matabeleland South,Insiza,Saphila Council Clinic(Construction),clinic,DSD,1435
+Matabeleland South,Insiza,Shangani Mine Clinic,clinic,DSD,1436
+Matabeleland South,Insiza,Wanezi Rural Hospital,clinic,DSD,1440
+Matabeleland South,Mangwe,Bango - 100042 - Clinic,clinic,TA-SDI,364
+Matabeleland South,Mangwe,Bango Clinic,clinic,DSD,1442
+Matabeleland South,Mangwe,Dingumuzi - 100394 - Clinic,clinic,TA-SDI,365
+Matabeleland South,Mangwe,Embakwe - 100444 - Mission Hospital,clinic,TA-SDI,366
+Matabeleland South,Mangwe,Embakwe Mission Hospital,clinic,DSD,1444
+Matabeleland South,Mangwe,Empandeni - 100445 - Clinic,clinic,TA-SDI,367
+Matabeleland South,Mangwe,Empandeni Clinic,clinic,DSD,1445
+Matabeleland South,Mangwe,Ingwizi - 100639 - Clinic,clinic,TA-SDI,368
+Matabeleland South,Mangwe,Ingwizi Clinic,clinic,DSD,1446
+Matabeleland South,Mangwe,Macingwana RHC,clinic,TA-SDI,369
+Matabeleland South,Mangwe,Madabe - 100800 - Clinic,clinic,TA-SDI,370
+Matabeleland South,Mangwe,Mambale - 100864 - Clinic,clinic,TA-SDI,371
+Matabeleland South,Mangwe,Maninji - 101914 - Clinic,clinic,TA-SDI,372
+Matabeleland South,Mangwe,Marula - 100910 - Clinic,clinic,TA-SDI,373
+Matabeleland South,Mangwe,Matshinge - 100961 - Rural Health Centre,clinic,TA-SDI,374
+Matabeleland South,Mangwe,Mayobodo - 100972 - Rural Health Centre,clinic,TA-SDI,375
+Matabeleland South,Mangwe,Ndolwane - 101213 - Rural Health Centre,clinic,TA-SDI,376
+Matabeleland South,Mangwe,Ntoli - 101303 - Rural Health Centre,clinic,TA-SDI,377
+Matabeleland South,Mangwe,Plumtree - 101417 - District Hospital,clinic,TA-SDI,378
+Matabeleland South,Mangwe,Plumtree District Hospital,hub,TA-SDI,1452
+Matabeleland South,Mangwe,SANZUKWI - 101529 - Clinic,clinic,TA-SDI,379
+Matabeleland South,Mangwe,St. Annes Brunapeg - 101642 - Mission Hospital,clinic,TA-SDI,380
+Matabeleland South,Mangwe,St. Annes Brunapeg Mission Hospital,clinic,DSD,1454
+Matabeleland South,Mangwe,Tshitshi - 101712 - Clinic,clinic,TA-SDI,381
+Matabeleland South,Matobo,Bazha Clinic,clinic,DSD,1456
+Matabeleland South,Matobo,Beula Rural Health Centre,clinic,DSD,1457
+Matabeleland South,Matobo,Ekukanyeni Clinic,clinic,DSD,1459
+Matabeleland South,Matobo,Gulati Rural Health Centre,clinic,DSD,1460
+Matabeleland South,Matobo,Maphisa District Hospital,clinic,DSD,1463
+Matabeleland South,Matobo,Masiye Camp Clinic,clinic,DSD,1464
+Matabeleland South,Matobo,Matobo Mission Clinic,clinic,DSD,1465
+Matabeleland South,Matobo,Matobo Rural Rural Hospital,clinic,DSD,1466
+Matabeleland South,Matobo,Mbembeswane Rural Health Centre,clinic,DSD,1467
+Matabeleland South,Matobo,Sankonjana Rural Health Centre,clinic,DSD,1469
+Matabeleland South,Matobo,Silozwe Clinic,clinic,DSD,1803
+Matabeleland South,Matobo,St. Joseph's Rural Hospital,clinic,DSD,1470
+Matabeleland South,Umzingwane,Empsini  Clinic,clinic,DSD,1472
+Matabeleland South,Umzingwane,Esibobvu Clinic,clinic,DSD,1473
+Matabeleland South,Umzingwane,Esigodini District Hospital,clinic,DSD,1474
+Matabeleland South,Umzingwane,Habani Clinic,clinic,DSD,1475
+Matabeleland South,Umzingwane,How Mine Mine Clinic,clinic,DSD,1476
+Matabeleland South,Umzingwane,Irisvale Rural Health Centre,clinic,DSD,1477
+Matabeleland South,Umzingwane,Kumbuzi Rural Health Centre,clinic,DSD,1478
+Matabeleland South,Umzingwane,Mbalabala Clinic,clinic,DSD,1697
+Matabeleland South,Umzingwane,Mbizingwe Rural Health Centre,clinic,DSD,1480
+Matabeleland South,Umzingwane,Mpisini Clinic,clinic,DSD,1482
+Matabeleland South,Umzingwane,Umzingwane Clinic,clinic,DSD,1486
+Midlands,Chirumhanzu,Mvuma District Hospital,hub,TA-SDI,395
+Midlands,Chirumhanzu,St Theresa Hospital,hub,TA-SDI,1634
+Midlands,Gokwe North,Dr Auxillia Mnangagwa Clinic,clinic,TA-SDI,1775
+Midlands,Gokwe North,Gokwe North District Hospital,hub,TA-SDI,405
+Midlands,Gokwe North,Masosoni Clinic,clinic,TA-SDI,1777
+Midlands,Gokwe South,Gokwe District Hospital,clinic,DSD,1492
+Midlands,Gokwe South,Jiri Clinic,clinic,DSD,1496
+Midlands,Gokwe South,Mateme Clinic,clinic,DSD,1503
+Midlands,Gokwe South,Mkoka Rural Health Centre,clinic,DSD,1505
+Midlands,Gokwe South,Mutange Clinic,clinic,DSD,1508
+Midlands,Gokwe South,Ndabambi Clinic,clinic,DSD,1509
+Midlands,Gokwe South,Ndhlalambi Clinic,clinic,DSD,1747
+Midlands,Gokwe South,Nyamunga Clinic,clinic,DSD,1512
+Midlands,Gokwe South,Sesame Clinic,clinic,DSD,1514
+Midlands,Gokwe South,Svisvi Rural Health Centre,clinic,DSD,1515
+Midlands,Gweru,Ceeshar,hub,DSD,1683
+Midlands,Gweru,Chikwingwizha Mission Clinic,clinic,DSD,1518
+Midlands,Gweru,Chiundura Clinic,clinic,DSD,1521
+Midlands,Gweru,City Lab,hub,DSD,1685
+Midlands,Gweru,Connemara,hub,DSD,1693
+Midlands,Gweru,Gatawa,hub,DSD,1691
+Midlands,Gweru,Gunde Clinic,clinic,DSD,1522
+Midlands,Gweru,Gweru District Hospital,clinic,DSD,1524
+Midlands,Gweru,Gweru New Start Centre/New Life Centre,clinic,DSD,1525
+Midlands,Gweru,Harben Park Pfende,hub,DSD,1689
+Midlands,Gweru,Hozheri Clinic,clinic,DSD,1526
+Midlands,Gweru,IDH,hub,DSD,1695
+Midlands,Gweru,Impala,hub,DSD,1692
+Midlands,Gweru,Josiah Tungamirai Air Base,hub,DSD,1690
+Midlands,Gweru,Kabanga Clinic,clinic,DSD,1528
+Midlands,Gweru,Lower Gweru Mission Clinic,clinic,DSD,1529
+Midlands,Gweru,Madhikani Clinic,clinic,DSD,1531
+Midlands,Gweru,Mangwande Clinic,clinic,DSD,1533
+Midlands,Gweru,Masvori Clinic,clinic,DSD,1534
+Midlands,Gweru,Mkoba 1 Clinic,clinic,DSD,1535
+Midlands,Gweru,Mkoba Poly Clinic,clinic,DSD,1536
+Midlands,Gweru,Riverdale,hub,DSD,1694
+Midlands,Gweru,Ruby Clinic,clinic,DSD,1540
+Midlands,Gweru,Senga Poly Clinic,clinic,DSD,1541
+Midlands,Gweru,Somabula Clinic,clinic,DSD,1542
+Midlands,Gweru,St. Patricks Mission Clinic,clinic,DSD,1543
+Midlands,Gweru,Whawha Prison,hub,DSD,1688
+Midlands,Gweru,Zimbabwe Military Academy,hub,DSD,1687
+Midlands,Gweru,Zimbabwe Republic Police,hub,DSD,1686
+Midlands,Kwekwe,Dendera Rural Hospital,clinic,DSD,1550
+Midlands,Kwekwe,Don Juan Clinic,clinic,DSD,1551
+Midlands,Kwekwe,Donsa Clinic,clinic,DSD,1552
+Midlands,Kwekwe,Jena Mine Mine Clinic,clinic,DSD,1555
+Midlands,Kwekwe,Kwekwe District Hospital,clinic,DSD,1556
+Midlands,Kwekwe,Malisa  Zhambe   Clinic,clinic,DSD,1557
+Midlands,Kwekwe,Malisa Josefa Clinic,clinic,DSD,1558
+Midlands,Kwekwe,Mayoka Rural Health Centre,clinic,DSD,1559
+Midlands,Kwekwe,Mbizo 1 Clinic,clinic,DSD,1561
+Midlands,Kwekwe,Mbizo 2 Clinic,clinic,DSD,1562
+Midlands,Kwekwe,Mlezu College Clinic,clinic,DSD,1563
+Midlands,Kwekwe,Msilahove Rural Hospital,clinic,DSD,1565
+Midlands,Kwekwe,Rio Tinto Mine Clinic,clinic,DSD,1570
+Midlands,Kwekwe,Senkwasi Clinic,clinic,DSD,1574
+Midlands,Kwekwe,Sigezububi Clinic,clinic,DSD,1577
+Midlands,Kwekwe,Silobela District Hospital,clinic,DSD,1578
+Midlands,Kwekwe,Torwood Hospital,clinic,DSD,1581
+Midlands,Kwekwe,Zhombe Mission Clinic,clinic,DSD,1582
+Midlands,Mberengwa,Bonda Mission Hospital,clinic,DSD,1583
+Midlands,Mberengwa,Buchwa Clinic,clinic,DSD,1584
+Midlands,Mberengwa,Chedembeko Clinic,clinic,DSD,1587
+Midlands,Mberengwa,Gwarava Rural Health Centre,clinic,DSD,1591
+Midlands,Mberengwa,Kotokwe Clinic,clinic,DSD,1595
+Midlands,Mberengwa,Mberengwa District Hospital,clinic,DSD,1602
+Midlands,Mberengwa,Muketi Clinic,clinic,DSD,1606
+Midlands,Mberengwa,Mwenezi Rural Health Centre,clinic,DSD,1609
+Midlands,Mberengwa,Negobe Clinic,clinic,DSD,1610
+Midlands,Mberengwa,Wanezi Clinic,clinic,DSD,1616
+Midlands,Shurugwi,Chrome Mine Hospital,clinic,TA-SDI,427
+Midlands,Shurugwi,Shurugwi District Hospital,hub,TA-SDI,442
+Midlands,Zvishavane,Nkatazo RHC,clinic,TA-SDI,1635
+Midlands,Zvishavane,ZPCS Clinic,clinic,TA-SDI,1741
+Midlands,Zvishavane,ZRP Clinic,clinic,TA-SDI,1742
+Midlands,Zvishavane,Zvishavane District Hospital,hub,TA-SDI,469

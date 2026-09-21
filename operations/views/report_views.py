@@ -47,6 +47,7 @@ from ..services.week_fuel_service import (
     week_fuel_alloc_used_from_report,
     week_fuel_totals_from_pc_post,
 )
+from ..services.trip_analysis import specimens_from_entries
 from ..services.trip_facilities import facilities_for_rider_endpoint
 from ..services.sync_service import apply_sync_batch, register_device
 from ..services.sync_payload import report_sync_envelope
@@ -203,6 +204,7 @@ class RiderReportListView(LoginRequiredMixin, ListView):
                     "rider__rider_profile__district",
                     "rider__rider_profile__district__province",
                 )
+                .prefetch_related("trip_entries")
                 .annotate(week_trip_count=Count("trip_entries"))
                 .order_by(
                     "rider__first_name",
@@ -268,7 +270,8 @@ class RiderReportListView(LoginRequiredMixin, ListView):
                             else "Mixed"
                         ),
                         "samples_total": sum(
-                            (rr["report"].samples_collected or 0) for rr in sorted_rows
+                            specimens_from_entries(rr["report"].trip_entries.all())
+                            for rr in sorted_rows
                         ),
                         "trip_total": sum((rr["report"].week_trip_count or 0) for rr in sorted_rows),
                         "submitted_at": max(

@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from ..models import RiderWeeklyReport, WeeklyRecordReviewed
+from .trip_analysis import is_relayed_trip
 from .week_relief_service import relief_coverage_snapshot_dict
 
 
@@ -31,6 +32,8 @@ def build_weekly_review_snapshot(*, rider, week_start):
     total_samples_collected = 0
     total_specimens = 0
     total_results = 0
+    relayed_specimens = 0
+    relayed_results = 0
 
     for report in reports:
         trips = []
@@ -71,8 +74,12 @@ def build_weekly_review_snapshot(*, rider, week_start):
                 "distance_travelled": _decimal_to_string(trip.distance_travelled),
             }
             trips.append(trip_payload)
-            total_specimens += trip.specimens_total
-            total_results += trip.results_total
+            if is_relayed_trip(trip):
+                relayed_specimens += trip.specimens_total
+                relayed_results += trip.results_total
+            else:
+                total_specimens += trip.specimens_total
+                total_results += trip.results_total
 
         rejections = []
         for rej in report.sample_rejections.all().order_by("order", "id"):
@@ -126,6 +133,8 @@ def build_weekly_review_snapshot(*, rider, week_start):
             "samples_collected": total_samples_collected,
             "specimens_transported": total_specimens,
             "results_transported": total_results,
+            "relayed_specimens_transported": relayed_specimens,
+            "relayed_results_transported": relayed_results,
         },
         "relief_coverage": relief_coverage_snapshot_dict(
             rider_id=rider.id,

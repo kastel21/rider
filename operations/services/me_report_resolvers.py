@@ -21,6 +21,7 @@ from ..models import (
 )
 from .distance_km import distance_km_str
 from .other_specify_aggregate import aggregate_other_specify_texts
+from .trip_analysis import iter_primary_analysis_trips
 
 User = get_user_model()
 
@@ -60,7 +61,9 @@ def _trip_aggregate(report: RiderWeeklyReport) -> dict[str, Any]:
     if cached is not None:
         return cached
 
-    entries: list[RiderTripEntry] = list(report.trip_entries.all())
+    entries: list[RiderTripEntry] = list(
+        iter_primary_analysis_trips(report.trip_entries.all())
+    )
     agg: dict[str, Any] = {
         "count": len(entries),
         "vl_blood_plasma": 0,
@@ -256,7 +259,8 @@ def _days_vehicle_functional(report: RiderWeeklyReport) -> str:
 
 
 def _dominant_transport_kind_label(report: RiderWeeklyReport) -> str:
-    entries = list(report.trip_entries.all())
+    all_entries = list(report.trip_entries.all())
+    entries = list(iter_primary_analysis_trips(all_entries)) or all_entries
     if not entries:
         return ""
     kinds: list[str] = []
@@ -429,7 +433,7 @@ def _trip_aggregate_many(
         "adhoc_results": 0,
     }
     for report in reports:
-        for e in report.trip_entries.all():
+        for e in iter_primary_analysis_trips(report.trip_entries.all()):
             agg["vl_blood_plasma"] += e.vl_blood_plasma or 0
             agg["vl_dbs"] += e.vl_dbs or 0
             agg["eid_blood"] += e.eid_blood or 0

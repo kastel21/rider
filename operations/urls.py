@@ -48,6 +48,26 @@ urlpatterns = [
         views.METableExportView.as_view(table="weekly_report_drivers", export_format="xlsx"),
         name="weekly_report_drivers_export_xlsx",
     ),
+    path(
+        "weekly-report/rider-submissions/",
+        views.RiderWeekSubmissionsView.as_view(),
+        name="rider_week_submissions",
+    ),
+    path(
+        "weekly-report/rider-submissions/summary.csv/",
+        views.RiderWeekSubmissionsCsvView.as_view(table="summary"),
+        name="rider_week_submissions_summary_csv",
+    ),
+    path(
+        "weekly-report/rider-submissions/riders.csv/",
+        views.RiderWeekSubmissionsCsvView.as_view(table="riders"),
+        name="rider_week_submissions_riders_csv",
+    ),
+    path(
+        "weekly-report/rider-submissions/pc-reviews.csv/",
+        views.RiderWeekSubmissionsCsvView.as_view(table="pc_reviews"),
+        name="rider_week_submissions_pc_reviews_csv",
+    ),
     path("ajax/report-facilities/", views.ReportFacilitiesAjaxView.as_view(), name="report_facilities_ajax"),
     path("api/register-device/", views.RiderRegisterDeviceView.as_view(), name="rider_register_device"),
     path("api/sync/", views.RiderSyncView.as_view(), name="rider_session_sync"),

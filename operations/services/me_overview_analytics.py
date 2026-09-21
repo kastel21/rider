@@ -21,6 +21,11 @@ from django.db.models import (
 from django.db.models.functions import Coalesce
 
 from .distance_km import round_distance_km
+from .trip_analysis import (
+    NON_RELAYED_TRIP_COUNT_FILTER,
+    filter_primary_analysis_trips,
+    sum_specimen_counts,
+)
 from ..models import (
     PCDistrictWeeklyTransportStat,
     Province,
@@ -37,6 +42,13 @@ def _trip_window_filter(start_monday: date, end_monday: date) -> Q:
     return Q(report__week_start__gte=start_monday, report__week_start__lte=end_monday)
 
 
+def _primary_trip_qs(*, start_monday: date, end_monday: date):
+    """Non-relayed trip rows in the M&E metrics window (default analysis cohort)."""
+    return filter_primary_analysis_trips(
+        RiderTripEntry.objects.filter(_trip_window_filter(start_monday, end_monday))
+    )
+
+
 def _week_start_key(value: date | datetime | str | None) -> date | None:
     """Normalize ORM week values for dict lookup (SQL Server may return datetime)."""
     if value is None:
@@ -51,8 +63,7 @@ def _week_start_key(value: date | datetime | str | None) -> date | None:
 
 
 def _aggregate_trip_specimens_results(*, start_monday: date, end_monday: date) -> dict[str, Any]:
-    flt = _trip_window_filter(start_monday, end_monday)
-    agg = RiderTripEntry.objects.filter(flt).aggregate(
+    agg = _primary_trip_qs(start_monday=start_monday, end_monday=end_monday).aggregate(
         vl_blood_plasma=Sum("vl_blood_plasma"),
         vl_dbs=Sum("vl_dbs"),
         eid_blood=Sum("eid_blood"),
@@ -124,7 +135,7 @@ def _province_specimen_top(*, start_monday: date, end_monday: date, n: int = 5) 
         + Coalesce(F("hpv"), 0)
     )
     rows = list(
-        RiderTripEntry.objects.filter(_trip_window_filter(start_monday, end_monday))
+        _primary_trip_qs(start_monday=start_monday, end_monday=end_monday)
         .annotate(
             pid=Coalesce(
                 "report__rider__rider_profile__district__province_id",
@@ -209,7 +220,9 @@ def _operations_kpis(*, window: Any, all_reports: Any) -> dict[str, Any]:
         me_n = appr.filter(me_reviewed_at__isnull=False).count()
         me_pct = round(100.0 * me_n / appr_n, 1) if appr_n else None
 
-        scheduled_qs = qs.filter(scheduled_visits__gt=0).annotate(tcount=Count("trip_entries"))
+        scheduled_qs = qs.filter(scheduled_visits__gt=0).annotate(
+            tcount=Count("trip_entries", filter=NON_RELAYED_TRIP_COUNT_FILTER)
+        )
         sched_total = 0
         actual_rows = 0
         n_sched_reports = 0
@@ -304,12 +317,12 @@ def _fuel_distance(*, start_monday: date, end_monday: date, labels: list[str]) -
     dt = dist_totals["dt"] or Decimal("0")
     dt_km = round_distance_km(dt)
 
-    # samples per km from window reports (same window as fuel weeks)
-    window_reports = RiderWeeklyReport.objects.filter(
-        week_start__gte=start_monday,
-        week_start__lte=end_monday,
+    samples_sum = sum_specimen_counts(
+        RiderTripEntry.objects.filter(
+            report__week_start__gte=start_monday,
+            report__week_start__lte=end_monday,
+        )
     )
-    samples_sum = int(window_reports.aggregate(s=Sum("samples_collected"))["s"] or 0)
     eff_samples_per_km = None
     if dt_km > 0:
         eff_samples_per_km = round(samples_sum / dt_km, 4)
@@ -385,7 +398,7 @@ def _weekly_delivery_trends(*, start_monday: date, end_monday: date, labels: lis
     """National trip-row specimens/results by report week (VL, HPV, TB programs)."""
     rows: dict[date, dict[str, Any]] = {}
     for r in (
-        RiderTripEntry.objects.filter(_trip_window_filter(start_monday, end_monday))
+        _primary_trip_qs(start_monday=start_monday, end_monday=end_monday)
         .values("report__week_start")
         .annotate(
             vl_plasma=Sum("vl_blood_plasma"),
@@ -450,7 +463,7 @@ def _province_delivery_charts(
 ) -> dict[str, Any]:
     """Top provinces by VL / HPV trip-row volume in the metrics window."""
     prov_rows = list(
-        RiderTripEntry.objects.filter(_trip_window_filter(start_monday, end_monday))
+        _primary_trip_qs(start_monday=start_monday, end_monday=end_monday)
         .annotate(pid=_trip_province_pid_expr())
         .values("pid")
         .annotate(

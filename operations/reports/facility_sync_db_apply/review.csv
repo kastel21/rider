@@ -1,0 +1,152 @@
+csv_line,province,district,csv_name,candidate_name,rule,ratio,note
+51,Harare,Harare,Braeside FHS Clinic,Braeside Clinic,similar,0.882,Possible same site; not unique enough to auto-rename
+53,Harare,Harare,Budiriro Satellite Clinic,Budiriro Satelite Clinic,similar,0.98,Possible same site; not unique enough to auto-rename
+61,Harare,Harare,Greendale FHS Clinic,Greendale Clinic,similar,0.889,Possible same site; not unique enough to auto-rename
+65,Harare,Harare,Highlands FHS Clinic,Highlands Clinic,similar,0.889,Possible same site; not unique enough to auto-rename
+70,Harare,Harare,Kuwadzana PolyClinic,Kuwadzana Poly Clinic,similar,0.976,Possible same site; not unique enough to auto-rename
+79,Harare,Harare,Mbare PolyClinic,Mbare Poly clinic,similar,0.97,Possible same site; not unique enough to auto-rename
+80,Harare,Harare,Mount Pleasant Clinic,Mt. Pleasant Clinic,similar,0.923,Possible same site; not unique enough to auto-rename
+96,Harare,Harare,Tafara FHS Clinic,Tafara Clinic,similar,0.867,Possible same site; not unique enough to auto-rename
+115,Manicaland,Buhera,Berenyazvizvi Clinic,Berenyazvidzi Clinic,similar,0.95,Possible same site; not unique enough to auto-rename
+127,Manicaland,Buhera,Chiwese Clinic,Chiweshe Clinic,similar,0.966,Possible same site; not unique enough to auto-rename
+149,Manicaland,Buhera,Rambanepasi Clinic,Rambanapasi Clinic,similar,0.944,Possible same site; not unique enough to auto-rename
+157,Manicaland,Chimanimani,Charlsewood clinic,Charleswood Clinic,similar,0.944,Possible same site; not unique enough to auto-rename
+188,Manicaland,Chimanimani,Vimba clinic,Vhimba Clinic,similar,0.96,Possible same site; not unique enough to auto-rename
+199,Manicaland,Chipinge,Clearwater Clinic,Clear Water Clinic,similar,0.971,Possible same site; not unique enough to auto-rename
+203,Manicaland,Chipinge,Hwakwata Clinic,Hwakata Clinic,similar,0.966,Possible same site; not unique enough to auto-rename
+213,Manicaland,Chipinge,Maparadza Clinic,Muparadze Clinic,similar,0.875,Possible same site; not unique enough to auto-rename
+215,Manicaland,Chipinge,Mount Selinda Mission Hospital,Mt. Selinda Mission Hospital,similar,0.947,Possible same site; not unique enough to auto-rename
+221,Manicaland,Chipinge,New Year's Gift Clinic,New Year Gift Clinic,similar,0.952,Possible same site; not unique enough to auto-rename
+222,Manicaland,Chipinge,Ngaone Clinic,Ngaome Clinic,similar,0.923,Possible same site; not unique enough to auto-rename
+227,Manicaland,Chipinge,Southdown Clinic,Southdowns Clinic,similar,0.97,Possible same site; not unique enough to auto-rename
+229,Manicaland,Chipinge,Tamandayi Clinic,Tamandai Clinic,similar,0.968,Possible same site; not unique enough to auto-rename
+235,Manicaland,Chipinge,Veneka Clinic,Vheneka Clinic,similar,0.963,Possible same site; not unique enough to auto-rename
+236,Manicaland,Chipinge,Zamuchiya Clinic,Zamchiya Clinic,similar,0.968,Possible same site; not unique enough to auto-rename
+252,Manicaland,Makoni,Dumbabwe Clinic,Dumbamwe Clinic,similar,0.933,Possible same site; not unique enough to auto-rename
+255,Manicaland,Makoni,Groobi Spring Rural Health Centre,Gorubi Springs Rural Health Centre,similar,0.925,Possible same site; not unique enough to auto-rename
+272,Manicaland,Makoni,Name Clinic,Nasmie Clinic,similar,0.917,Possible same site; not unique enough to auto-rename
+285,Manicaland,Makoni,St Michael's Tanda Mission Hospital,St. Michael's Mission Hospital,similar,0.906,Possible same site; not unique enough to auto-rename
+286,Manicaland,Makoni,St Therese's Mission Hospital,St. Theresa Mission Hospital,similar,0.929,Possible same site; not unique enough to auto-rename
+288,Manicaland,Makoni,Toriro Clinic,Tariro Clinic,similar,0.923,Possible same site; not unique enough to auto-rename
+294,Manicaland,Makoni,Zunhidza Clinic,Zunidza Clinic,similar,0.966,Possible same site; not unique enough to auto-rename
+297,Manicaland,Mutare,Bezely Bridge Clinic,Berzerly Bridge Clinic,similar,0.952,Possible same site; not unique enough to auto-rename
+311,Manicaland,Mutare,Fern Valley Clinic,Fernvalley Clinic,similar,0.971,Possible same site; not unique enough to auto-rename
+327,Manicaland,Mutare,Mkwada Clinic,Mukwada Clinic,similar,0.963,Possible same site; not unique enough to auto-rename
+369,Manicaland,Mutasa,Mandeya II Clinic,Mandeya 11 Clinic,similar,0.882,Possible same site; not unique enough to auto-rename
+392,Manicaland,Mutasa,St Barbara Mission Hospital,St. Barbara's Mission Hospitals,similar,0.947,Possible same site; not unique enough to auto-rename
+430,Manicaland,Chipinge,Silver Stream Clinic,Silverstream Clinic,similar,0.974,Possible same site; not unique enough to auto-rename
+431,Manicaland,Makoni,Nedewedzo Rural Hospital,Nedevedzo Rural Hospital,similar,0.958,Possible same site; not unique enough to auto-rename
+477,Mashonaland Central,Guruve,Camsasa Clinic,Kamusasa Clinic,similar,0.897,Possible same site; not unique enough to auto-rename
+501,Mashonaland Central,Mazowe,Dandamera Clinic,Dandamira Clinic,similar,0.938,Possible same site; not unique enough to auto-rename
+507,Mashonaland Central,Mazowe,Holme Eden Clinic,Holmeden Clinic,similar,0.938,Possible same site; not unique enough to auto-rename
+526,Mashonaland Central,Mazowe,Suoguru Clinic,Suwoguru Clinic,similar,0.966,Possible same site; not unique enough to auto-rename
+528,Mashonaland Central,Mazowe,Von Abo Clinic,Vonabor Clinic,similar,0.929,Possible same site; not unique enough to auto-rename
+529,Mashonaland Central,Mazowe,ZPS Mazowe Prison Clinic,Mazowe Prison Clinic,similar,0.909,Possible same site; not unique enough to auto-rename
+576,Mashonaland Central,Rushinga,Nhawa Rural Health Center,Nhawa Rural Health Centre,similar,0.96,Possible same site; not unique enough to auto-rename
+652,Mashonaland East,Goromonzi,Masikandoro Clinic,Masukandoro Clinic,similar,0.944,Possible same site; not unique enough to auto-rename
+661,Mashonaland East,Goromonzi,ZPS Goromonzi Clinic,ZPCS Goromonzi Clinic,similar,0.976,Possible same site; not unique enough to auto-rename
+694,Mashonaland East,Marondera,Mudzimurema Rural Health Centre,Mudzimuirema Rural Health Centre,similar,0.984,Possible same site; not unique enough to auto-rename
+700,Mashonaland East,Marondera,Wenimbi Rural Health Centre,Wenimbe Rural Health Centre,similar,0.963,Possible same site; not unique enough to auto-rename
+703,Mashonaland East,Mudzi,Chimango Clinic,Chinamano Clinic,similar,0.903,Possible same site; not unique enough to auto-rename
+720,Mashonaland East,Mudzi,Muzezuru Grace Life Clinic,Mazezuru Grace Life Clinic,similar,0.962,Possible same site; not unique enough to auto-rename
+750,Mashonaland East,Murewa,Murewa Polyclinic,Murewa Poly Clinic,similar,0.971,Possible same site; not unique enough to auto-rename
+753,Mashonaland East,Murewa,Nyamutumbu Rural Health Centre,Matututu Rural Health Centre,similar,0.862,Possible same site; not unique enough to auto-rename
+755,Mashonaland East,Murewa,St Clares Clinic,St. Clare's Clinic,similar,0.97,Possible same site; not unique enough to auto-rename
+901,Midlands,Gokwe South,Mateme SDA Clinic,Mateme Clinic,similar,0.867,Possible same site; not unique enough to auto-rename
+905,Midlands,Gokwe South,Mtanke Clinic,Mutange Clinic,similar,0.889,Possible same site; not unique enough to auto-rename
+910,Midlands,Gokwe South,Nyamhunga Clinic,Nyamunga Clinic,similar,0.968,Possible same site; not unique enough to auto-rename
+913,Midlands,Gokwe South,Sessami Clinic,Sesame Clinic,similar,0.889,Possible same site; not unique enough to auto-rename
+923,Midlands,Gweru,Chiwundura Clinic,Chiundura Clinic,similar,0.97,Possible same site; not unique enough to auto-rename
+934,Midlands,Gweru,Madikani Clinic,Madhikani Clinic,similar,0.968,Possible same site; not unique enough to auto-rename
+938,Midlands,Gweru,Mkoba I Clinic,Mkoba 1 Clinic,similar,0.929,Possible same site; not unique enough to auto-rename
+939,Midlands,Gweru,Mkoba PolyClinic,Mkoba Poly Clinic,similar,0.97,Possible same site; not unique enough to auto-rename
+945,Midlands,Gweru,Rubi Clinic,Ruby Clinic,similar,0.909,Possible same site; not unique enough to auto-rename
+947,Midlands,Gweru,Somabhula Clinic,Somabula Clinic,similar,0.968,Possible same site; not unique enough to auto-rename
+959,Midlands,Kwekwe,Donjuan Clinic,Don Juan Clinic,similar,0.966,Possible same site; not unique enough to auto-rename
+965,Midlands,Kwekwe,Malisa Joshepha Clinic,Malisa Josefa Clinic,similar,0.905,Possible same site; not unique enough to auto-rename
+966,Midlands,Kwekwe,Malisa Zhombe Clinic,Malisa  Zhambe   Clinic,similar,0.95,Possible same site; not unique enough to auto-rename
+969,Midlands,Kwekwe,Mbizo 16 Clinic,Mbizo 1 Clinic,similar,0.966,Possible same site; not unique enough to auto-rename
+980,Midlands,Kwekwe,Rio Tinto Clinic,Rio Tinto Mine Clinic,similar,0.865,Possible same site; not unique enough to auto-rename
+984,Midlands,Kwekwe,Senkwazi Clinic,Senkwasi Clinic,similar,0.933,Possible same site; not unique enough to auto-rename
+987,Midlands,Kwekwe,Sigezibubi Clinic,Sigezububi Clinic,similar,0.941,Possible same site; not unique enough to auto-rename
+997,Midlands,Mberengwa,Chidembeko Clinic,Chedembeko Clinic,similar,0.941,Possible same site; not unique enough to auto-rename
+1001,Midlands,Mberengwa,Gwarawa Rural Health Centre,Gwarava Rural Health Centre,similar,0.963,Possible same site; not unique enough to auto-rename
+1008,Midlands,Mberengwa,Mataga Health Centre,Mataga Rural Health Centre,similar,0.87,Possible same site; not unique enough to auto-rename
+1014,Midlands,Mberengwa,Mketi Clinic,Muketi Clinic,similar,0.96,Possible same site; not unique enough to auto-rename
+1020,Midlands,Mberengwa,Mwanezi Rural Health Centre,Mwenezi Rural Health Centre,similar,0.963,Possible same site; not unique enough to auto-rename
+1021,Midlands,Mberengwa,Negove Clinic,Negobe Clinic,similar,0.923,Possible same site; not unique enough to auto-rename
+1027,Midlands,Mberengwa,Wanezi Rural Health Centre,Mwenezi Rural Health Centre,similar,0.943,Possible same site; not unique enough to auto-rename
+1108,Matabeleland North,Binga,Sinamunsanga Clinic,Sinamusanga Clinic,similar,0.973,Possible same site; not unique enough to auto-rename
+1171,Matabeleland North,Lupane,Mdlankuzi Clinic,Mdlankunzi Clinic,similar,0.97,Possible same site; not unique enough to auto-rename
+1173,Matabeleland North,Lupane,St Luke's Mission Hospital,St. Lukes Mission Hospital,similar,0.98,Possible same site; not unique enough to auto-rename
+1174,Matabeleland North,Lupane,St Paul's Mission Hospital,St. Pauls Mission Hospital,similar,0.98,Possible same site; not unique enough to auto-rename
+1187,Matabeleland North,Nkayi,Sebhumane Clinic,Sebumane Clinic,similar,0.968,Possible same site; not unique enough to auto-rename
+1190,Matabeleland North,Nkayi,Simbo RH Clinic,Simbo Clinic,similar,0.889,Possible same site; not unique enough to auto-rename
+1203,Matabeleland North,Tsholotsho,Makhaza Rural Health Centre,Makaza Rural Health Centre,similar,0.981,Possible same site; not unique enough to auto-rename
+1209,Matabeleland North,Tsholotsho,Phumula Mission Hospital,Pumula Mission Hospital,similar,0.979,Possible same site; not unique enough to auto-rename
+1210,Matabeleland North,Tsholotsho,Samahuru Mission Clinc,Samahuru Mission clinic,similar,0.978,Possible same site; not unique enough to auto-rename
+1213,Matabeleland North,Tsholotsho,Siphepha Rural Hospital,Sipepa Rural Hospital,similar,0.955,Possible same site; not unique enough to auto-rename
+1248,Matabeleland South,Beitbridge,Chamnangana Clinic,Chamunangana Clinic,similar,0.973,Possible same site; not unique enough to auto-rename
+1249,Matabeleland South,Beitbridge,Chaswingo Clinic,Chasvingo Clinic,similar,0.938,Possible same site; not unique enough to auto-rename
+1250,Matabeleland South,Beitbridge,Chikwalakwala Rural Health Centre,Chikwarakwara Rural Health Centre,similar,0.939,Possible same site; not unique enough to auto-rename
+1251,Matabeleland South,Beitbridge,Chitulipasi Rural Health Centre,Chituripasi Rural Health Centre,similar,0.968,Possible same site; not unique enough to auto-rename
+1270,Matabeleland South,Beitbridge,Zezani Clinic,Zezane Clinic,similar,0.923,Possible same site; not unique enough to auto-rename
+1273,Matabeleland South,Bulilima,Gambu Clinic,Gambo Clinic,similar,0.917,Possible same site; not unique enough to auto-rename
+1274,Matabeleland South,Bulilima,Hingwe Rural Health Centre,Matjinge  Rural Health Centre,similar,0.889,Possible same site; not unique enough to auto-rename
+1278,Matabeleland South,Bulilima,Madlambudzi Clinic,Madlambuzi Clinic,similar,0.971,Possible same site; not unique enough to auto-rename
+1286,Matabeleland South,Bulilima,Sikhathini Clinic,Sikhatini Clinic,similar,0.97,Possible same site; not unique enough to auto-rename
+1288,Matabeleland South,Bulilima,Temateme Clinic,Tematema Clinic,similar,0.933,Possible same site; not unique enough to auto-rename
+1310,Matabeleland South,Gwanda,Phakama Clinic,Pakama Clinic,similar,0.963,Possible same site; not unique enough to auto-rename
+1317,Matabeleland South,Gwanda,West Nicholson Clinic,West Nicolson Clinic,similar,0.976,Possible same site; not unique enough to auto-rename
+1357,Matabeleland South,Matobo,Beula-seula Rural Health Centre,Beula Rural Health Centre,similar,0.893,Possible same site; not unique enough to auto-rename
+1359,Matabeleland South,Matobo,Ekukhanyeni Clinic,Ekukanyeni Clinic,similar,0.971,Possible same site; not unique enough to auto-rename
+1361,Matabeleland South,Matobo,Gulati Rural Health Center,Gulati Rural Health Centre,similar,0.962,Possible same site; not unique enough to auto-rename
+1366,Matabeleland South,Matobo,Matopo Mission Clinic,Matobo Mission Clinic,similar,0.952,Possible same site; not unique enough to auto-rename
+1372,Matabeleland South,Matobo,Sankonjane Rural Health Centre,Sankonjana Rural Health Centre,similar,0.967,Possible same site; not unique enough to auto-rename
+1373,Matabeleland South,Matobo,Silozwi Clinic,Silozwe Clinic,similar,0.929,Possible same site; not unique enough to auto-rename
+1377,Matabeleland South,Umzingwane,Esibomvu Clinic,Esibobvu Clinic,similar,0.933,Possible same site; not unique enough to auto-rename
+1379,Matabeleland South,Umzingwane,Habane Clinic,Habani Clinic,similar,0.923,Possible same site; not unique enough to auto-rename
+1392,Matabeleland South,Umzingwane,Umzingwane ZNA Clinic,Umzingwane Clinic,similar,0.895,Possible same site; not unique enough to auto-rename
+1397,Masvingo,Bikita,Budzi clinic,Odzi Clinic,similar,0.87,Possible same site; not unique enough to auto-rename
+1425,Masvingo,Chiredzi,Chibvedziva Clinic,Chimbwedziva Clinic,similar,0.919,Possible same site; not unique enough to auto-rename
+1434,Masvingo,Chiredzi,Chompani Clinic,Chomopani Clinic,similar,0.968,Possible same site; not unique enough to auto-rename
+1455,Masvingo,Chiredzi,Rupangwana Clinic,Rapanguwana Clinic,similar,0.914,Possible same site; not unique enough to auto-rename
+1462,Masvingo,Chiredzi,Tshovani Clinic,Tsovani Clinic,similar,0.966,Possible same site; not unique enough to auto-rename
+1470,Masvingo,Chivi,Chirogwe Clinic,Chirongwe Clinic,similar,0.968,Possible same site; not unique enough to auto-rename
+1478,Masvingo,Chivi,Mandamabwe Rural Health Centre,Mhandamabwe Rural Health Centre,similar,0.984,Possible same site; not unique enough to auto-rename
+1487,Masvingo,Chivi,Zivuku Clinic,Ziviku Clinic,similar,0.923,Possible same site; not unique enough to auto-rename
+1501,Masvingo,Gutu,Majada Rural Health Centre,Majarada Rural Health Centre,similar,0.963,Possible same site; not unique enough to auto-rename
+1504,Masvingo,Gutu,Mazuru Clinic,Mazura Clinic,similar,0.923,Possible same site; not unique enough to auto-rename
+1531,Masvingo,Masvingo,Morgenster Mission Hospital,Mogenester Mission Hospital,similar,0.963,Possible same site; not unique enough to auto-rename
+1535,Masvingo,Masvingo,Mushandike Rural Health Centre,Zvamahande Rural Health Centre,similar,0.867,Possible same site; not unique enough to auto-rename
+1554,Masvingo,Masvingo,Wendedzo Clinic,Hwendedzo Clinic,similar,0.968,Possible same site; not unique enough to auto-rename
+1564,Masvingo,Mwenezi,Chirindi Rural Health Centre,Marinda Rural Health Centre,similar,0.873,Possible same site; not unique enough to auto-rename
+1568,Masvingo,Mwenezi,Maranda Clinic,Maranda Sub-Clinic,similar,0.875,Possible same site; not unique enough to auto-rename
+1579,Masvingo,Mwenezi,Nehanda Rural Health Centre,Marinda Rural Health Centre,similar,0.889,Possible same site; not unique enough to auto-rename
+1590,Masvingo,Zaka,Fube Clinic,Fuve Clinic,similar,0.909,Possible same site; not unique enough to auto-rename
+1592,Masvingo,Zaka,Jerera Satellite Clinic,Jerera Satelite Clinic,similar,0.978,Possible same site; not unique enough to auto-rename
+1630,Mashonaland West,Chegutu,Lismore Clinic,Lizmore Clinic,similar,0.929,Possible same site; not unique enough to auto-rename
+1643,Mashonaland West,Chegutu,Pfupajena Munic Clinic,Pfupajena Council Clinic,similar,0.87,Possible same site; not unique enough to auto-rename
+1660,Mashonaland West,Hurungwe,Chundu Clinic,Chirundu Clinic,similar,0.929,Possible same site; not unique enough to auto-rename
+1674,Mashonaland West,Hurungwe,Lanlory Clinic,Lan Lorry Clinic,similar,0.933,Possible same site; not unique enough to auto-rename
+1681,Mashonaland West,Hurungwe,Murambe Clinic,Murambi Clinic,similar,0.929,Possible same site; not unique enough to auto-rename
+1684,Mashonaland West,Hurungwe,Nyamakate Clinic,Nyamakaze Clinic,similar,0.938,Possible same site; not unique enough to auto-rename
+1705,Mashonaland West,Makonde,Chinhoyi Munic Clinic,Chinhoyi Clinic Clinic,similar,0.884,Possible same site; not unique enough to auto-rename
+1706,Mashonaland West,Makonde,Chinhoyi Provincial Hospital FCH,Chinhoyi  Provincial Hospital,similar,0.933,Possible same site; not unique enough to auto-rename
+1707,Mashonaland West,Makonde,Chinhoyi Provincial Hospital OPD,Chinhoyi  Provincial Hospital,similar,0.933,Possible same site; not unique enough to auto-rename
+1711,Mashonaland West,Makonde,Gamanya RDC clinic,Gamanya Clinic,similar,0.875,Possible same site; not unique enough to auto-rename
+1714,Mashonaland West,Makonde,Green Valley RDC Clinic,Green Valley Clinic,similar,0.905,Possible same site; not unique enough to auto-rename
+1716,Mashonaland West,Makonde,Hombwe RDC Clinic,Hombwe Clinic,similar,0.867,Possible same site; not unique enough to auto-rename
+1722,Mashonaland West,Makonde,Long Valley RDC Clinic,Long Valley Clinic,similar,0.9,Possible same site; not unique enough to auto-rename
+1728,Mashonaland West,Makonde,Mukohwe RDC Clinic,Mukohwe Clinic,similar,0.875,Possible same site; not unique enough to auto-rename
+1733,Mashonaland West,Makonde,Nyamugomba RDC Clinic,Nyamugomba Clinic,similar,0.895,Possible same site; not unique enough to auto-rename
+1735,Mashonaland West,Makonde,Portlet RDC clinic,Portlet Clinic,similar,0.875,Possible same site; not unique enough to auto-rename
+1737,Mashonaland West,Makonde,River Ranch RDC Clinic,River Ranch Clinic,similar,0.9,Possible same site; not unique enough to auto-rename
+1740,Mashonaland West,Makonde,Sadoma RDC Clinic,Sadoma Clinic,similar,0.867,Possible same site; not unique enough to auto-rename
+1750,Mashonaland West,Mhondoro,Donain Rural Health Centre,Donain - 100405 - Rural Health Centre,similar,0.881,Possible same site; not unique enough to auto-rename
+1762,Mashonaland West,Mhondoro,St Michael's Mission Hospital,St. Michaels Mission Hospital,similar,0.982,Possible same site; not unique enough to auto-rename
+1766,Mashonaland West,Kadoma Sanyati,Blackmovale Clinic,Black Movale Clinic,similar,0.973,Possible same site; not unique enough to auto-rename
+1772,Mashonaland West,Kadoma Sanyati,Golden Valley Mine Clinic,Golden Valley Private Mine Clinic,similar,0.862,Possible same site; not unique enough to auto-rename
+1794,Mashonaland West,Zvimba,Arda Sisi RDC Clinic,ARDA Sisi Clinic,similar,0.889,Possible same site; not unique enough to auto-rename
+1815,Mashonaland West,Zvimba,Madzorera RDC Clinic,Madzorera Clinic,similar,0.889,Possible same site; not unique enough to auto-rename
+1816,Mashonaland West,Zvimba,Mapinga RDC Clinic,Mapinga  Clinic,similar,0.875,Possible same site; not unique enough to auto-rename

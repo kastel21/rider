@@ -36,6 +36,10 @@
         <span class="app-sidebar__glyph" aria-hidden="true">W</span>
         <span class="app-sidebar__text">Weekly report</span>
       </a>
+      <a href="{% url 'operations:rider_week_submissions' %}" class="app-sidebar__link" title="Rider submissions by province">
+        <span class="app-sidebar__glyph" aria-hidden="true">P</span>
+        <span class="app-sidebar__text">Week submissions</span>
+      </a>
       {% elif user_role == "me" %}
       <a href="{% url 'operations:me_reports' %}" class="app-sidebar__link" title="My reports">
         <span class="app-sidebar__glyph" aria-hidden="true">R</span>
@@ -64,6 +68,10 @@
       <a href="{% url 'operations:weekly_report' %}" class="app-sidebar__link" title="Weekly workstream report">
         <span class="app-sidebar__glyph" aria-hidden="true">W</span>
         <span class="app-sidebar__text">Weekly report</span>
+      </a>
+      <a href="{% url 'operations:rider_week_submissions' %}" class="app-sidebar__link" title="Rider submissions by province">
+        <span class="app-sidebar__glyph" aria-hidden="true">P</span>
+        <span class="app-sidebar__text">Week submissions</span>
       </a>
       {% else %}
       <a href="{% url 'operations:rider_reports' %}" class="app-sidebar__link" title="My reports">

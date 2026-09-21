@@ -15,6 +15,7 @@ DISTRICT_ALIASES = {
     "mt. darwin": "Mount Darwin",
     "mt darwin": "Mount Darwin",
     "kadoma": "Kadoma Sanyati",
+    "sanyati": "Kadoma Sanyati",
 }
 
 

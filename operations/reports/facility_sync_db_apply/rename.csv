@@ -1,0 +1,19 @@
+province,district,old_name,new_name,rule,kind,support_type,pk
+Harare,Harare,Warren Park Poly clinic,Warren Park PolyClinic,trailing_type,clinic,DSD,541
+Manicaland,Mutare,St. Andrew's Mission Hospital,St Andrew's Mission Hospital,punctuation,clinic,DSD,720
+Manicaland,Mutasa,Triashill Mission Hospitals,Triashill Mission Hospital,trailing_type,clinic,DSD,767
+Mashonaland Central,Centenary,St. Albert's Mission Hospital,St Albert's Mission Hospital,punctuation,hub,TA-SDI,1632
+Mashonaland East,Goromonzi,St. Joseph's Rural Health centre,St Joseph's Clinic,trailing_type,clinic,DSD,870
+Mashonaland East,Murewa,Chitowa 1 Rural Health Centre,Chitowa 1 Clinic,trailing_type,clinic,DSD,889
+Mashonaland East,Murewa,St. Paul's Musami Mission Hospital,St Paul's Musami Mission Hospital,punctuation,clinic,DSD,910
+Midlands,Gokwe South,Kana Mission Hospitals,Kana Mission Hospital,trailing_type,clinic,DSD,1497
+Matabeleland North,Lupane,Lake Alice Clinic,Lake-Alice Clinic,punctuation,clinic,DSD,1310
+Matabeleland North,Umguza,St. James Mission Clinic,St James Mission Clinic,punctuation,clinic,DSD,1366
+Matabeleland North,Umguza,T.G. Silundika Rural Health Centre,TG Silundika Clinic,trailing_type,clinic,DSD,1367
+Masvingo,Chiredzi,Old Boli Clinic,Old Boli Rural Health Centre,trailing_type,clinic,DSD,1093
+Masvingo,Chiredzi,St. Joseph Clinic,St Joseph Clinic,punctuation,clinic,DSD,1099
+Masvingo,Gutu,Magombedze Chitsa Rural Health Centre,Magombedze Chitsa Clinic,trailing_type,clinic,DSD,1135
+Masvingo,Gutu,Soti Source Clinic,Soti Source Rural Health Centre,trailing_type,clinic,DSD,1149
+Masvingo,Mwenezi,Maranda Sub-Clinic,Maranda Sub Rural Health Centre,trailing_type,clinic,DSD,1197
+Masvingo,Chiredzi,Turkey Heart Clinic,Turkey heart RHC,trailing_type,clinic,DSD,1733
+Mashonaland West,Makonde,St. Rupert's Mission Hospital,St Rupert's Mission Hospital,punctuation,clinic,DSD,1039

@@ -1,7 +1,7 @@
 Bulawayo	Bulawayo	Bambanani  New Start Centre
 Bulawayo	Bulawayo	Cowdray Park Clinic
-Bulawayo	Bulawayo	Dr. Shennan Clinic
-Bulawayo	Bulawayo	E.F. Watson Clinic
+Bulawayo	Bulawayo	Dr Shennan Clinic
+Bulawayo	Bulawayo	EF Watson Clinic
 Bulawayo	Bulawayo	Emakhandeni Clinic
 Bulawayo	Bulawayo	Entumbane Clinic
 Bulawayo	Bulawayo	Ingutsheni Central Hospital
@@ -69,7 +69,7 @@ Harare	Harare	Southerton Clinic
 Harare	Harare	St. Mary's Clinic
 Harare	Harare	Sunningdale Satellite Clinic
 Harare	Harare	Tafara Clinic
-Harare	Harare	Warren Park Poly clinic
+Harare	Harare	Warren Park PolyClinic
 Harare	Harare	Waterfalls Clinic
 Harare	Harare	Western Triangle Clinic
 Harare	Harare	Wilkins Infectious Disease Hospital Infectious Disease Hospital
@@ -249,7 +249,7 @@ Manicaland	Mutare	Odzi Rural Hospital
 Manicaland	Mutare	Rowa Clinic
 Manicaland	Mutare	Sakubva District Hospital
 Manicaland	Mutare	Sakubva Health Centre Hospital
-Manicaland	Mutare	St. Andrew's Mission Hospital
+Manicaland	Mutare	St Andrew's Mission Hospital
 Manicaland	Mutare	St. Joseph's T.B Hospital
 Manicaland	Mutare	St. Welburgh Mission Clinic
 Manicaland	Mutare	Vumba Clinic
@@ -297,7 +297,7 @@ Manicaland	Mutasa	Sherukuru Rural Health Centre
 Manicaland	Mutasa	St. Augustine's Mission Clinic
 Manicaland	Mutasa	St. Barbara's Mission Hospitals
 Manicaland	Mutasa	St. Peter's Mandeya Mission Hospital
-Manicaland	Mutasa	Triashill Mission Hospitals
+Manicaland	Mutasa	Triashill Mission Hospital
 Manicaland	Mutasa	Tsonzo Rural Hospital
 Manicaland	Mutasa	Zindi Clinic
 Manicaland	Mutasa	Zongoro Council Clinic
@@ -385,7 +385,9 @@ Mashonaland East	Goromonzi	Chikwaka Rural Hospital
 Mashonaland East	Goromonzi	Chinamhora Clinic
 Mashonaland East	Goromonzi	Chinyika Clinic
 Mashonaland East	Goromonzi	Cranborne Clinic Clinic
+Mashonaland East	Goromonzi	Damafalls Poly Clinic
 Mashonaland East	Goromonzi	Domboshava Clinic
+Mashonaland East	Goromonzi	Gazebo Clinic
 Mashonaland East	Goromonzi	Gejo raRuby Rural Health Centre
 Mashonaland East	Goromonzi	Joan Rankini Rural Health Centre
 Mashonaland East	Goromonzi	John Reimer Clinic
@@ -398,9 +400,12 @@ Mashonaland East	Goromonzi	Mwanza Rural Health Centre
 Mashonaland East	Goromonzi	Nyaure Clinic
 Mashonaland East	Goromonzi	Pote Clinic
 Mashonaland East	Goromonzi	Rusike Clinic
+Mashonaland East	Goromonzi	Ruwa Clinic
 Mashonaland East	Goromonzi	Ruwa Poly Clinic
 Mashonaland East	Goromonzi	Ruwa Rehabilitation  Hospital
-Mashonaland East	Goromonzi	St. Joseph's Rural Health centre
+Mashonaland East	Goromonzi	St Joseph's Clinic
+Mashonaland East	Goromonzi	Xanadu Clinic
+Mashonaland East	Goromonzi	ZPCS Goromonzi Clinic
 Mashonaland East	Marondera	Border Church Rural Health Centre
 Mashonaland East	Marondera	Chimbwanda Rural Health Centre
 Mashonaland East	Marondera	Chiota Rural Hospital
@@ -417,10 +422,11 @@ Mashonaland East	Marondera	Masikana Clinic
 Mashonaland East	Marondera	Mudzimuirema Rural Health Centre
 Mashonaland East	Marondera	Nyameni Clinic
 Mashonaland East	Marondera	Nyembanzvere Clinic
+Mashonaland East	Marondera	Ridigita Clinic
 Mashonaland East	Marondera	Wenimbe Rural Health Centre
 Mashonaland East	Murewa	Chidiya Clinic
 Mashonaland East	Murewa	Chitate Rural Health Centre
-Mashonaland East	Murewa	Chitowa 1 Rural Health Centre
+Mashonaland East	Murewa	Chitowa 1 Clinic
 Mashonaland East	Murewa	Chitowa 2 Clinic
 Mashonaland East	Murewa	Craiglea Clinic
 Mashonaland East	Murewa	Dandara Clinic
@@ -441,19 +447,22 @@ Mashonaland East	Murewa	Nhowe Mission Hospital
 Mashonaland East	Murewa	Nyamutumbu Clinic
 Mashonaland East	Murewa	Shambamuto Clinic
 Mashonaland East	Murewa	St. Clare's Clinic
-Mashonaland East	Murewa	St. Paul's Musami Mission Hospital
+Mashonaland East	Murewa	St Paul's Musami Mission Hospital
 Mashonaland East	Murewa	Virginia Clinic Clinic
 Mashonaland East	Murewa	Waterloo Clinic
 Mashonaland East	Murewa	Welcome Home Liden Clinic
 Mashonaland East	Murewa	Wuyuwuyu Clinic
 Mashonaland West	Chegutu	Beersheba Clinic
+Mashonaland West	Chegutu	Bevking Clinic
 Mashonaland West	Chegutu	Brunswick Clinic
 Mashonaland West	Chegutu	Chegutu District Hospital
+Mashonaland West	Chegutu	Chegutu Rural District Clinic
 Mashonaland West	Chegutu	Chegutu Urban Council Clinic
 Mashonaland West	Chegutu	Chikara Council Clinic
 Mashonaland West	Chegutu	Chinengundu Clinic
 Mashonaland West	Chegutu	Chivero Council Clinic
 Mashonaland West	Chegutu	Dombwe  Clinic
+Mashonaland West	Chegutu	Fanham Clinic
 Mashonaland West	Chegutu	Glenluce Clinic
 Mashonaland West	Chegutu	Gora Rural Health Centre
 Mashonaland West	Chegutu	Homedale Clinic
@@ -464,12 +473,16 @@ Mashonaland West	Chegutu	Mbuyanehanda Rural Health Centre
 Mashonaland West	Chegutu	Mhondoro North Council Clinic
 Mashonaland West	Chegutu	Mhondoro Rural Hospital
 Mashonaland West	Chegutu	Monera Council Clinic
+Mashonaland West	Chegutu	Munemo Clinic
 Mashonaland West	Chegutu	Mupawose Council Clinic
+Mashonaland West	Chegutu	Mupfure Clinic
+Mashonaland West	Chegutu	Musengezi Clinic
 Mashonaland West	Chegutu	Musinami Rural Health Centre
 Mashonaland West	Chegutu	Norton Hospital
 Mashonaland West	Chegutu	Padre Pio Poly Clinic
 Mashonaland West	Chegutu	Pfupajena Council Clinic
 Mashonaland West	Chegutu	Presbyterian  Clinic
+Mashonaland West	Chegutu	Rasper Clinic
 Mashonaland West	Chegutu	Rwizi Council Clinic
 Mashonaland West	Chegutu	Sandringham Mission Clinic
 Mashonaland West	Chegutu	Santa Barbra Clinic
@@ -574,7 +587,7 @@ Mashonaland West	Makonde	River Ranch Clinic
 Mashonaland West	Makonde	Runene  Council Clinic
 Mashonaland West	Makonde	Sadoma Clinic
 Mashonaland West	Makonde	Shackleton Clinic
-Mashonaland West	Makonde	St. Rupert's Mission Hospital
+Mashonaland West	Makonde	St Rupert's Mission Hospital
 Mashonaland West	Makonde	Umboe Clinic
 Mashonaland West	Makonde	Zumbara Clinic
 Mashonaland West	Zvimba	ARDA Sisi Clinic
@@ -638,19 +651,21 @@ Masvingo	Chiredzi	Muhlanguleni Clinic
 Masvingo	Chiredzi	Muteyo Clinic
 Masvingo	Chiredzi	Neromwe Clinic
 Masvingo	Chiredzi	Nyangambe Clinic
-Masvingo	Chiredzi	Old Boli Clinic
+Masvingo	Chiredzi	Old Boli Rural Health Centre
 Masvingo	Chiredzi	Pahlela Clinic
 Masvingo	Chiredzi	Porepore Clinic
 Masvingo	Chiredzi	Rapanguwana Clinic
 Masvingo	Chiredzi	Rusununguko Clinic
 Masvingo	Chiredzi	Rutandare Clinic
 Masvingo	Chiredzi	Samu Clinic
-Masvingo	Chiredzi	St. Joseph Clinic
+Masvingo	Chiredzi	St Joseph Clinic
 Masvingo	Chiredzi	Triangle Hospital
 Masvingo	Chiredzi	Tsovani Clinic
-Masvingo	Chiredzi	Turkey Heart Clinic
+Masvingo	Chiredzi	Turkey heart RHC
 Masvingo	Chiredzi	ZPCS Clinic
 Masvingo	Chivi	Berejena Mission Clinic
+Masvingo	Chivi	Bwanya Clinic
+Masvingo	Chivi	Chasiyatende Clinic
 Masvingo	Chivi	Chidyamakono Clinic
 Masvingo	Chivi	Chifedza Clinic
 Masvingo	Chivi	Chigwikwi Rural Health Centre
@@ -683,7 +698,7 @@ Masvingo	Gutu	Denhere Clinic
 Masvingo	Gutu	Devure Mission Clinic
 Masvingo	Gutu	Gutu Mission Hospital
 Masvingo	Gutu	Gutu Rural  Clinic
-Masvingo	Gutu	Magombedze Chitsa Rural Health Centre
+Masvingo	Gutu	Magombedze Chitsa Clinic
 Masvingo	Gutu	Magombedze Clinic
 Masvingo	Gutu	Majarada Rural Health Centre
 Masvingo	Gutu	Mataruse Clinic
@@ -699,7 +714,7 @@ Masvingo	Gutu	Nemashakwe Clinic
 Masvingo	Gutu	Nyazvidzi Clinic
 Masvingo	Gutu	Rufaro Clinic
 Masvingo	Gutu	Serima Mission Hospital
-Masvingo	Gutu	Soti Source Clinic
+Masvingo	Gutu	Soti Source Rural Health Centre
 Masvingo	Gutu	Tirizi Clinic
 Masvingo	Gutu	Zinhata Clinic
 Masvingo	Gutu	Zvavahera Clinic
@@ -747,7 +762,7 @@ Masvingo	Mwenezi	Chizumba Clinic
 Masvingo	Mwenezi	G&N Clinic Clinic
 Masvingo	Mwenezi	Lundi Clinic
 Masvingo	Mwenezi	Maranda Mission Hospital
-Masvingo	Mwenezi	Maranda Sub-Clinic
+Masvingo	Mwenezi	Maranda Sub Rural Health Centre
 Masvingo	Mwenezi	Marinda Rural Health Centre
 Masvingo	Mwenezi	Matibi Mission Hospital
 Masvingo	Mwenezi	Mazetese Clinic
@@ -771,15 +786,19 @@ Masvingo	Zaka	Harava Rural Health Centre
 Masvingo	Zaka	Jerera Satelite Clinic
 Masvingo	Zaka	Jichidza Council Clinic
 Masvingo	Zaka	Jichidza Mission Clinic
+Masvingo	Zaka	Machiva Clinic
 Masvingo	Zaka	Mageza Rural Health Centre
 Masvingo	Zaka	Mandhloro Clinic
+Masvingo	Zaka	Murerekwa Clinic
 Masvingo	Zaka	Mushaya Clinic
 Masvingo	Zaka	Musiso Mission Hospital
 Masvingo	Zaka	Ndanga Clinic
 Masvingo	Zaka	Ndanga Hospital
 Masvingo	Zaka	Nemauku Clinic
 Masvingo	Zaka	Nhema Clinic
+Masvingo	Zaka	Njiva Clinic
 Masvingo	Zaka	Nyakunhuwa Clinic
+Masvingo	Zaka	Rucors Clinic
 Masvingo	Zaka	Siyawareva Clinic
 Masvingo	Zaka	Svuvure Rural Health Hospital
 Masvingo	Zaka	Veza Clinic
@@ -862,7 +881,7 @@ Matabeleland North	Lupane	Gomoza Rural Health Centre
 Matabeleland North	Lupane	Gwaai RHC
 Matabeleland North	Lupane	Jotsholo Clinic
 Matabeleland North	Lupane	Kanyandavu Clinic
-Matabeleland North	Lupane	Lake Alice Clinic
+Matabeleland North	Lupane	Lake-Alice Clinic
 Matabeleland North	Lupane	Lupaka Clinic
 Matabeleland North	Lupane	Lupane Rural Health Centre
 Matabeleland North	Lupane	Mdlankunzi Clinic
@@ -882,21 +901,27 @@ Matabeleland North	Nkayi	Satelite clinic
 Matabeleland North	Nkayi	Sebumane Clinic
 Matabeleland North	Nkayi	Sesemba Rural Health Centre
 Matabeleland North	Nkayi	Sikhobokhobo Clinic
+Matabeleland North	Nkayi	Simbo Clinic
 Matabeleland North	Nkayi	Sivalo Rural Health Centre
 Matabeleland North	Nkayi	Vova RHC
 Matabeleland North	Nkayi	Zenka Rural Health Centre
 Matabeleland North	Nkayi	Zinyangeni Rural Health Centre
+Matabeleland North	Nkayi	ZPS Clinic
 Matabeleland North	Tsholotsho	Bemba Council Clinic
 Matabeleland North	Tsholotsho	Bubude RHC
 Matabeleland North	Tsholotsho	Dlamini Council Clinic
+Matabeleland North	Tsholotsho	Inala Clinic
 Matabeleland North	Tsholotsho	Jimila Clinic
+Matabeleland North	Tsholotsho	Jowa Clinic
 Matabeleland North	Tsholotsho	Kapane RHC
 Matabeleland North	Tsholotsho	Madlangombe  Clinic
 Matabeleland North	Tsholotsho	Makaza Rural Health Centre
 Matabeleland North	Tsholotsho	Mlagisa Rural Health centre
 Matabeleland North	Tsholotsho	Mpanedziba Clinic
+Matabeleland North	Tsholotsho	Mpilo Clinic
 Matabeleland North	Tsholotsho	Mtshayeli Clinic
 Matabeleland North	Tsholotsho	Nkunzi Rural Health Centre
+Matabeleland North	Tsholotsho	Ngamo Clinic
 Matabeleland North	Tsholotsho	Pumula Mission Hospital
 Matabeleland North	Tsholotsho	Samahuru Mission clinic
 Matabeleland North	Tsholotsho	Shaba Council Clinic
@@ -904,8 +929,10 @@ Matabeleland North	Tsholotsho	Sikente Clinic
 Matabeleland North	Tsholotsho	Sipepa Rural Hospital
 Matabeleland North	Tsholotsho	Sodaka Rural Health centre
 Matabeleland North	Tsholotsho	Tshefunye
+Matabeleland North	Tsholotsho	Tshitatshawa Clinic
 Matabeleland North	Tsholotsho	Tsholotsho District Hospital
 Matabeleland North	Tsholotsho	Tsholotsho Urban Clinic
+Matabeleland North	Tsholotsho	ZPCS Clinic
 Matabeleland North	Umguza	Anju
 Matabeleland North	Umguza	Fairbridge ZRP Camp clinic
 Matabeleland North	Umguza	Fingo Clinic
@@ -918,8 +945,8 @@ Matabeleland North	Umguza	Nyamandlovu District Hospital
 Matabeleland North	Umguza	Redwood Clinic
 Matabeleland North	Umguza	Ross camp
 Matabeleland North	Umguza	Siganda   Clinic
-Matabeleland North	Umguza	St. James Mission Clinic
-Matabeleland North	Umguza	T.G. Silundika Rural Health Centre
+Matabeleland North	Umguza	St James Mission Clinic
+Matabeleland North	Umguza	TG Silundika Clinic
 Matabeleland North	Umguza	Umguza RDC Clinic
 Matabeleland North	Umguza	Umuntu clinic
 Matabeleland South	Beitbridge	Beitbridge District Hospital
@@ -929,31 +956,44 @@ Matabeleland South	Beitbridge	Chikwarakwara Rural Health Centre
 Matabeleland South	Beitbridge	Chituripasi Rural Health Centre
 Matabeleland South	Beitbridge	Dite Rural Health Centre
 Matabeleland South	Beitbridge	Dulibadzimu Clinic
+Matabeleland South	Beitbridge	Dumba Clinic
 Matabeleland South	Beitbridge	Majini Rural Health Centre
 Matabeleland South	Beitbridge	Makakabule Rural Health Centre
 Matabeleland South	Beitbridge	Makombe Clinic
+Matabeleland South	Beitbridge	Malabe Clinic
 Matabeleland South	Beitbridge	Masera Clinic
+Matabeleland South	Beitbridge	Mazunga Clinic
 Matabeleland South	Beitbridge	Mtetengwe Clinic
 Matabeleland South	Beitbridge	Nottingham Rural Health Centre
+Matabeleland South	Beitbridge	Satelite Clinic
 Matabeleland South	Beitbridge	Shabwe Rural Health Centre
 Matabeleland South	Beitbridge	Shashe Clinic
 Matabeleland South	Beitbridge	Swereki Clinic
 Matabeleland South	Beitbridge	Tongwe Clinic
+Matabeleland South	Beitbridge	Tshabili Clinic
+Matabeleland South	Beitbridge	Wellness Clinic
 Matabeleland South	Beitbridge	Zezane Clinic
+Matabeleland South	Beitbridge	ZPCS Clinic
+Matabeleland South	Beitbridge	ZRP Clinic
 Matabeleland South	Bulilima	Bezu Clinic
 Matabeleland South	Bulilima	Dombodema Clinic
+Matabeleland South	Bulilima	Gambo Clinic
 Matabeleland South	Bulilima	Hingwe Clinic
 Matabeleland South	Bulilima	Huwana Clinic
 Matabeleland South	Bulilima	Lady Barring Mission Hospital
 Matabeleland South	Bulilima	Lady Stanley Mission Hospital
 Matabeleland South	Bulilima	Madlambuzi Clinic
 Matabeleland South	Bulilima	Makhuleka Clinic
+Matabeleland South	Bulilima	Malalume Clinic
 Matabeleland South	Bulilima	Masendu Clinic
 Matabeleland South	Bulilima	Matjinge  Rural Health Centre
+Matabeleland South	Bulilima	Mbimba Clinic
 Matabeleland South	Bulilima	Ndiweni Clinic
 Matabeleland South	Bulilima	Nswazwi Rural Health Centre
+Matabeleland South	Bulilima	Nyabane Clinic
 Matabeleland South	Bulilima	Sikhatini Clinic
 Matabeleland South	Bulilima	Solusi Clinic
+Matabeleland South	Bulilima	Tematema Clinic
 Matabeleland South	Bulilima	Tokwana Clinic
 Matabeleland South	Bulilima	Village 13 Rural Health Centre
 Matabeleland South	Gwanda	Buvuma Clinic
@@ -978,12 +1018,16 @@ Matabeleland South	Gwanda	Simbumbumbu Rural Health Centre
 Matabeleland South	Gwanda	Sitezi clinic
 Matabeleland South	Gwanda	Stanmore Clinic
 Matabeleland South	Gwanda	West Nicolson Clinic
+Matabeleland South	Insiza	Amazon Clinic
 Matabeleland South	Insiza	Avoca Rural Hospital
 Matabeleland South	Insiza	Filabusi District Hospital
+Matabeleland South	Insiza	Gwanda State University Clinic (GSU)
 Matabeleland South	Insiza	Gwatemba Rural Health Centre
 Matabeleland South	Insiza	Insiza PBS  Clinic
 Matabeleland South	Insiza	Kombo Clinic
 Matabeleland South	Insiza	Mabuze Rural Health Centre
+Matabeleland South	Insiza	Mbondo Clinic
+Matabeleland South	Insiza	Montrose Clinic
 Matabeleland South	Insiza	Nkankezi Rural Health Centre
 Matabeleland South	Insiza	Nyamime Rural Health Centre
 Matabeleland South	Insiza	Sanale Rural Health Centre
@@ -1012,6 +1056,7 @@ Matabeleland South	Matobo	Bazha Clinic
 Matabeleland South	Matobo	Beula Rural Health Centre
 Matabeleland South	Matobo	Cyrene Mission Clinic
 Matabeleland South	Matobo	Ekukanyeni Clinic
+Matabeleland South	Matobo	Fumugwe Clinic
 Matabeleland South	Matobo	Gulati Rural Health Centre
 Matabeleland South	Matobo	Homestead Rural Health Centre
 Matabeleland South	Matobo	Kezi Rural Hospital
@@ -1020,8 +1065,11 @@ Matabeleland South	Matobo	Masiye Camp Clinic
 Matabeleland South	Matobo	Matobo Mission Clinic
 Matabeleland South	Matobo	Matobo Rural Rural Hospital
 Matabeleland South	Matobo	Mbembeswane Rural Health Centre
+Matabeleland South	Matobo	Mlugulu Clinic
 Matabeleland South	Matobo	Natisa Rural Health Centre
+Matabeleland South	Matobo	Ndabankulu Clinic
 Matabeleland South	Matobo	Sankonjana Rural Health Centre
+Matabeleland South	Matobo	Silozwe Clinic
 Matabeleland South	Matobo	St. Joseph's Rural Hospital
 Matabeleland South	Matobo	Tshelanyemba Mission Hospital
 Matabeleland South	Umzingwane	Dula Clinic
@@ -1053,7 +1101,7 @@ Midlands	Gokwe South	Gwanyika Rural Health Centre
 Midlands	Gokwe South	Huchu Clinic
 Midlands	Gokwe South	Jahana Clinic
 Midlands	Gokwe South	Jiri Clinic
-Midlands	Gokwe South	Kana Mission Hospitals
+Midlands	Gokwe South	Kana Mission Hospital
 Midlands	Gokwe South	Krima Clinic
 Midlands	Gokwe South	Mangidi Clinic
 Midlands	Gokwe South	Manoti Clinic
@@ -1066,6 +1114,7 @@ Midlands	Gokwe South	Msala Clinic
 Midlands	Gokwe South	Musita Clinic
 Midlands	Gokwe South	Mutange Clinic
 Midlands	Gokwe South	Ndabambi Clinic
+Midlands	Gokwe South	Ndhlalambi Clinic
 Midlands	Gokwe South	Njelele Clinic
 Midlands	Gokwe South	Nyaje Rural Health Centre
 Midlands	Gokwe South	Nyamunga Clinic
@@ -1173,3 +1222,618 @@ Midlands	Mberengwa	Svita Clinic
 Midlands	Mberengwa	Vurasha Rural Health Centre
 Midlands	Mberengwa	Vutsanana Clinic
 Midlands	Mberengwa	Wanezi Clinic
+Bulawayo	Bulawayo	Bulawayo Family Health Clinic
+Bulawayo	Bulawayo	CIMAS
+Bulawayo	Bulawayo	Emganwini Clinic
+Bulawayo	Bulawayo	Khami - Ceshhar Clinic
+Bulawayo	Bulawayo	Khami Road Clinic
+Bulawayo	Bulawayo	Lister House - Zimbabwe National Family Planning Services (ZNFPS)
+Bulawayo	Bulawayo	Mahatshula Clinic
+Bulawayo	Bulawayo	Maternal and Child Health Centre
+Bulawayo	Bulawayo	Mpilo ZNFPC Clinic
+Bulawayo	Bulawayo	NRZ
+Bulawayo	Bulawayo	PSI New Start Clinic
+Bulawayo	Bulawayo	United Bulawayo Hospital
+Bulawayo	Bulawayo	ZPS Bulawayo Prison Clinic
+Bulawayo	Bulawayo	ZRP Rosecamp Clinic
+Bulawayo	Bulawayo	Cowdray Park Health Centre
+Harare	Chitungwiza	Chitungwiza Central Hospital
+Harare	Chitungwiza	Chitungwiza New Start Centre Town Centre
+Harare	Chitungwiza	Seke North Clinic
+Harare	Chitungwiza	Seke South Clinic
+Harare	Chitungwiza	South Medical Hospital
+Harare	Chitungwiza	St Mary's Clinic
+Harare	Chitungwiza	Zengeza Clinic
+Harare	Epworth	Epworth Mission Clinic
+Harare	Epworth	Epworth Polyclinic
+Harare	Epworth	Overspill Clinic
+Harare	Harare	Beatrice Road Hospital
+Harare	Harare	Belvedere Satellite Clinic
+Harare	Harare	Budiriro Poly
+Harare	Harare	Eastley FHS Clinic
+Harare	Harare	Fife Avenue Clinic
+Harare	Harare	Giovanni Spagnolli Clinic
+Harare	Harare	Glen View Maternity Home
+Harare	Harare	Glen View Poly
+Harare	Harare	Hatcliffe Poly
+Harare	Harare	Highfield Poly
+Harare	Harare	Highlands Primary Care Clinic
+Harare	Harare	Hopley
+Harare	Harare	Kambuzuma
+Harare	Harare	Mabvuku Poly
+Harare	Harare	Mabvuku Satellite
+Harare	Harare	Marlborough Satellite Clinic
+Harare	Harare	Mashambanzou Care Trust Hospital
+Harare	Harare	Mbare Hostel CeSHHAR Sisters' Clinic
+Harare	Harare	Mufakose FHS
+Harare	Harare	Mufakose Poly
+Harare	Harare	Newlands Clinic
+Harare	Harare	Parirenyatwa Clinic
+Harare	Harare	Parirenyatwa Group of Hospitals
+Harare	Harare	PSI New start Centre, Kwame
+Harare	Harare	Queen of Peace
+Harare	Harare	Rujeko Poly
+Harare	Harare	Rutsanana Poly
+Harare	Harare	Sally Mugabe Central Hospital OPD
+Harare	Harare	Sally Mugabe Central Hospital Paediatric
+Harare	Harare	Spilhaus
+Harare	Harare	Stoneridge Hospital
+Harare	Harare	Sunningdale Clinic
+Harare	Harare	Wilkins Infectious Diseases Hospital
+Harare	Harare	ZPS Chikurubi Farm Prison
+Harare	Harare	ZPS Chikurubi Female Prison Clinic
+Harare	Harare	ZPS Chikurubi Maximum Prison Hospital
+Harare	Harare	ZPS Chikurubi Maximum Prison Psychiatric
+Harare	Harare	ZPS Chikurubi Prison Dependants Clinic
+Harare	Harare	ZPS Chikurubi Prison Staff Hospital
+Harare	Harare	ZPS Harare Central Prison Dependants Clinic
+Harare	Harare	ZPS Harare Central Prison Hospital
+Harare	Harare	ZPS Harare Remand Prison
+Harare	Ruwa	Ruwa Clinic
+Harare	Ruwa	Ruwa PolyClinic
+Harare	Ruwa	Ruwa Rehabilitation Hospital
+Manicaland	Buhera	Birchenough Bridge Hospital
+Manicaland	Buhera	Chawatama RHC
+Manicaland	Buhera	Chipondamidzi Clinic
+Manicaland	Buhera	Garamwera Rural Council Clinic
+Manicaland	Buhera	Maburutse Clinic
+Manicaland	Buhera	Mbundire Clinic
+Manicaland	Buhera	Msasa RDC clinic
+Manicaland	Buhera	Mukubu Clinic
+Manicaland	Buhera	Murambinda Mission Hospital
+Manicaland	Buhera	Mutasa Clinic
+Manicaland	Buhera	Ndyarima clinic
+Manicaland	Buhera	Nyashanu Mission Clinic
+Manicaland	Buhera	St Moses Chiremwa clinic
+Manicaland	Chipinge	Arda Chisumbanje Clinic
+Manicaland	Chipinge	Chinyamukwakwa Rural Health Centre
+Manicaland	Chipinge	Chipinge Hospital
+Manicaland	Chipinge	Chiriga Clinic
+Manicaland	Chipinge	Gaza Clinic
+Manicaland	Chipinge	Kopera Rural Health Centre
+Manicaland	Chipinge	Lamont clinic
+Manicaland	Chipinge	Mabee Rural Health Centre
+Manicaland	Chipinge	Madhuku Clinic
+Manicaland	Chipinge	Mahenye Rural Health Centre
+Manicaland	Chipinge	Midsave Clinic
+Manicaland	Chipinge	Musilizwe Rural Health Centre
+Manicaland	Chipinge	Muswera Rural clinic
+Manicaland	Chipinge	Paidamoyo Rural Health Centre
+Manicaland	Chipinge	St Peters Hospital
+Manicaland	Chipinge	Tanganda Rural
+Manicaland	Chipinge	Tanganda Rural Health Centre
+Manicaland	Chipinge	Tingamira Clinic
+Manicaland	Chipinge	Tongogara Rural Health Centre
+Manicaland	Chipinge	Tuzuka Clinic
+Manicaland	Chipinge	ZPS Chipinge Prison Clinic
+Manicaland	Makoni	Nzvimbe clinic
+Manicaland	Makoni	Arnoldine Mission Clinic
+Manicaland	Makoni	Era Mine Clinic
+Manicaland	Makoni	Mabvazuva Clinic
+Manicaland	Makoni	Matotwe Rural Health Centre
+Manicaland	Makoni	Mukuwapasi Rehab Clinic
+Manicaland	Makoni	Rusape Hospital
+Manicaland	Makoni	Tsikada Rural Health Center
+Manicaland	Makoni	ZPS Little Kraal Prison Clinic
+Manicaland	Mutare	Bwizi Rural Health Centre
+Manicaland	Mutare	Chikanga
+Manicaland	Mutare	Chikwariro Clinic
+Manicaland	Mutare	Chinyamazizi Clinic
+Manicaland	Mutare	Chipendeke Clinic
+Manicaland	Mutare	Dangamvura
+Manicaland	Mutare	Forbes Boarder
+Manicaland	Mutare	Forbes Boarder CeSHHAR Mobile Sister's clinic
+Manicaland	Mutare	Forbes Boarder Clinic
+Manicaland	Mutare	Gimboki Clinic
+Manicaland	Mutare	Hob House
+Manicaland	Mutare	Leekuil Takunda Clinic
+Manicaland	Mutare	Madanga Clinic
+Manicaland	Mutare	Matanda Clinic
+Manicaland	Mutare	Mount Zuma Clinic
+Manicaland	Mutare	Mutare Health
+Manicaland	Mutare	New Start Centre
+Manicaland	Mutare	Odzi Clinic
+Manicaland	Mutare	Sakubva
+Manicaland	Mutare	Sakubva Hospital
+Manicaland	Mutare	St Josephs' Mission Hospital
+Manicaland	Mutare	St Werburghs Clinic
+Manicaland	Mutare	Victoria Chitepo Provincial Hospital
+Manicaland	Mutare	ZPS Mutare Prison Farm Clinic
+Manicaland	Mutare	Zvipiripiri Rural Health Centre
+Manicaland	Mutasa	Chinaka Health Post
+Manicaland	Mutasa	Chinamasa Clinic
+Manicaland	Mutasa	Chitombo Clinic
+Manicaland	Mutasa	Drenane Clinic
+Manicaland	Mutasa	Eastern Highlands Plantation Clinic
+Manicaland	Mutasa	Guta Clinic
+Manicaland	Mutasa	Haparari Clinic
+Manicaland	Mutasa	Hauna Hospital
+Manicaland	Mutasa	Hawling health post
+Manicaland	Mutasa	Honde Mission Clinic
+Manicaland	Mutasa	Imbeza Clinic
+Manicaland	Mutasa	Katiyo Tea Estate Clinic
+Manicaland	Mutasa	Kubatana health post
+Manicaland	Mutasa	Magadzire health post
+Manicaland	Mutasa	Mpotedzi Clinic
+Manicaland	Mutasa	Mt Jenya Clinic
+Manicaland	Mutasa	Mutasa Clinic
+Manicaland	Mutasa	Mwoyoweshumba Clinic
+Manicaland	Mutasa	Ngarura Clinic
+Manicaland	Mutasa	Nyamukwarara RDC Clinic
+Manicaland	Mutasa	Premier Central Clinic
+Manicaland	Mutasa	Redwing Clinic
+Manicaland	Mutasa	Sadziwa Clinic
+Manicaland	Mutasa	Sagambe Clinic
+Manicaland	Mutasa	Sahumani Clinic
+Manicaland	Mutasa	Sakupwanya Clinic
+Manicaland	Mutasa	Samanga Clinic
+Manicaland	Mutasa	Samaringa Clinic
+Manicaland	Mutasa	Selbourne/Nyanga Pine Clinic
+Manicaland	Mutasa	Sheba Clinic
+Manicaland	Mutasa	St Augustine's Clinic
+Manicaland	Mutasa	St Peter's Mandeya Mission Clinic
+Manicaland	Mutasa	Tsvingwe RDC Clinic
+Manicaland	Mutasa	Zongoro Clinic
+Manicaland	Mutare	Chiwere Clinic
+Mashonaland Central	Guruve	Birkdale Clinic
+Mashonaland Central	Guruve	Bvochora Rural Health Centre
+Mashonaland Central	Guruve	Guruve Centre Rural Health Clinic
+Mashonaland Central	Guruve	Guruve Hospital
+Mashonaland Central	Guruve	Kemutamba Clinic
+Mashonaland Central	Guruve	Mugarakamwe Clinic
+Mashonaland Central	Guruve	Negomo Rural Health Centre
+Mashonaland Central	Guruve	Nyamhondoro Rural Health Centre
+Mashonaland Central	Guruve	Nyamupfuta Clinic
+Mashonaland Central	Guruve	Shinje Rural Health Centre
+Mashonaland Central	Mazowe	Adura Clinic
+Mashonaland Central	Mazowe	Belgownie Clinic
+Mashonaland Central	Mazowe	Chigwida Clinic
+Mashonaland Central	Mazowe	Chinehasha Rural Health Centre
+Mashonaland Central	Mazowe	Concession Hospital
+Mashonaland Central	Mazowe	Cranham Clinic
+Mashonaland Central	Mazowe	Dandamera Clinic
+Mashonaland Central	Mazowe	Gombekombe Clinic
+Mashonaland Central	Mazowe	Henderson Clinic
+Mashonaland Central	Mazowe	Horta Clinic
+Mashonaland Central	Mazowe	Maria Theresa Clinic
+Mashonaland Central	Mazowe	Mazowe Citrus Clinic
+Mashonaland Central	Mazowe	Mazowe Mine
+Mashonaland Central	Mazowe	Mazowe Secondary Clinic
+Mashonaland Central	Mazowe	Muswenhede Clinic
+Mashonaland Central	Mazowe	Nyakudya Rural Health Centre
+Mashonaland Central	Mazowe	Sandringham Clinic
+Mashonaland Central	Mazowe	Shutu Rural Health Centre
+Mashonaland Central	Mazowe	Suoguru Clinic
+Mashonaland Central	Mazowe	ZPS Mazowe Prison Clinic
+Mashonaland Central	Mount Darwin	Bandimba Clinic
+Mashonaland Central	Mount Darwin	Bveke Clinic
+Mashonaland Central	Mount Darwin	Chibuli Clinic
+Mashonaland Central	Mount Darwin	Dotito Rural Health Centre
+Mashonaland Central	Mount Darwin	Kamutsenzere Rural Health Centre
+Mashonaland Central	Mount Darwin	Kandeya clinic
+Mashonaland Central	Mount Darwin	Mount Darwin Hospital
+Mashonaland Central	Mount Darwin	Murongwe Clinic
+Mashonaland Central	Mount Darwin	Nembire Rural Health Centre
+Mashonaland Central	Mount Darwin	Nyamahobogo Rural Health Centre
+Mashonaland Central	Mount Darwin	Pfunyanguwo Rural Health Centre
+Mashonaland Central	Mount Darwin	Tsakare Rural Health Centre
+Mashonaland Central	Mount Darwin	ZPS Mount Darwin Prison Clinic
+Mashonaland East	Goromonzi	Bromley Clinic
+Mashonaland East	Goromonzi	Caledonia clinic
+Mashonaland East	Goromonzi	Chabwino Clinic
+Mashonaland East	Goromonzi	Chivaraidze Clinic(Pvt)
+Mashonaland East	Goromonzi	Cranborne Clinic
+Mashonaland East	Goromonzi	Domboshava Rural Health Centre
+Mashonaland East	Goromonzi	Henry John Reimer Clinic
+Mashonaland East	Goromonzi	Joan Rankine Clinic
+Mashonaland East	Goromonzi	Makumbe Hospital
+Mashonaland East	Goromonzi	Melfort Clinic
+Mashonaland East	Goromonzi	Pagejo RaRuby Clinic
+Mashonaland East	Marondera	Arcadia Rural Council Clinic
+Mashonaland East	Marondera	Chakadini Clinic
+Mashonaland East	Marondera	Chipararwe Council Clinic
+Mashonaland East	Marondera	Dombotombo Council Clinic
+Mashonaland East	Marondera	Igava Council Clinic
+Mashonaland East	Marondera	Kushinga Phikhelela Rural Health Centre
+Mashonaland East	Marondera	Lustleigh Council Clinic
+Mashonaland East	Marondera	Marondera Rural Council Clinic
+Mashonaland East	Marondera	Marondera ZNFPC Clinic
+Mashonaland East	Marondera	Masikana Council Clinic
+Mashonaland East	Marondera	Nyameni Council Clinic
+Mashonaland East	Marondera	Nyembanzvere Council Clinic
+Mashonaland East	Marondera	Rakodzi Pvt Clinic
+Mashonaland East	Marondera	Ridigita Farm Prison Clinic
+Mashonaland East	Marondera	Waddilove Clinic
+Mashonaland East	Marondera	ZPS Marondera Prison Clinic
+Mashonaland East	Murewa	Chingwaru Clinic
+Mashonaland East	Murewa	Dandara Rural Health Centre
+Mashonaland East	Murewa	Goso Rural Health Centre
+Mashonaland East	Murewa	Kadzere Rural Health Centre
+Mashonaland East	Murewa	Kambarami Rural Health Centre
+Mashonaland East	Murewa	Matututu Clinic
+Mashonaland East	Murewa	Ngwerume Rural Health Centre
+Mashonaland East	Murewa	Shambamuto Rural Health Centre
+Mashonaland East	Murewa	Virginia Clinic
+Mashonaland East	Murewa	Welcome Home Rural Health Centre
+Mashonaland East	Murewa	ZPS Murewa Prison Clinic
+Mashonaland East	Murewa	Murewa Gvt Hospital
+Midlands	Gokwe South	Chitapo Clinic
+Midlands	Gokwe South	Ganye Clinic
+Midlands	Gokwe South	Gokwe South Hospital
+Midlands	Gokwe South	Gokwe South ZRP Camp Clinic
+Midlands	Gokwe South	Jiri/ndoza Clinic
+Midlands	Gokwe South	Katema RDC
+Midlands	Gokwe South	Mapfungautsi Poly Clinic
+Midlands	Gokwe South	Mkoka Clinic
+Midlands	Gokwe South	Ndavambi Clinic
+Midlands	Gokwe South	Nyaradza Clinic
+Midlands	Gokwe South	Svisvi Clinic
+Midlands	Gokwe South	ZPS Gokwe Prison Clinic
+Midlands	Gweru	CeSHHAR Clinic
+Midlands	Gweru	Gweru ZNFPC Clinic
+Midlands	Gweru	Riverdale Clinic
+Midlands	Gweru	Gatawa Clinic
+Midlands	Gweru	Gunde Rural Health Centre
+Midlands	Gweru	Gweru Hospital
+Midlands	Gweru	Hozheri Mission Clinic
+Midlands	Gweru	Impala Rural Clinic
+Midlands	Gweru	Kabanga Rural Health Centre
+Midlands	Gweru	Lower Gweru Clinic
+Midlands	Gweru	Mangwandi Rural Health Centre
+Midlands	Gweru	Masvori Rural Health Centre
+Midlands	Gweru	Pfende Clinic
+Midlands	Gweru	PSI New Start Centre
+Midlands	Gweru	Senga Clinic
+Midlands	Gweru	St Patrick's Clinic
+Midlands	Gweru	ZPS Connemara Prison Clinic
+Midlands	Gweru	ZPS Whawha Prison Clinic
+Midlands	Kwekwe	Dendera Rural Health Centre
+Midlands	Kwekwe	Donza Rural Health Centre
+Midlands	Kwekwe	Jena Mines Clinic
+Midlands	Kwekwe	Kwekwe General Hospital
+Midlands	Kwekwe	Mayoka Clinic
+Midlands	Kwekwe	Mbizo I Clinic
+Midlands	Kwekwe	Mbizo II Clinic
+Midlands	Kwekwe	Melsonia Clinic
+Midlands	Kwekwe	Mlezu Clinic
+Midlands	Kwekwe	Msilahobe Rural Health Centre
+Midlands	Kwekwe	Silobela Hospital
+Midlands	Kwekwe	Torwood Clinic
+Midlands	Kwekwe	Zhombe Mission Hospital
+Midlands	Mberengwa	Bonda Clinic
+Midlands	Mberengwa	Buchwa Camp Clinic
+Midlands	Mberengwa	Kotokwe Rural Health Centre
+Midlands	Mberengwa	Marirazhombe RDC
+Midlands	Mberengwa	Mberengwa Hospital
+Midlands	Mberengwa	Neta Clinic
+Midlands	Gokwe South	Ndhlalambi RDC
+Matabeleland North	Bubi	Balanda Clinic
+Matabeleland North	Bubi	Bona Clinic
+Matabeleland North	Bubi	Famona Clinic
+Matabeleland North	Bubi	Inyathi Hospital
+Matabeleland North	Bubi	Kenilworth Clinic
+Matabeleland North	Bubi	Mdutshane Rural Health Centre
+Matabeleland North	Bubi	Membeswana Rural Health Centre
+Matabeleland North	Bubi	Siganda Clinic
+Matabeleland North	Hwange	Sinamatela Camp Clinic
+Matabeleland North	Hwange	Dete NRZ Clinic
+Matabeleland North	Hwange	Five Miles Rural Hospital
+Matabeleland North	Hwange	Hwange NRZ Surgery Clinic
+Matabeleland North	Hwange	Leona RHC
+Matabeleland North	Hwange	Wellness Clinic
+Matabeleland North	Hwange	ZRP Hwange
+Matabeleland North	Hwange	ZRP Victoria Falls
+Matabeleland North	Lupane	Dandanda Rural Health Centre
+Matabeleland North	Lupane	Dongamuzi Rural Health Centre
+Matabeleland North	Lupane	Gwaai Rural Health Centre
+Matabeleland North	Lupane	Kanyandavu Rural Health Centre
+Matabeleland North	Lupane	Pupu Clinic
+Matabeleland North	Lupane	Tshongogwe Mission Hospital
+Matabeleland North	Nkayi	Fanisoni Clinic
+Matabeleland North	Nkayi	Guwe Clinic
+Matabeleland North	Nkayi	Gwelutshena Clinic
+Matabeleland North	Nkayi	Lutsha Clinic
+Matabeleland North	Nkayi	Mdengelele Clinic
+Matabeleland North	Nkayi	Nesigwe Clinic
+Matabeleland North	Nkayi	Ngwaladi Rural Health Centre
+Matabeleland North	Nkayi	Nkayi Hospital
+Matabeleland North	Nkayi	Sesemba Clinic
+Matabeleland North	Nkayi	Vova
+Matabeleland North	Nkayi	Zinyangeni Clinic
+Matabeleland North	Nkayi	ZPS Nkayi Prison Clinic
+Matabeleland North	Tsholotsho	Bemba Clinic
+Matabeleland North	Tsholotsho	Bubude Clinic
+Matabeleland North	Tsholotsho	Dlamini Clinic
+Matabeleland North	Tsholotsho	Kapane Clinic
+Matabeleland North	Tsholotsho	Mtshayeli Rural Health Centre
+Matabeleland North	Tsholotsho	Nkunzi Clinic
+Matabeleland North	Tsholotsho	Shaba Clinc
+Matabeleland North	Tsholotsho	Tshefunye Clinic
+Matabeleland North	Tsholotsho	Tsholotsho Hospital
+Matabeleland North	Tsholotsho	ZPS Tsholotsho Prison Clinic
+Matabeleland North	Umguza	Bhekeni Clinic
+Matabeleland North	Umguza	Bhumane Clinic
+Matabeleland North	Umguza	Maboleni Clinic
+Matabeleland North	Umguza	Nyamandlovu Hospital
+Matabeleland North	Umguza	Umguza Council Clinic
+Matabeleland North	Umguza	ZNA Imbizo Camp Hospital
+Matabeleland North	Umguza	ZNA Induna Clinic
+Matabeleland North	Umguza	ZPS Anju Rural Health Centre
+Matabeleland North	Umguza	ZPS Khami Max Prison Hospital
+Matabeleland North	Umguza	ZPS Khami Medium Prison Clinic
+Matabeleland North	Umguza	ZPS Khami Prison Staff Hospital
+Matabeleland North	Umguza	ZPS Khami Remand Prison Clinic
+Matabeleland North	Umguza	ZPS Mlondolozi Prison Clinic
+Matabeleland North	Umguza	ZPS Ntabazinduna Prison Clinic
+Matabeleland North	Umguza	ZRP Fairbridge Rural Health Centre
+Matabeleland North	Umguza	ZRP Ntabazinduna Rural Health Centre
+Matabeleland South	Beitbridge	Beitbridge CeSHHAR Sister's Clinic
+Matabeleland South	Beitbridge	Beitbridge Hospital
+Matabeleland South	Beitbridge	Beitbridge ZRP Clinic
+Matabeleland South	Beitbridge	Dulibadzimu Satelite Clinic
+Matabeleland South	Beitbridge	Makakabule Clinic
+Matabeleland South	Beitbridge	Malabe Health post
+Matabeleland South	Beitbridge	Wellness
+Matabeleland South	Beitbridge	Wellness Centre
+Matabeleland South	Bulilima	Lady Barring Rural Hospital
+Matabeleland South	Bulilima	Lady Stanley Rural Hospital
+Matabeleland South	Bulilima	Makhulela Rural Health Centre
+Matabeleland South	Bulilima	Solusi Mission Clinic
+Matabeleland South	Gwanda	Colleen-bawn Clinic
+Matabeleland South	Gwanda	Gungwe RHC
+Matabeleland South	Gwanda	Gwanda ZNFPC
+Matabeleland South	Gwanda	Gwanda ZNFPC Clinic
+Matabeleland South	Gwanda	Gwanda ZRP Clinic
+Matabeleland South	Gwanda	Makwe RHC
+Matabeleland South	Gwanda	Mandihongola RHC
+Matabeleland South	Gwanda	Mapate Clinic
+Matabeleland South	Gwanda	Nhwali RHC
+Matabeleland South	Gwanda	Selonga Clinic
+Matabeleland South	Gwanda	Sengezane Clinic
+Matabeleland South	Gwanda	Silikwe Clinic
+Matabeleland South	Gwanda	Simbumbumbu RHC
+Matabeleland South	Gwanda	Stanmore RHC
+Matabeleland South	Gwanda	ZPS Gwanda Prison Clinic
+Matabeleland South	Insiza	Filabusi Hospital
+Matabeleland South	Insiza	GSU Clinic
+Matabeleland South	Insiza	Insiza Rural Health Centre
+Matabeleland South	Insiza	Kombo Health Post
+Matabeleland South	Insiza	Saphila RDC
+Matabeleland South	Insiza	Shangani Clinic
+Matabeleland South	Insiza	Wanezi Mission Hospital
+Matabeleland South	Matobo	Bazha Mission Clinic
+Matabeleland South	Matobo	Maphisa Hospital
+Matabeleland South	Matobo	Masiye Clinic
+Matabeleland South	Matobo	Matopo Rural Hospital
+Matabeleland South	Matobo	Mbembeswane Clinic
+Matabeleland South	Matobo	St Joseph's Mission Hospital
+Matabeleland South	Umzingwane	Esigodini Hospital
+Matabeleland South	Umzingwane	How Mine Clinic
+Matabeleland South	Umzingwane	Irrisvale RHC
+Matabeleland South	Umzingwane	Kumbudzi RHC
+Matabeleland South	Umzingwane	Mbizingwe RHC
+Matabeleland South	Umzingwane	Mpisini RHC
+Matabeleland South	Umzingwane	Mzingwane RHC
+Matabeleland South	Beitbridge	ZPS Beitbridge Prison Clinic
+Masvingo	Chiredzi	Chikombedzi Mission Hospital
+Masvingo	Chiredzi	Chikwirire RHC
+Masvingo	Chiredzi	Chilonga Rural Health Centre
+Masvingo	Chiredzi	Chizvirizvi Rural Health Centre
+Masvingo	Chiredzi	Davata Rural Health Centre
+Masvingo	Chiredzi	Gezani Rural Health Centre
+Masvingo	Chiredzi	Gudo Rural Health Centre
+Masvingo	Chiredzi	Hippo Valley Private Hospital
+Masvingo	Chiredzi	Masivamele Rhc
+Masvingo	Chiredzi	Matedzi RHC
+Masvingo	Chiredzi	Mhlanguleni Rural Health Centre
+Masvingo	Chiredzi	Muteyo Rural Health Centre
+Masvingo	Chiredzi	Nyangambe Rural Health Centre
+Masvingo	Chiredzi	Samu Rural Health Centre
+Masvingo	Chiredzi	Sango Border Post
+Masvingo	Chiredzi	Triangle Private Hospital
+Masvingo	Chiredzi	ZPS Chiredzi Prison Clinic
+Masvingo	Chivi	Berejena Mission Hospital
+Masvingo	Chivi	Chivi Hospital
+Masvingo	Chivi	Madamombe Clinic
+Masvingo	Chivi	Nyahombe Rural Health Centre
+Masvingo	Chivi	Shindi Satellite Clinic
+Masvingo	Chivi	Vuranda Clinic
+Masvingo	Chivi	Vutete Health Centre
+Masvingo	Gutu	Chinyika Rural Hospital
+Masvingo	Gutu	Chiwore Rural Health Centre
+Masvingo	Gutu	Dewure Clinic
+Masvingo	Gutu	Gutu Rural Hospital
+Masvingo	Gutu	Matizha Rural Health Centre
+Masvingo	Gutu	Mukaro Mission Hospital
+Masvingo	Gutu	Munyikwa Clinic
+Masvingo	Gutu	Mushaviri Rural Health Centre
+Masvingo	Gutu	Mutema Rural Health Centre
+Masvingo	Gutu	Mutero Mission Hospital
+Masvingo	Gutu	Nemashakwe Rural Health Centre
+Masvingo	Gutu	Tirizi Satellite Clinic
+Masvingo	Gutu	Zvavahera Rural Health Centre
+Masvingo	Masvingo	Alvord Rural Health Centre
+Masvingo	Masvingo	Bondolfi Clinic
+Masvingo	Masvingo	Chisase Clinic
+Masvingo	Masvingo	Gokomere Mission Clinic
+Masvingo	Masvingo	Gurajena Rural Health Centre
+Masvingo	Masvingo	Guwa Rural Health Centre
+Masvingo	Masvingo	Masvingo Provincial Hospital
+Masvingo	Masvingo	Mavizhu Clinic
+Masvingo	Masvingo	Mucheke
+Masvingo	Masvingo	Mukosi Rural Health Centre
+Masvingo	Masvingo	Musingarabwi Clinic
+Masvingo	Masvingo	Musvovi Rural Health Centre
+Masvingo	Masvingo	Nemamwa Rural Health Centre
+Masvingo	Masvingo	Ngomahuru Psychiatric Hospital
+Masvingo	Masvingo	North West Medical Center Clinic
+Masvingo	Masvingo	PSI Newstart Masvingo
+Masvingo	Masvingo	Rucors Talitha Cumi Mission Hospital
+Masvingo	Masvingo	Summerton Rural Health Centre
+Masvingo	Masvingo	Zimuto Mission Clinic
+Masvingo	Masvingo	ZPS Mutimurefu Prison Clinic
+Masvingo	Masvingo	Zvamahande Clinic
+Masvingo	Mwenezi	Boterere Clinic
+Masvingo	Mwenezi	Bubye River Ranch Clinic
+Masvingo	Mwenezi	Chimbudzi Rural Health Centre
+Masvingo	Mwenezi	Chingwizi Clinic
+Masvingo	Mwenezi	Chizumba Rural Health Centre
+Masvingo	Mwenezi	G and N Clinic
+Masvingo	Mwenezi	Marinda Clinic
+Masvingo	Mwenezi	Mlelezi Clinic
+Masvingo	Mwenezi	Munyamani Rural Health Centre
+Masvingo	Mwenezi	Neshuro Hospital
+Masvingo	Mwenezi	Rutenga NRZ Clinic
+Masvingo	Mwenezi	ZIMBABWE BIO ENERGY CLINIC
+Masvingo	Zaka	Benzi Clinic
+Masvingo	Zaka	Mageza Clinic
+Masvingo	Zaka	Nemauku Rural Health Centre
+Masvingo	Zaka	Svuure Rural Health Centre
+Masvingo	Zaka	Zibwowa Rural Health Centre
+Masvingo	Chiredzi	Crownrange RHC
+Mashonaland West	Chegutu	Beersheba Mission Clinic
+Mashonaland West	Chegutu	Chegutu Clinic
+Mashonaland West	Chegutu	Chegutu Hospital FCH
+Mashonaland West	Chegutu	Chegutu Hospital OPD
+Mashonaland West	Chegutu	Chikara Clinic
+Mashonaland West	Chegutu	Chivero Clinic
+Mashonaland West	Chegutu	Danangwe Rural Council
+Mashonaland West	Chegutu	Katanga Utano Clinic
+Mashonaland West	Chegutu	Kent Estate Clinic
+Mashonaland West	Chegutu	Mhondoro North Clinic
+Mashonaland West	Chegutu	Monera Rural Health Centre
+Mashonaland West	Chegutu	Msengezi Rural Health Centre
+Mashonaland West	Chegutu	Mupawose Clinic
+Mashonaland West	Chegutu	Rwizi Clinic
+Mashonaland West	Chegutu	Sandringham Clinic
+Mashonaland West	Chegutu	Santa Barbara Mission Clinic
+Mashonaland West	Chegutu	Selous Clinic
+Mashonaland West	Chegutu	Shamrock Clinic
+Mashonaland West	Chegutu	Watyoka Clinic
+Mashonaland West	Chegutu	Zimplats Selous Clinic
+Mashonaland West	Hurungwe	Beugest RDC Clinic
+Mashonaland West	Hurungwe	Chinhere Clinic
+Mashonaland West	Hurungwe	Chiroti Clinic
+Mashonaland West	Hurungwe	Chirundu Rural Health Centre
+Mashonaland West	Hurungwe	Chivende Rural Health Centre
+Mashonaland West	Hurungwe	Dete Clinic
+Mashonaland West	Hurungwe	Deve Clinic
+Mashonaland West	Hurungwe	Helwin Clinic
+Mashonaland West	Hurungwe	Hesketh Clinic
+Mashonaland West	Hurungwe	Kapfunde Clinic
+Mashonaland West	Hurungwe	Karoi CeSHHAR Sister's Clinic
+Mashonaland West	Hurungwe	Karoi Hospital
+Mashonaland West	Hurungwe	Karuru RDC Clinic
+Mashonaland West	Hurungwe	Kasimure RHC
+Mashonaland West	Hurungwe	Kazangarare Clinic
+Mashonaland West	Hurungwe	Lynx Clinic
+Mashonaland West	Hurungwe	Makuti Rural Health Centre
+Mashonaland West	Hurungwe	Masanga Rural Health Centre
+Mashonaland West	Hurungwe	Mashongwe Clinic
+Mashonaland West	Hurungwe	Masikati Clinic
+Mashonaland West	Hurungwe	Moy RDC Clinic
+Mashonaland West	Hurungwe	Mwami Rural Hospital
+Mashonaland West	Hurungwe	Nyama clinic
+Mashonaland West	Hurungwe	Nyamhunga Sengwe Clinic
+Mashonaland West	Hurungwe	Nyangoma Clinic
+Mashonaland West	Hurungwe	Zvipani Rural Health Centre
+Mashonaland West	Makonde	Alaska Munic Clinic
+Mashonaland West	Makonde	Ceshhar Chinhoyi
+Mashonaland West	Makonde	Chikonohono Munic Clinic
+Mashonaland West	Makonde	Chimanimani RDC Clinic
+Mashonaland West	Makonde	Chinhoyi Univ of Tech Clinic
+Mashonaland West	Makonde	Chipfuwamiti Clinic
+Mashonaland West	Makonde	Doma RDC Clinic
+Mashonaland West	Makonde	Gandawasvika RDC Clinic
+Mashonaland West	Makonde	Godzi RDC Clinic
+Mashonaland West	Makonde	Gudubu Rural Health Centre
+Mashonaland West	Makonde	Kamhonde Rural Health Centre
+Mashonaland West	Makonde	Kamuzingizi RDC Clinic
+Mashonaland West	Makonde	Kanyaga RDC Clinic
+Mashonaland West	Makonde	Kenzamba Rural Health Centre
+Mashonaland West	Makonde	Khosana Ranch RDCClinic
+Mashonaland West	Makonde	Makonde Christ Hosp
+Mashonaland West	Makonde	Makonde ZNFPC Clinic
+Mashonaland West	Makonde	Manyamba Rural Health Centre
+Mashonaland West	Makonde	Matoranjera RDC Clinic
+Mashonaland West	Makonde	Mpata RDC Clinic
+Mashonaland West	Makonde	Murereka Rural Health Centre
+Mashonaland West	Makonde	Mutala RDC Clinic
+Mashonaland West	Makonde	Muzari Ployclinic Munic
+Mashonaland West	Makonde	Naison Dip RDC Clinic
+Mashonaland West	Makonde	Obva RDC Clinic
+Mashonaland West	Makonde	Presbyterian Private Clinic
+Mashonaland West	Makonde	RSHM Life Care Centre
+Mashonaland West	Makonde	Runene RDCClinic
+Mashonaland West	Makonde	Shackelton Municipal Clinic
+Mashonaland West	Makonde	Umboe RDC Clinic
+Mashonaland West	Makonde	ZPS Chinhoyi Prison Clinic
+Mashonaland West	Makonde	Zumbara Rural Health Centre
+Mashonaland West	Kadoma Sanyati	Carfex RDC Clinic
+Mashonaland West	Kadoma Sanyati	Chemukute Municipal Clinic
+Mashonaland West	Kadoma Sanyati	Chirikiti RDC Clinic
+Mashonaland West	Kadoma Sanyati	Kadoma CeSHHAR Sister's Clinic
+Mashonaland West	Kadoma Sanyati	Kadoma General Hospital (FCH)
+Mashonaland West	Kadoma Sanyati	Kadoma General Hospital (OPD)
+Mashonaland West	Kadoma Sanyati	Kadoma ZRP Clinic
+Mashonaland West	Kadoma Sanyati	Muuyu RDC Clinic
+Mashonaland West	Kadoma Sanyati	Ngezi Municipal_Clinic
+Mashonaland West	Kadoma Sanyati	Ordoff RDC Clinic
+Mashonaland West	Kadoma Sanyati	Patchway RDC Clinic
+Mashonaland West	Kadoma Sanyati	Perseverance Army Clinic
+Mashonaland West	Kadoma Sanyati	Rimuka MCH Municipal Clinic
+Mashonaland West	Kadoma Sanyati	Rimuka Municipal Clinic
+Mashonaland West	Kadoma Sanyati	Sanyati RDC Clinic
+Mashonaland West	Kadoma Sanyati	Waverly Municipal Clinic
+Mashonaland West	Kadoma Sanyati	ZPS Kadoma Prison Clinic
+Mashonaland West	Zvimba	Aryshire Mine Clinic
+Mashonaland West	Zvimba	Ayshire RDC Clinic
+Mashonaland West	Zvimba	Banket Hospital MCH
+Mashonaland West	Zvimba	Banket Hospital OPD
+Mashonaland West	Zvimba	Bervking
+Mashonaland West	Zvimba	Chikeya RDC Clinic
+Mashonaland West	Zvimba	Chirau RDC Clinic
+Mashonaland West	Zvimba	Chivhere Rural Health Centre
+Mashonaland West	Zvimba	Dzivaresekwa gvt Clinic
+Mashonaland West	Zvimba	Gwebi Rural Health Centre
+Mashonaland West	Zvimba	Herbert Chitepo
+Mashonaland West	Zvimba	Inamo Farming Clinic
+Mashonaland West	Zvimba	Inkomo ARMY Mech Field Coy Clinic
+Mashonaland West	Zvimba	Jari RDC Clinic
+Mashonaland West	Zvimba	Kemurara RDC Clinic
+Mashonaland West	Zvimba	Kutama RDC Clinic
+Mashonaland West	Zvimba	Kuwadzana RDC Clinic
+Mashonaland West	Zvimba	Lospen Farming Clinic
+Mashonaland West	Zvimba	Masiyarwa RDC Clinic
+Mashonaland West	Zvimba	Mount Hampden RDC Clinic
+Mashonaland West	Zvimba	Mpumbu RDC Clinic
+Mashonaland West	Zvimba	Mutorashanga RDC Hospital
+Mashonaland West	Zvimba	North Middle Dyke Clinic
+Mashonaland West	Zvimba	Nyabira RDC Clinic
+Mashonaland West	Zvimba	Rasper RDC Clinic
+Mashonaland West	Zvimba	Sutton RDC Clinic
+Mashonaland West	Zvimba	TRB RDC Clinic
+Mashonaland West	Zvimba	Trelawney RDC Clinic
+Mashonaland West	Zvimba	Zowa RDCClinic
+Mashonaland West	Zvimba	Paramedical ARMY Hospital
+Mashonaland West	Zvimba	Vanad RDC Clinic

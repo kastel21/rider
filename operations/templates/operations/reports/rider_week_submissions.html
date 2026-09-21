@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Rider submissions by province{% endblock %}
+{% block body_class %}dashboard-shell weekly-report-page me-metrics-page{% endblock %}
+{% block extra_css %}
+<link
+  href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+  rel="stylesheet"
+  integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+  crossorigin="anonymous"
+>
+<link rel="stylesheet" href="{% static 'css/me-bootstrap.css' %}">
+{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Rider submissions by province</h1>
+  <p class="muted" style="margin-top:0.35rem;max-width:52rem;">
+    Active riders for the selected Monday–Sunday week, grouped by province.
+    <strong>Submitted</strong> means the rider has a weekly report that was sent for PC review
+    (submitted, under review, approved, or rejected — not draft).
+    <strong>Trips</strong> are trip rows on that rider’s reports for the week.
+    <strong>Need to submit</strong> is the number of active riders in the province.
+    <strong>PC reviewed</strong> means a program coordinator completed review
+    (approved or rejected; <code>reviewed_at</code> is set).
+  </p>
+
+  <form method="get" action="{% url 'operations:rider_week_submissions' %}" class="report-week-filter report-week-picker">
+    <div class="report-week-picker__inner">
+      <label for="id-rider-submissions-week" class="report-week-picker__label">
+        <span class="report-week-picker__label-text">Date in week</span>
+      </label>
+      <input
+        type="date"
+        id="id-rider-submissions-week"
+        name="week"
+        value="{{ selected_week_start|date:'Y-m-d' }}"
+        class="report-week-filter__input report-week-picker__input"
+        autocomplete="off"
+      >
+      <label for="id-rider-submissions-province" class="report-week-picker__label" style="margin-left:0.75rem;">
+        <span class="report-week-picker__label-text">Province</span>
+      </label>
+      <select id="id-rider-submissions-province" name="province" class="report-week-filter__input">
+        <option value="">All provinces</option>
+        {% for prov in provinces %}
+        <option value="{{ prov.pk }}"{% if selected_province_id == prov.pk %} selected{% endif %}>{{ prov.name }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn-dash btn-dash-primary">Apply</button>
+    </div>
+  </form>
+  <p class="muted" style="margin-top:0.65rem;">
+    Showing: <strong>{{ week_range_label }}</strong>
+    <span class="muted" style="margin-left:0.75rem;">
+      <a href="{% url 'operations:rider_week_submissions' %}{{ prev_week_href }}">Previous week</a>
+      ·
+      <a href="{% url 'operations:rider_week_submissions' %}{{ next_week_href }}">Next week</a>
+    </span>
+  </p>
+</div>
+
+<div class="card" style="margin-top:1rem;">
+  <h2 class="rider-home-section-title" style="margin-top:0;">Province summary</h2>
+  <p class="muted" style="margin:0 0 0.5rem;font-size:0.92rem;">
+    Submitted vs riders in the province, and PC reviews vs riders who need to submit this week.
+  </p>
+  <p class="muted" style="margin:0 0 0.75rem;font-size:0.92rem;">
+    Download CSV:
+    <a href="{{ summary_csv_href }}">Province summary</a>
+    ·
+    <a href="{{ pc_reviews_csv_href }}">PC reviews vs need to submit</a>
+    ·
+    <a href="{{ riders_csv_href }}">Riders and trips</a>
+  </p>
+  <div class="rider-home-metrics" style="margin-bottom:1rem;">
+    <div class="rider-home-metric-card">
+      <span class="rider-home-metric-label">Riders</span>
+      <strong class="rider-home-metric-value">{{ report.totals.rider_count }}</strong>
+    </div>
+    <div class="rider-home-metric-card">
+      <span class="rider-home-metric-label">Submitted</span>
+      <strong class="rider-home-metric-value">{{ report.totals.submitted_count }}</strong>
+    </div>
+    <div class="rider-home-metric-card">
+      <span class="rider-home-metric-label">Not submitted</span>
+      <strong class="rider-home-metric-value">{{ report.totals.not_submitted_count }}</strong>
+    </div>
+    <div class="rider-home-metric-card">
+      <span class="rider-home-metric-label">PC reviewed</span>
+      <strong class="rider-home-metric-value">{{ report.totals.pc_reviewed_count }}</strong>
+    </div>
+  </div>
+  <div style="overflow-x:auto;">
+    <table class="data-table responsive-stack-table">
+      <thead>
+        <tr>
+          <th>Province</th>
+          <th>Riders</th>
+          <th>Submitted</th>
+          <th>Not submitted</th>
+          <th>PC reviewed</th>
+          <th>Need to submit</th>
+          <th>Awaiting PC review</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in report.provinces %}
+        <tr>
+          <td data-label="Province">{{ p.province_name }}</td>
+          <td data-label="Riders">{{ p.rider_count }}</td>
+          <td data-label="Submitted">{{ p.submitted_count }}</td>
+          <td data-label="Not submitted">{{ p.not_submitted_count }}</td>
+          <td data-label="PC reviewed">{{ p.pc_reviewed_count }}</td>
+          <td data-label="Need to submit">{{ p.needs_to_submit }}</td>
+          <td data-label="Awaiting PC review">{{ p.submitted_pending_review }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7">No active riders in scope for this week.</td></tr>
+        {% endfor %}
+      </tbody>
+      {% if report.provinces %}
+      <tfoot>
+        <tr>
+          <th scope="row">Total</th>
+          <td data-label="Riders">{{ report.totals.rider_count }}</td>
+          <td data-label="Submitted">{{ report.totals.submitted_count }}</td>
+          <td data-label="Not submitted">{{ report.totals.not_submitted_count }}</td>
+          <td data-label="PC reviewed">{{ report.totals.pc_reviewed_count }}</td>
+          <td data-label="Need to submit">{{ report.totals.needs_to_submit }}</td>
+          <td data-label="Awaiting PC review">{{ report.totals.submitted_pending_review }}</td>
+        </tr>
+      </tfoot>
+      {% endif %}
+    </table>
+  </div>
+</div>
+
+{% for p in report.provinces %}
+<div class="card" style="margin-top:1rem;">
+  <h2 class="rider-home-section-title" style="margin-top:0;">{{ p.province_name }}</h2>
+  <p class="muted" style="margin:0 0 0.75rem;font-size:0.92rem;">
+    {{ p.submitted_count }} submitted · {{ p.not_submitted_count }} not submitted ·
+    {{ p.pc_reviewed_count }} PC reviewed of {{ p.needs_to_submit }} who need to submit.
+    Sorted by trips (highest first).
+  </p>
+
+  <h3 class="rider-home-section-title" style="margin-top:0.75rem;font-size:1rem;">Submitted</h3>
+  <div style="overflow-x:auto;">
+    <table class="data-table responsive-stack-table">
+      <thead>
+        <tr>
+          <th>Rider</th>
+          <th>District</th>
+          <th>Trips</th>
+          <th>Status</th>
+          <th>PC reviewed</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in p.submitted_riders %}
+        <tr>
+          <td data-label="Rider">{{ r.rider_name }}</td>
+          <td data-label="District">{{ r.district_name }}</td>
+          <td data-label="Trips">{{ r.trip_count }}</td>
+          <td data-label="Status">{{ r.status_display }}</td>
+          <td data-label="PC reviewed">{% if r.pc_reviewed %}Yes{% else %}No{% endif %}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5">No riders have submitted this week in this province.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="rider-home-section-title" style="margin-top:1.25rem;font-size:1rem;">Not submitted</h3>
+  <div style="overflow-x:auto;">
+    <table class="data-table responsive-stack-table">
+      <thead>
+        <tr>
+          <th>Rider</th>
+          <th>District</th>
+          <th>Trips</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in p.not_submitted_riders %}
+        <tr>
+          <td data-label="Rider">{{ r.rider_name }}</td>
+          <td data-label="District">{{ r.district_name }}</td>
+          <td data-label="Trips">{{ r.trip_count }}</td>
+          <td data-label="Status">{{ r.status_display }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4">Every rider in this province has submitted this week.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}

@@ -33,6 +33,7 @@ class DistrictAliasTests(TestCase):
         self.assertEqual(canon_district_name("Mt. Darwin"), "Mount Darwin")
         self.assertEqual(canon_district_name("mt darwin"), "Mount Darwin")
         self.assertEqual(canon_district_name("Kadoma"), "Kadoma Sanyati")
+        self.assertEqual(canon_district_name("Sanyati"), "Kadoma Sanyati")
 
     def test_get_or_create_reuses_ump_row_and_renames(self):
         ump = District.objects.create(province=self.province, name="UMP", support_type="TA-SDI")
