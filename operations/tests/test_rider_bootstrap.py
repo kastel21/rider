@@ -69,6 +69,20 @@ class RiderBootstrapFacilitiesTests(TestCase):
         self.assertEqual(chingwena["district_id"], self.mudzi.id)
         self.assertEqual(chingwena["province_id"], self.mash_east.id)
         self.assertEqual(chingwena["district_name"], "Mudzi")
+        self.assertEqual(body.get("district_id"), self.harare_dist.id)
+
+    @override_settings(OPS_MOBILE_SYNC_USERNAMES=frozenset({"emmanuel_takawengwa"}))
+    def test_sync_user_without_district_still_gets_numeric_district_id(self):
+        self.sync_user.rider_profile.district = None
+        self.sync_user.rider_profile.province = None
+        self.sync_user.rider_profile.save()
+        self.client.force_authenticate(user=self.sync_user)
+        boot = self.client.get("/api/rider/bootstrap/")
+        self.assertEqual(boot.status_code, 200, boot.content)
+        self.assertIsInstance(boot.json().get("district_id"), int)
+        prof = self.client.get("/api/rider/profile/")
+        self.assertEqual(prof.status_code, 200, prof.content)
+        self.assertIsInstance((prof.json().get("district") or {}).get("id"), int)
 
 
 class EmbeddedBootstrapImportGeoTests(TestCase):
@@ -159,6 +173,18 @@ class MobileUserExportScopeTests(TestCase):
         self.assertIn("james_shoko", names)
         james = next(r for r in res.json()["users"] if r["username"] == "james_shoko")
         self.assertEqual(james["riderprofile"]["district_id"], self.zvishavane.id)
+
+    @override_settings(OPS_MOBILE_SYNC_USERNAMES=frozenset({"emmanuel_takawengwa"}))
+    def test_sync_user_can_export_with_other_district_id(self):
+        self.client.force_authenticate(user=self.sync_user)
+        res = self.client.get(
+            "/api/rider/mobile-user-export/",
+            {"district_id": self.zvishavane.id},
+        )
+        self.assertEqual(res.status_code, 200, res.content)
+        names = self._usernames(res)
+        self.assertIn("james_shoko", names)
+        self.assertIn("emmanuel_takawengwa", names)
 
     @override_settings(OPS_MOBILE_SYNC_USERNAMES=frozenset({"emmanuel_takawengwa"}))
     def test_normal_rider_export_stays_district_scoped(self):

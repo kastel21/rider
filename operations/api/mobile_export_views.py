@@ -14,7 +14,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from operations.models import District
-from operations.services.mobile_sync import is_mobile_sync_user
+from operations.services.mobile_sync import fallback_district_id, is_mobile_sync_user
 
 User = get_user_model()
 
@@ -109,6 +109,21 @@ class MobileUserExportView(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             return int(qp), None
+
+        # Landing-sync accounts always download every rider; the APK still sends a
+        # district_id. Accept any id so user/password import is not skipped with 403.
+        if is_mobile_sync_user(user):
+            if qp and str(qp).strip().isdigit():
+                return int(qp), None
+            did = rider_p.district_id if rider_p else None
+            if not did:
+                did = fallback_district_id(user)
+            if did:
+                return int(did), None
+            return None, Response(
+                {"error": "district_id required (no rider district on account)"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         if qp and str(qp).strip().isdigit():
             did = int(qp)

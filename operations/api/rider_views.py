@@ -35,6 +35,7 @@ from operations.models import (
     UserProfile,
 )
 from operations.services.accessible_apps_service import allowed_package_names, upsert_reported_user_apps
+from operations.services.mobile_sync import fallback_district_id
 from operations.services.mobile_sync import is_mobile_sync_user as _is_mobile_sync_user
 from operations.services.sync_service import apply_sync_batch
 
@@ -277,18 +278,28 @@ class RiderProfileView(APIView):
                 "id": rider.car_id,
                 "code": rider.car.code,
             }
+        district_payload = None
+        if rider.district_id:
+            district_payload = {
+                "id": rider.district_id,
+                "name": rider.district.name if rider.district_id else None,
+                "province_id": rider.district.province_id if rider.district_id else None,
+            }
+        elif _is_mobile_sync_user(request.user):
+            fallback_id = fallback_district_id(request.user)
+            if fallback_id is not None:
+                fallback_dist = District.objects.filter(pk=fallback_id).first()
+                district_payload = {
+                    "id": fallback_id,
+                    "name": fallback_dist.name if fallback_dist else None,
+                    "province_id": fallback_dist.province_id if fallback_dist else None,
+                }
         return Response(
             {
                 "rider_id": rider.pk,
                 "user_id": user.pk,
                 "username": user.get_username(),
-                "district": {
-                    "id": rider.district_id,
-                    "name": rider.district.name if rider.district_id else None,
-                    "province_id": rider.district.province_id if rider.district_id else None,
-                }
-                if rider.district_id
-                else None,
+                "district": district_payload,
                 "province": {
                     "id": rider.province_id,
                     "name": rider.province.name if rider.province_id else None,
@@ -470,6 +481,8 @@ class RiderBootstrapView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
         district_id = rider.district_id
+        if district_id is None and _is_mobile_sync_user(request.user):
+            district_id = fallback_district_id(request.user)
         province_id = rider.province_id or (
             rider.district.province_id if rider.district_id else None
         )
