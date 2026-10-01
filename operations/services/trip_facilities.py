@@ -2,7 +2,7 @@
 
 from django.db.models import QuerySet
 
-from ..models import Facility, TripRouteKind, UserProfile
+from ..models import Facility, TripRouteKind, TripVisitPurpose, UserProfile
 from ..selectors import pc_province_ids as get_pc_province_ids
 
 # Hub routes: PEPFAR hubs plus clinics / district & mission hospitals (stored as clinic).
@@ -66,6 +66,21 @@ def _base_facility_qs() -> QuerySet:
     return Facility.objects.select_related("district", "district__province").order_by("name")
 
 
+# Relay From/To uses this name suffix. The installed app already requests hub-to-hub
+# sites for Relay and does not send visit purpose, so these rows are also stored as hubs.
+DISTRICT_LAB_NAME_SUFFIX = "district lab"
+
+
+def is_district_lab(facility: Facility | None) -> bool:
+    if not facility:
+        return False
+    return (facility.name or "").strip().casefold().endswith(DISTRICT_LAB_NAME_SUFFIX)
+
+
+def _district_lab_qs() -> QuerySet:
+    return _base_facility_qs().filter(name__iendswith="District Lab")
+
+
 def _filter_qs_for_endpoint_role(qs: QuerySet, role: str) -> QuerySet:
     kinds = kinds_for_endpoint_role(role)
     if role == "vl_lab":
@@ -80,19 +95,30 @@ def facilities_for_rider_endpoint(
     *,
     district_id: int | None = None,
     province_ids: list[int] | None = None,
+    visit_purpose: str | None = None,
 ) -> QuerySet:
     """
     Rider: district-scoped hub sites; province-scoped VL labs.
     Driver: province-scoped for all endpoint roles.
     PC / ME / admin: province filter when provided.
+    Relay: district labs only (province-scoped), for both From and To.
     slot: 'from' or 'to'
     """
-    roles = route_endpoint_roles(route_kind)
-    if not roles or slot not in ("from", "to"):
+    if slot not in ("from", "to"):
         return _base_facility_qs().none()
-    want_role = roles[0] if slot == "from" else roles[1]
 
-    qs = _filter_qs_for_endpoint_role(_base_facility_qs(), want_role)
+    relay = (visit_purpose or "").strip() == TripVisitPurpose.RELAY
+    roles = route_endpoint_roles(route_kind)
+    if relay:
+        # Province scope, same as VL labs, so a relay can reach other districts.
+        want_role = "vl_lab"
+        qs = _district_lab_qs()
+    else:
+        if not roles:
+            return _base_facility_qs().none()
+        want_role = roles[0] if slot == "from" else roles[1]
+        qs = _filter_qs_for_endpoint_role(_base_facility_qs(), want_role)
+        qs = qs.exclude(name__iendswith="District Lab")
 
     if not user.is_authenticated:
         return qs.none()
@@ -149,10 +175,16 @@ def facility_allowed_for_user(
     *,
     district_id: int | None = None,
     province_ids: list[int] | None = None,
+    visit_purpose: str | None = None,
 ) -> bool:
     if not facility:
         return True
     qs = facilities_for_rider_endpoint(
-        user, route_kind, slot, district_id=district_id, province_ids=province_ids
+        user,
+        route_kind,
+        slot,
+        district_id=district_id,
+        province_ids=province_ids,
+        visit_purpose=visit_purpose,
     )
     return qs.filter(pk=facility.pk).exists()

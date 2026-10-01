@@ -1105,6 +1105,7 @@ class ReportFacilitiesAjaxView(LoginRequiredMixin, View):
         district_id = int(raw_district) if raw_district and str(raw_district).isdigit() else None
         route_kind = (request.GET.get("route_kind") or "").strip()
         slot = (request.GET.get("slot") or "").strip()
+        visit_purpose = (request.GET.get("visit_purpose") or "").strip()
 
         if route_kind and slot in ("from", "to"):
             qs = facilities_for_rider_endpoint(
@@ -1112,6 +1113,7 @@ class ReportFacilitiesAjaxView(LoginRequiredMixin, View):
                 route_kind,
                 slot,
                 district_id=district_id,
+                visit_purpose=visit_purpose,
             )
         elif is_rider_like(request.user):
             qs = Facility.objects.none()

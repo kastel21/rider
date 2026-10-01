@@ -51,6 +51,10 @@
     var url = new URL(base, window.location.origin);
     url.searchParams.set("route_kind", routeKind);
     url.searchParams.set("slot", slot);
+    var purposeInput = card.querySelector(".trip-visit-purpose");
+    if (purposeInput && purposeInput.value) {
+      url.searchParams.set("visit_purpose", purposeInput.value);
+    }
 
     return fetch(url.toString(), { credentials: "same-origin" })
       .then(function (r) {

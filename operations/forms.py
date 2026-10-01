@@ -492,13 +492,27 @@ class RiderTripEntryForm(forms.ModelForm):
             return self._pc_province_ids
         return None
 
-    def _apply_facility_querysets(self):
-        u = self._entry_user
-        rk = self._route_kind_value()
-        p_kw = {}
+    def _visit_purpose_value(self) -> str:
+        purpose = ""
+        if self.data:
+            purpose = (self.data.get(f"{self.prefix}-visit_purpose") or "").strip()
+        if not purpose:
+            purpose = (self.initial.get("visit_purpose") or "").strip()
+        if not purpose and getattr(self.instance, "pk", None):
+            purpose = (self.instance.visit_purpose or "").strip()
+        return purpose
+
+    def _endpoint_scope_kwargs(self) -> dict:
+        p_kw = {"visit_purpose": self._visit_purpose_value()}
         pids = self._province_ids_for_endpoint()
         if pids is not None:
             p_kw["province_ids"] = pids
+        return p_kw
+
+    def _apply_facility_querysets(self):
+        u = self._entry_user
+        rk = self._route_kind_value()
+        p_kw = self._endpoint_scope_kwargs()
 
         if rk and u is not None:
             self.fields["origin_facility"].queryset = facilities_for_rider_endpoint(
@@ -568,17 +582,7 @@ class RiderTripEntryForm(forms.ModelForm):
             u = self._entry_user
             if u is None:
                 return cleaned
-            p_kw = {}
-            if self._pc_province_ids is not None:
-                p_kw["province_ids"] = self._pc_province_ids
-            if not facility_matches_route_endpoint(origin, roles[0]):
-                self.add_error("origin_facility", "From site does not match this route type.")
-            elif not facility_allowed_for_user(u, origin, rk, "from", **p_kw):
-                self.add_error("origin_facility", "From site is not valid for your scope.")
-            if not facility_matches_route_endpoint(dest, roles[1]):
-                self.add_error("destination_facility", "To site does not match this route type.")
-            elif not facility_allowed_for_user(u, dest, rk, "to", **p_kw):
-                self.add_error("destination_facility", "To site is not valid for your scope.")
+            self._validate_route_endpoints(cleaned, u, purpose, rk, origin, dest, roles)
             return cleaned
         if self.driver_numeric_required:
             self._clean_driver_required_numerics(cleaned)
@@ -643,21 +647,32 @@ class RiderTripEntryForm(forms.ModelForm):
         if u is None:
             return cleaned
 
+        self._validate_route_endpoints(cleaned, u, purpose, rk, origin, dest, roles)
+        return cleaned
+
+    def _validate_route_endpoints(self, cleaned, user, purpose, rk, origin, dest, roles):
         p_kw = {}
         if self._pc_province_ids is not None:
             p_kw["province_ids"] = self._pc_province_ids
+        p_kw["visit_purpose"] = purpose
+        relay = purpose == TripVisitPurpose.RELAY
+
+        if relay:
+            if not facility_allowed_for_user(user, origin, rk, "from", **p_kw):
+                self.add_error("origin_facility", "From site must be a district lab.")
+            if not facility_allowed_for_user(user, dest, rk, "to", **p_kw):
+                self.add_error("destination_facility", "To site must be a district lab.")
+            return
 
         if not facility_matches_route_endpoint(origin, roles[0]):
             self.add_error("origin_facility", "From site does not match this route type.")
-        elif not facility_allowed_for_user(u, origin, rk, "from", **p_kw):
+        elif not facility_allowed_for_user(user, origin, rk, "from", **p_kw):
             self.add_error("origin_facility", "From site is not valid for your scope.")
 
         if not facility_matches_route_endpoint(dest, roles[1]):
             self.add_error("destination_facility", "To site does not match this route type.")
-        elif not facility_allowed_for_user(u, dest, rk, "to", **p_kw):
+        elif not facility_allowed_for_user(user, dest, rk, "to", **p_kw):
             self.add_error("destination_facility", "To site is not valid for your scope.")
-
-        return cleaned
 
 
 class RiderTripEntryInlineFormSet(BaseInlineFormSet):
