@@ -10,6 +10,7 @@ class UserProfile(models.Model):
         RIDER = "rider", "Rider"
         DRIVER = "driver", "Driver"
         PC = "pc", "Program Coordinator"
+        LAB_MANAGER = "lab_manager", "Lab manager"
         ME = "me", "Monitoring & Evaluation"
         ADMIN = "admin", "Administrator"
 
@@ -29,6 +30,7 @@ class Role(models.TextChoices):
     RIDER = UserProfile.Role.RIDER
     DRIVER = UserProfile.Role.DRIVER
     PC = UserProfile.Role.PC
+    LAB_MANAGER = UserProfile.Role.LAB_MANAGER
     ME = UserProfile.Role.ME
     ADMIN = UserProfile.Role.ADMIN
 
@@ -224,6 +226,24 @@ class PCProfile(models.Model):
     provinces = models.ManyToManyField(Province, blank=True, related_name="pc_profiles")
 
 
+class LabManagerProfile(models.Model):
+    """District lab manager who releases rider submissions to the PC."""
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="lab_manager_profile",
+    )
+    district = models.ForeignKey(
+        District,
+        on_delete=models.PROTECT,
+        related_name="lab_managers",
+    )
+
+    def __str__(self):
+        return f"{self.user} — {self.district}"
+
+
 class RiderProfile(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -236,6 +256,11 @@ class RiderProfile(models.Model):
     facility = models.ForeignKey(Facility, on_delete=models.SET_NULL, null=True, blank=True)
     bike = models.ForeignKey(Bike, on_delete=models.SET_NULL, null=True, blank=True)
     car = models.ForeignKey(Car, on_delete=models.SET_NULL, null=True, blank=True, related_name="driver_profiles")
+
+    def __str__(self):
+        user = self.user
+        name = (user.get_full_name() or "").strip() or user.get_username()
+        return name
 
 
 class RiderWeeklyReport(models.Model):
@@ -288,6 +313,22 @@ class RiderWeeklyReport(models.Model):
         related_name="reports_me_reviewed",
     )
     pc_notes = models.TextField(blank=True)
+    lab_cleared_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When the district lab manager released this report to the PC.",
+    )
+    lab_cleared_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reports_lab_cleared",
+    )
+    lab_notes = models.TextField(
+        blank=True,
+        help_text="Reason from the lab manager when the report is sent back to the rider.",
+    )
     scheduled_visits = models.PositiveIntegerField(
         null=True,
         blank=True,

@@ -4,6 +4,7 @@ from datetime import date
 from unittest.mock import patch
 
 from django.conf import settings
+from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
@@ -189,6 +190,7 @@ class PcReportListNonRelayedSamplesTests(TestCase):
             week_start=self.week,
             status=RiderWeeklyReport.Status.SUBMITTED,
             samples_collected=99,
+            lab_cleared_at=timezone.now(),
         )
         RiderTripEntry.objects.create(
             report=report,

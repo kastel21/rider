@@ -4,6 +4,7 @@ from decimal import Decimal
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.utils import timezone
 from django.urls import reverse
 
 from operations.models import (
@@ -161,6 +162,17 @@ class PCBulkEditViewTests(TestCase):
         self.assertIsNone(row.relieved_rider_id)
         self.assertEqual(row.relief_reason, "")
 
+    def test_bulk_save_accepts_more_fields_than_django_default(self):
+        """A full week of trip rows exceeds Django's default 1000-field cap."""
+        self.assertGreaterEqual(settings.DATA_UPLOAD_MAX_NUMBER_FIELDS, 1001)
+        self.client.force_login(self.pc_user)
+        payload = self._save_payload()
+        for i in range(1001):
+            payload[f"pad_{i}"] = "0"
+        self.assertGreater(len(payload), 1000)
+        response = self.client.post(self.url, data=payload)
+        self.assertEqual(response.status_code, 302)
+
     def test_bulk_save_all_updates_each_report(self):
         self.client.force_login(self.pc_user)
         self.client.get(self.url)
@@ -191,3 +203,24 @@ class PCBulkEditViewTests(TestCase):
             WeeklyRecordReviewed.objects.filter(source_report_id__in=[self.report_one.pk, self.report_two.pk]).count(),
             2,
         )
+
+    def test_new_submission_is_listed_before_reviewed_record(self):
+        self.report_one.status = RiderWeeklyReport.Status.APPROVED
+        self.report_one.samples_collected = 9
+        self.report_one.save(update_fields=["status", "samples_collected", "updated_at"])
+        self.report_two.status = RiderWeeklyReport.Status.SUBMITTED
+        self.report_two.lab_cleared_at = timezone.now()
+        self.report_two.save(update_fields=["status", "lab_cleared_at", "updated_at"])
+
+        self.client.force_login(self.pc_user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode()
+        self.assertLess(
+            html.index(f"Record #{self.report_two.pk}"),
+            html.index(f"Record #{self.report_one.pk}"),
+        )
+        self.assertIn(f"report_{self.report_two.pk}-scheduled_visits", html)
+        self.assertIn("1 record still to review", html)
+        self.assertIn("Samples collected", html)
+        self.assertIn(">9<", html)

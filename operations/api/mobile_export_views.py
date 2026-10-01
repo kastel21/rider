@@ -24,8 +24,8 @@ class MobileUserExportView(APIView):
     GET /api/rider/mobile-user-export/?district_id=<id>
 
     - Staff/superuser: must pass district_id (any district); users for that district only.
-    - Landing-sync account: same district_id rules as a rider, but the user list is
-      every rider so district moves apply on any phone that landing-syncs.
+    - Landing-sync account (OPS_MOBILE_SYNC_USERNAMES): every rider/driver, not
+      district-scoped. ``district_id`` is optional and only echoed for the APK.
     - Rider/driver: may omit district_id (defaults to their rider_profile.district_id) or pass
       district_id equal to their district (cannot export other districts).
 
@@ -36,6 +36,23 @@ class MobileUserExportView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        if is_mobile_sync_user(request.user):
+            district_id, _err = self._resolve_district(request)
+            if not district_id:
+                district_id = fallback_district_id(request.user)
+            qs = (
+                User.objects.filter(rider_profile__isnull=False)
+                .select_related("profile", "rider_profile")
+                .order_by("id")
+            )
+            return Response(
+                {
+                    "district_id": district_id,
+                    "users": self._serialize_users(qs),
+                },
+                status=status.HTTP_200_OK,
+            )
+
         district_id, err = self._resolve_district(request)
         if err is not None:
             return err
@@ -46,19 +63,22 @@ class MobileUserExportView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        if is_mobile_sync_user(request.user):
-            qs = (
-                User.objects.filter(rider_profile__isnull=False)
-                .select_related("profile", "rider_profile")
-                .order_by("id")
-            )
-        else:
-            qs = (
-                User.objects.filter(rider_profile__district_id=district_id)
-                .select_related("profile", "rider_profile")
-                .order_by("id")
-            )
+        qs = (
+            User.objects.filter(rider_profile__district_id=district_id)
+            .select_related("profile", "rider_profile")
+            .order_by("id")
+        )
 
+        return Response(
+            {
+                "district_id": district_id,
+                "users": self._serialize_users(qs),
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    @staticmethod
+    def _serialize_users(qs):
         users_out = []
         for u in qs:
             profile = getattr(u, "profile", None)
@@ -87,14 +107,7 @@ class MobileUserExportView(APIView):
                     "riderprofile": rp_payload,
                 }
             )
-
-        return Response(
-            {
-                "district_id": district_id,
-                "users": users_out,
-            },
-            status=status.HTTP_200_OK,
-        )
+        return users_out
 
     def _resolve_district(self, request):
         """Returns (district_id, None) or (None, Response)."""

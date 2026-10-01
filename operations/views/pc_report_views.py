@@ -385,9 +385,24 @@ class PCBulkWeekEditView(LoginRequiredMixin, View):
                 self.request.user, self.kwargs["rider_id"], self.kwargs["week_str"]
             )
             .select_related("rider", "rider__profile", "bike", "car")
-            .prefetch_related("trip_entries", "sample_rejections")
+            .prefetch_related(
+                "trip_entries",
+                "trip_entries__origin_facility",
+                "trip_entries__destination_facility",
+                "sample_rejections",
+            )
             .order_by("created_at", "pk")
         )
+
+    def _ordered_bundles(self, bundles):
+        """Records still open for review first, newest submission first within each group."""
+
+        def sort_key(bundle):
+            report = bundle["report"]
+            stamp = report.submitted_at or report.created_at
+            return (0 if bundle["can_edit"] else 1, -(stamp.timestamp() if stamp else 0), -report.pk)
+
+        return sorted(bundles, key=sort_key)
 
     def _build_bundle(self, report, *, post_data=None):
         form_prefix = f"report_{report.pk}"
@@ -433,8 +448,10 @@ class PCBulkWeekEditView(LoginRequiredMixin, View):
         rider_user = first_report.rider
         loc = _report_location_for_user(rider_user)
         post = self.request.POST if self.request.method == "POST" else None
+        pending_count = sum(1 for bundle in bundles if bundle["can_edit"])
         return {
             "bundles": bundles,
+            "pending_count": pending_count,
             "week_start": first_report.week_start,
             "report_location": loc,
             "demographics": {
@@ -460,7 +477,7 @@ class PCBulkWeekEditView(LoginRequiredMixin, View):
         if not reports:
             messages.error(request, "No reports found for this rider and week in your scope.")
             return redirect("operations:pc_reports")
-        bundles = [self._build_bundle(r) for r in reports]
+        bundles = self._ordered_bundles([self._build_bundle(r) for r in reports])
         return self.render_to_response(self._context(bundles))
 
     def render_to_response(self, context, **response_kwargs):
@@ -474,7 +491,9 @@ class PCBulkWeekEditView(LoginRequiredMixin, View):
             messages.error(request, "No reports found for this rider and week in your scope.")
             return redirect("operations:pc_reports")
         action = (request.POST.get("action") or "save_all").strip().lower()
-        bundles = [self._build_bundle(r, post_data=request.POST) for r in reports]
+        bundles = self._ordered_bundles(
+            [self._build_bundle(r, post_data=request.POST) for r in reports]
+        )
         editable_bundles = [b for b in bundles if b["can_edit"]]
 
         if action == "review_all":

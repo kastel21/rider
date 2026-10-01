@@ -187,6 +187,18 @@ class MobileUserExportScopeTests(TestCase):
         self.assertIn("emmanuel_takawengwa", names)
 
     @override_settings(OPS_MOBILE_SYNC_USERNAMES=frozenset({"emmanuel_takawengwa"}))
+    def test_sync_user_export_is_not_district_scoped(self):
+        self.client.force_authenticate(user=self.sync_user)
+        res = self.client.get("/api/rider/mobile-user-export/")
+        self.assertEqual(res.status_code, 200, res.content)
+        names = self._usernames(res)
+        self.assertIn("james_shoko", names)
+        self.assertIn("emmanuel_takawengwa", names)
+        res_bogus = self.client.get("/api/rider/mobile-user-export/", {"district_id": 999999})
+        self.assertEqual(res_bogus.status_code, 200, res_bogus.content)
+        self.assertIn("james_shoko", self._usernames(res_bogus))
+
+    @override_settings(OPS_MOBILE_SYNC_USERNAMES=frozenset({"emmanuel_takawengwa"}))
     def test_normal_rider_export_stays_district_scoped(self):
         self.client.force_authenticate(user=self.moved)
         res = self.client.get(

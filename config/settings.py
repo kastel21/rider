@@ -196,6 +196,12 @@ CSRF_COOKIE_SAMESITE = os.environ.get("DJANGO_CSRF_COOKIE_SAMESITE", "Lax")
 _csrf_origins = os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "")
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_origins.split(",") if o.strip()]
 
+# PC bulk week edit posts every trip and rejection input for every open report
+# in one request. A busy rider week exceeds Django's default of 1000 fields
+# (TooManyFieldsSent on /pc/reports/rider/<id>/week/<date>/edit/).
+_max_fields = os.environ.get("DJANGO_DATA_UPLOAD_MAX_NUMBER_FIELDS", "").strip()
+DATA_UPLOAD_MAX_NUMBER_FIELDS = int(_max_fields) if _max_fields else 20000
+
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",

@@ -84,6 +84,7 @@ urlpatterns = [
         name="report_sync_payload",
     ),
     path("reports/<int:pk>/submit/", views.ReportSubmitView.as_view(), name="report_submit"),
+    path("lab/queue/", views.LabManagerQueueView.as_view(), name="lab_manager_queue"),
     path("pc/reports/", views.RiderReportListView.as_view(), name="pc_reports"),
     path(
         "pc/reports/rider/<int:rider_id>/week/<week_str>/edit/",

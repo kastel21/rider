@@ -260,14 +260,25 @@ class RiderReportListView(LoginRequiredMixin, ListView):
                 latest = sorted_rows[0]
                 edit_candidate = next((rr for rr in sorted_rows if rr["can_edit"]), None)
                 status_values = {rr["report"].status for rr in sorted_rows}
+                # A later submission must not disappear behind an older approved row.
+                if edit_candidate is not None:
+                    status_display = edit_candidate["report"].get_status_display()
+                elif len(status_values) == 1:
+                    status_display = latest["report"].get_status_display()
+                else:
+                    status_display = "Mixed"
                 aggregated_rows.append(
                     {
                         "report": latest["report"],
                         "can_edit": bool(edit_candidate),
-                        "status_display": (
-                            latest["report"].get_status_display()
-                            if len(status_values) == 1
-                            else "Mixed"
+                        "status_display": status_display,
+                        "lab_waiting": any(
+                            rr["report"].status == RiderWeeklyReport.Status.SUBMITTED
+                            and rr["report"].lab_cleared_at is None
+                            for rr in sorted_rows
+                        ),
+                        "lab_cleared": any(
+                            rr["report"].lab_cleared_at is not None for rr in sorted_rows
                         ),
                         "samples_total": sum(
                             specimens_from_entries(rr["report"].trip_entries.all())
@@ -664,6 +675,10 @@ class RiderReportDetailView(LoginRequiredMixin, DetailView):
             ctx["detail_back_url"] = f"{base}?{urlencode({'week': week_start.isoformat()})}"
         elif role in (UserProfile.Role.RIDER, UserProfile.Role.DRIVER):
             ctx["detail_back_url"] = reverse("operations:rider_reports")
+        elif role == UserProfile.Role.LAB_MANAGER:
+            ctx["detail_back_url"] = (
+                f"{reverse('operations:lab_manager_queue')}?{urlencode({'week': week_start.isoformat()})}"
+            )
         elif role == UserProfile.Role.ME:
             ctx["detail_back_url"] = reverse("operations:me_reports")
         else:

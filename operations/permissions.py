@@ -19,6 +19,10 @@ def is_pc(user):
     return _role(user) in (UserProfile.Role.PC, UserProfile.Role.ADMIN)
 
 
+def is_lab_manager(user):
+    return _role(user) == UserProfile.Role.LAB_MANAGER
+
+
 def is_me(user):
     return _role(user) == UserProfile.Role.ME
 
@@ -42,6 +46,10 @@ def can_view_report(user, report: RiderWeeklyReport) -> bool:
         return True
     if role == UserProfile.Role.PC:
         return report_in_pc_scope(user, report)
+    if role == UserProfile.Role.LAB_MANAGER:
+        from .selectors import reports_in_lab_manager_scope
+
+        return reports_in_lab_manager_scope(user).filter(pk=report.pk).exists()
     if role in (UserProfile.Role.RIDER, UserProfile.Role.DRIVER):
         return report.rider_id == user.id
     return False
@@ -52,8 +60,8 @@ def can_edit_report_as_rider(user, report: RiderWeeklyReport) -> bool:
         return False
     if report.rider_id != user.id:
         return False
-    # Draft or PC-rejected only: once submitted for PC review (submitted / under review /
-    # approved), the rider must wait for PC outcome before editing again.
+    # Same rule the rider APK already uses: draft, or rejected so they can fix and resend.
+    # Submitted, under review, and approved stay locked. No APK change.
     return report.status in (
         RiderWeeklyReport.Status.DRAFT,
         RiderWeeklyReport.Status.REJECTED,
@@ -104,6 +112,16 @@ class PCRequiredMixin(UserPassesTestMixin):
         if user.is_superuser:
             return True
         return is_pc(user)
+
+
+class LabManagerRequiredMixin(UserPassesTestMixin):
+    """District lab manager: approve rider submissions before they reach the PC."""
+
+    def test_func(self):
+        user = self.request.user
+        if not user.is_authenticated:
+            return False
+        return is_lab_manager(user)
 
 
 class MERequiredMixin(UserPassesTestMixin):

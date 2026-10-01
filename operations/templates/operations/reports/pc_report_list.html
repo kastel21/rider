@@ -4,7 +4,7 @@
 <div class="card">
   <h1>Weekly reports</h1>
   <p class="muted" style="margin:0 0 0.75rem;font-size:0.92rem;">
-    Showing weekly reports for riders and drivers in your provinces. Pick any day in the week; the list uses that week (Monday–Sunday).
+    Showing weekly reports for riders and drivers in your provinces. Submissions the lab manager has not approved yet are included, so you can review them to M&amp;E if they are not cleared in time. Pick any day in the week; the list uses that week (Monday–Sunday).
     <strong>Samples</strong> are first-time (non-relayed) specimen counts; relayed transport is captured on driver reports but excluded from these totals.
   </p>
 
@@ -43,6 +43,7 @@
           <th>District</th>
           <th>Province</th>
           <th>Status</th>
+          <th>Lab manager</th>
           <th>Samples</th>
           <th>Trips</th>
           <th>Submitted</th>
@@ -71,6 +72,7 @@
             {% endif %}
           </td>
           <td data-label="Status">{{ row.status_display }}</td>
+          <td data-label="Lab manager">{% if row.lab_waiting %}Not yet approved{% elif row.lab_cleared %}Approved{% else %}—{% endif %}</td>
           <td data-label="Samples">{{ row.samples_total }}</td>
           <td data-label="Trips">{{ row.trip_total }}</td>
           <td data-label="Submitted">{% if row.submitted_at %}{{ row.submitted_at|date:"Y-m-d H:i" }}{% else %}—{% endif %}</td>
@@ -80,7 +82,7 @@
         </tr>
         {% endwith %}
         {% empty %}
-        <tr><td colspan="8">No rider reports for this week in your provinces.</td></tr>
+        <tr><td colspan="9">No rider reports for this week in your provinces.</td></tr>
         {% endfor %}
       </tbody>
     </table>
@@ -95,6 +97,7 @@
           <th>District</th>
           <th>Province</th>
           <th>Status</th>
+          <th>Lab manager</th>
           <th>Samples</th>
           <th>Trips</th>
           <th>Submitted</th>
@@ -123,6 +126,7 @@
             {% endif %}
           </td>
           <td data-label="Status">{{ row.status_display }}</td>
+          <td data-label="Lab manager">{% if row.lab_waiting %}Not yet approved{% elif row.lab_cleared %}Approved{% else %}—{% endif %}</td>
           <td data-label="Samples">{{ row.samples_total }}</td>
           <td data-label="Trips">{{ row.trip_total }}</td>
           <td data-label="Submitted">{% if row.submitted_at %}{{ row.submitted_at|date:"Y-m-d H:i" }}{% else %}—{% endif %}</td>
@@ -132,7 +136,7 @@
         </tr>
         {% endwith %}
         {% empty %}
-        <tr><td colspan="8">No driver reports for this week in your provinces.</td></tr>
+        <tr><td colspan="9">No driver reports for this week in your provinces.</td></tr>
         {% endfor %}
       </tbody>
     </table>

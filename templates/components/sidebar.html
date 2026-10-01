@@ -40,6 +40,11 @@
         <span class="app-sidebar__glyph" aria-hidden="true">P</span>
         <span class="app-sidebar__text">Week submissions</span>
       </a>
+      {% elif user_role == "lab_manager" %}
+      <a href="{% url 'operations:lab_manager_queue' %}" class="app-sidebar__link" title="Reports to approve">
+        <span class="app-sidebar__glyph" aria-hidden="true">L</span>
+        <span class="app-sidebar__text">To approve</span>
+      </a>
       {% elif user_role == "me" %}
       <a href="{% url 'operations:me_reports' %}" class="app-sidebar__link" title="My reports">
         <span class="app-sidebar__glyph" aria-hidden="true">R</span>

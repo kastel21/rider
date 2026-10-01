@@ -1,5 +1,9 @@
 """
-Create a district-scoped rider account for Android landing sync (OPS_SYNC_USERNAME).
+Create a rider account for Android landing sync (OPS_SYNC_USERNAME).
+
+That account is not district-scoped: bootstrap and user export return every
+facility and every rider. --district-id is only stored on the profile so the
+APK receives a numeric district_id and proceeds to download users.
 
 Usage:
   python manage.py create_mobile_sync_user --username mobile_sync --password '...' --district-id 1

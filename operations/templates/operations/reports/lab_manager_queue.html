@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Lab manager queue{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Reports to approve</h1>
+  {% if not has_district %}
+  <p>Your account is not linked to a district. Ask an administrator to set your district.</p>
+  {% else %}
+  <p class="muted" style="margin:0 0 0.75rem;font-size:0.92rem;">
+    {{ district_name }}. Approve a report to send it to the PC. Until you approve it, the rider can still edit it.
+    To send one back, enter a reason — the rider can fix it and resend.
+  </p>
+
+  <form method="get" action="{% url 'operations:lab_manager_queue' %}" class="report-week-filter report-week-picker">
+    <div class="report-week-picker__inner">
+      <label for="id-lab-report-week" class="report-week-picker__label">
+        <span class="report-week-picker__label-text">Date in week</span>
+      </label>
+      <input
+        type="date"
+        id="id-lab-report-week"
+        name="week"
+        value="{{ selected_week_start|date:'Y-m-d' }}"
+        class="report-week-filter__input report-week-picker__input"
+        autocomplete="off"
+      >
+      <button type="submit" class="btn-dash btn-dash-primary">Apply</button>
+    </div>
+  </form>
+  <p class="muted" style="margin-top:0.65rem;">
+    Showing: <strong>{{ week_range_label }}</strong>
+    <span class="muted" style="margin-left:0.75rem;">
+      <a href="{% url 'operations:lab_manager_queue' %}?week={{ prev_week }}">Previous week</a>
+      ·
+      <a href="{% url 'operations:lab_manager_queue' %}?week={{ next_week }}">Next week</a>
+    </span>
+  </p>
+
+  {% if queue_rows %}
+  <form method="post" style="margin-top:1rem;">
+    {% csrf_token %}
+    <input type="hidden" name="week" value="{{ selected_week_start|date:'Y-m-d' }}">
+    <button type="submit" name="action" value="approve_all" class="btn-dash btn-dash-primary">Approve all</button>
+  </form>
+  {% endif %}
+
+  <div style="overflow-x:auto;margin-top:0.75rem;">
+    <table class="data-table responsive-stack-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Role</th>
+          <th>Samples</th>
+          <th>Trips</th>
+          <th>Submitted</th>
+          <th>Decision</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in queue_rows %}
+        <tr>
+          <td data-label="Name">
+            <a href="{% url 'operations:report_detail' row.report.pk %}">{{ row.rider_name }}</a>
+          </td>
+          <td data-label="Role">{% if row.is_driver %}Driver{% else %}Rider{% endif %}</td>
+          <td data-label="Samples">{{ row.samples_total }}</td>
+          <td data-label="Trips">{{ row.trip_total }}</td>
+          <td data-label="Submitted">{% if row.submitted_at %}{{ row.submitted_at|date:"Y-m-d H:i" }}{% else %}—{% endif %}</td>
+          <td data-label="Decision">
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="week" value="{{ selected_week_start|date:'Y-m-d' }}">
+              <input type="hidden" name="rider_id" value="{{ row.report.rider_id }}">
+              <button type="submit" name="action" value="approve" class="btn-dash btn-dash-primary">Approve</button>
+              <label class="muted" for="lab-notes-{{ row.report.rider_id }}" style="display:block;margin-top:0.5rem;">Reason to send back</label>
+              <textarea id="lab-notes-{{ row.report.rider_id }}" name="lab_notes" rows="2" style="width:100%;max-width:18rem;"></textarea>
+              <button type="submit" name="action" value="send_back" class="btn-dash" style="margin-top:0.35rem;">Send back</button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6">Nothing waiting for this week.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

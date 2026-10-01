@@ -7,6 +7,11 @@
   <div class="card">
     <h1>Bulk edit weekly reports</h1>
     <p class="muted">{{ demographics.rider_name }} · {{ demographics.district|default:"-" }} · {{ demographics.province|default:"-" }}</p>
+    {% if pending_count %}
+    <p class="muted" style="margin-bottom:0;">{{ pending_count }} record{{ pending_count|pluralize }} still to review. Already reviewed records stay on this page, under the open ones.</p>
+    {% else %}
+    <p class="muted" style="margin-bottom:0;">Every record for this week is already reviewed. A new submission from this rider will show at the top for review.</p>
+    {% endif %}
     {% include "operations/reports/_pc_relief_rider_panel.html" %}
   </div>
 
@@ -93,18 +98,55 @@
         {{ form.pc_notes.errors }}
       </div>
     {% else %}
-      <p class="muted">This record is no longer editable.</p>
+      <p class="muted">Already reviewed. This record is no longer editable.</p>
+      <dl class="detail-grid" style="margin-top:0.75rem;">
+        <dt>Samples collected</dt><dd>{{ report.samples_collected }}</dd>
+        <dt>{% if report.car %}Vehicle{% else %}Bike{% endif %}</dt>
+        <dd>{% if report.car %}{{ report.car.code }}{% elif report.bike %}{{ report.bike.code }}{% else %}—{% endif %}</dd>
+        {% if report.pc_notes %}<dt>PC notes</dt><dd>{{ report.pc_notes|linebreaksbr }}</dd>{% endif %}
+      </dl>
+      <h3 style="margin-top:1rem;">Trip entries</h3>
+      <div style="overflow-x:auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Date</th>
+              <th>From</th>
+              <th>To</th>
+              <th>Specimens</th>
+              <th>Results</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in report.trip_entries.all %}
+            <tr>
+              <td>{{ row.sequence }}</td>
+              <td>{{ row.entry_date|default:"—" }}</td>
+              <td>{{ row.origin_facility.name|default:"—" }}</td>
+              <td>{{ row.destination_facility.name|default:"—" }}</td>
+              <td>{{ row.specimens_total }}</td>
+              <td>{{ row.results_total }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6">No trip rows on this record.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     {% endif %}
   </div>
   {% endwith %}
   {% endfor %}
 
+  {% if pending_count %}
   <div class="card" style="margin-top:1rem;">
     <div class="record-form-actions">
       <button type="submit" name="action" value="save_all" class="btn-dash btn-dash-primary">Save all</button>
       <button type="submit" name="action" value="review_all" class="btn-dash btn-dash-submit">Review all</button>
     </div>
   </div>
+  {% endif %}
 </form>
 {% endblock %}
 {% block extra_js %}

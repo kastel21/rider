@@ -97,6 +97,8 @@ class RoleRedirectView(LoginRequiredMixin, View):
 
         if role in (UserProfile.Role.PC, UserProfile.Role.ADMIN):
             return redirect("operations:pc_reports")
+        if role == UserProfile.Role.LAB_MANAGER:
+            return redirect("operations:lab_manager_queue")
         if role == UserProfile.Role.ME:
             return redirect("operations:me_metrics")
         return redirect("operations:rider_reports")

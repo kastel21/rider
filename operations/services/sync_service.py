@@ -92,6 +92,9 @@ def _apply_payload_status(report, payload):
     ):
         return
     report.status = RiderWeeklyReport.Status.SUBMITTED
+    report.lab_cleared_at = None
+    report.lab_cleared_by = None
+    report.lab_notes = ""
     if not report.submitted_at:
         report.submitted_at = dj_timezone.now()
 

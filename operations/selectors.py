@@ -10,6 +10,7 @@ from .models import (
     Car,
     District,
     Facility,
+    LabManagerProfile,
     PCProfile,
     Province,
     ReferredSample,
@@ -217,6 +218,49 @@ def pc_province_ids(user) -> list[int]:
     return list(pc.provinces.values_list("id", flat=True))
 
 
+def lab_manager_district_id(user) -> int | None:
+    """District PK for a lab manager. None when the account has no district."""
+    if not user.is_authenticated:
+        return None
+    try:
+        profile = user.profile
+    except UserProfile.DoesNotExist:
+        return None
+    if profile.role != UserProfile.Role.LAB_MANAGER:
+        return None
+    try:
+        return user.lab_manager_profile.district_id
+    except LabManagerProfile.DoesNotExist:
+        return None
+
+
+def reports_in_lab_manager_scope(user) -> QuerySet:
+    """Weekly reports for riders and drivers in the lab manager's district."""
+    district_id = lab_manager_district_id(user)
+    if not district_id:
+        return RiderWeeklyReport.objects.none()
+    return (
+        RiderWeeklyReport.objects.filter(rider__rider_profile__district_id=district_id)
+        .select_related("rider")
+        .distinct()
+    )
+
+
+def report_hidden_from_pc_q() -> Q:
+    """
+    Lab send-backs stay with the rider.
+
+    Submitted reports the lab manager has not approved yet stay visible, so the PC
+    can review them to M&E if the lab manager does not act in time.
+    """
+    st = RiderWeeklyReport.Status
+    return Q(
+        status=st.REJECTED,
+        reviewed_at__isnull=True,
+        lab_cleared_at__isnull=True,
+    )
+
+
 def reports_in_pc_scope(user) -> QuerySet:
     """
     Reports visible to a PC: rider's district province in assigned provinces, or (drivers
@@ -234,6 +278,7 @@ def reports_in_pc_scope(user) -> QuerySet:
                 rider__rider_profile__province_id__in=ids,
             )
         )
+        .exclude(report_hidden_from_pc_q())
         .select_related("rider")
         .distinct()
     )
@@ -256,6 +301,8 @@ def reports_for_user(user) -> QuerySet:
         return qs
     if profile.role == UserProfile.Role.PC:
         return reports_in_pc_scope(user)
+    if profile.role == UserProfile.Role.LAB_MANAGER:
+        return reports_in_lab_manager_scope(user)
     return RiderWeeklyReport.objects.none()
 
 

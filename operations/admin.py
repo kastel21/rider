@@ -10,6 +10,7 @@ from .models import (
     Facility,
     PCAccidentDetail,
     PCDistrictWeeklyTransportStat,
+    LabManagerProfile,
     PCProfile,
     Province,
     RegisteredDevice,
@@ -88,6 +89,13 @@ class CarAdmin(admin.ModelAdmin):
 @admin.register(PCProfile)
 class PCProfileAdmin(admin.ModelAdmin):
     filter_horizontal = ("provinces",)
+
+
+@admin.register(LabManagerProfile)
+class LabManagerProfileAdmin(admin.ModelAdmin):
+    list_display = ("user", "district")
+    list_select_related = ("user", "district", "district__province")
+    search_fields = ("user__username", "user__first_name", "user__last_name", "district__name")
 
 
 @admin.register(PCAccidentDetail)
