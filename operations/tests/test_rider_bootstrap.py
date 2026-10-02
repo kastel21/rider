@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
 from rest_framework.test import APIClient
 
-from operations.models import District, Facility, Province, RiderProfile, UserProfile
+from operations.models import Bike, District, Facility, Province, RiderProfile, UserProfile
 from operations.services.embedded_bootstrap_import import apply_embedded_bootstrap
 from operations.services.embedded_user_import import apply_embedded_user_import
 
@@ -21,6 +21,8 @@ class RiderBootstrapFacilitiesTests(TestCase):
         self.chingwena = Facility.objects.create(
             name="Chingwena Clinic", district=self.mudzi, kind=Facility.Kind.HUB
         )
+        self.harare_bike = Bike.objects.create(code="HAR-1", district=self.harare_dist, active=True)
+        self.mudzi_bike = Bike.objects.create(code="MUD-1", district=self.mudzi, active=True)
 
         self.sync_user = User.objects.create_user(username="emmanuel_takawengwa", password="x")
         UserProfile.objects.update_or_create(
@@ -54,6 +56,8 @@ class RiderBootstrapFacilitiesTests(TestCase):
         self.assertIn("Chingwena Clinic", self._names(body["facilities_province"]))
         self.assertNotIn("Harare Clinic", self._names(body["facilities_province"]))
         self.assertNotIn("Harare Clinic", self._names(body["facilities_district"]))
+        bike_codes = {row["registration_number"] for row in body["bikes"]}
+        self.assertEqual(bike_codes, {"MUD-1"})
 
     @override_settings(OPS_MOBILE_SYNC_USERNAMES=frozenset({"emmanuel_takawengwa"}))
     def test_sync_user_bootstrap_includes_all_facilities(self):
@@ -70,6 +74,8 @@ class RiderBootstrapFacilitiesTests(TestCase):
         self.assertEqual(chingwena["province_id"], self.mash_east.id)
         self.assertEqual(chingwena["district_name"], "Mudzi")
         self.assertEqual(body.get("district_id"), self.harare_dist.id)
+        bike_codes = {row["registration_number"] for row in body["bikes"]}
+        self.assertEqual(bike_codes, {"HAR-1"})
 
     @override_settings(OPS_MOBILE_SYNC_USERNAMES=frozenset({"emmanuel_takawengwa"}))
     def test_sync_user_without_district_still_gets_numeric_district_id(self):
@@ -126,6 +132,50 @@ class EmbeddedBootstrapImportGeoTests(TestCase):
         self.assertEqual(fac.name, "Chingwena Clinic")
         self.assertEqual(fac.district_id, 22)
         self.assertEqual(fac.kind, Facility.Kind.HUB)
+
+    def test_import_keeps_each_bike_in_its_district(self):
+        harare = Province.objects.create(id=6, name="Harare", code="")
+        District.objects.create(id=3, province=harare, name="Harare", support_type="")
+        stats = apply_embedded_bootstrap(
+            {
+                "profile": {
+                    "province": {"id": 6, "name": "Harare"},
+                    "district": {"id": 3, "name": "Harare", "province_id": 6},
+                },
+                "bootstrap": {
+                    "province_id": 6,
+                    "district_id": 3,
+                    "facilities_province": [],
+                    "facilities_district": [],
+                    "hubs": [],
+                    "labs": [],
+                    "bikes": [
+                        {
+                            "id": 11,
+                            "registration_number": "HAR-1",
+                            "district_id": 3,
+                            "district_name": "Harare",
+                            "province_id": 6,
+                            "province_name": "Harare",
+                        },
+                        {
+                            "id": 12,
+                            "registration_number": "MUD-1",
+                            "district_id": 22,
+                            "district_name": "Mudzi",
+                            "province_id": 5,
+                            "province_name": "Mashonaland East",
+                        },
+                    ],
+                },
+            }
+        )
+        self.assertEqual(stats["bikes"], 2)
+        self.assertEqual(Bike.objects.get(pk=11).district_id, 3)
+        mudzi_bike = Bike.objects.get(pk=12)
+        self.assertEqual(mudzi_bike.district_id, 22)
+        self.assertEqual(mudzi_bike.district.name, "Mudzi")
+        self.assertEqual(mudzi_bike.district.province_id, 5)
 
 
 class MobileUserExportScopeTests(TestCase):

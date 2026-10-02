@@ -520,14 +520,10 @@ class RiderBootstrapView(APIView):
         ]
 
         bikes = []
-        if all_facilities:
-            qs_bikes = Bike.objects.filter(active=True)
-        elif district_id:
-            qs_bikes = Bike.objects.filter(district_id=district_id, active=True)
-        else:
-            qs_bikes = Bike.objects.none()
-        if all_facilities or district_id:
-            bikes_raw = list(qs_bikes.values("id", "code"))
+        if district_id:
+            bikes_raw = list(
+                Bike.objects.filter(district_id=district_id, active=True).values("id", "code")
+            )
             bikes = [
                 {
                     "id": b["id"],

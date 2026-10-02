@@ -163,16 +163,16 @@ def apply_embedded_bootstrap(payload: dict) -> dict:
             )
             stats["labs"] += 1
 
-    district_id = bootstrap.get("district_id")
-    if isinstance(district_id, (int, str)) and str(district_id).isdigit():
-        district_id = int(district_id)
+    fallback_district_id = bootstrap.get("district_id")
+    if isinstance(fallback_district_id, (int, str)) and str(fallback_district_id).isdigit():
+        fallback_district_id = int(fallback_district_id)
     else:
-        district_id = None
+        fallback_district_id = None
     if dist_payload and dist_payload.get("id") is not None:
-        district_id = int(dist_payload["id"])
+        fallback_district_id = int(dist_payload["id"])
 
     bikes = bootstrap.get("bikes")
-    if isinstance(bikes, list) and district_id is not None:
+    if isinstance(bikes, list):
         for row in bikes:
             if not isinstance(row, dict):
                 continue
@@ -180,14 +180,64 @@ def apply_embedded_bootstrap(payload: dict) -> dict:
             reg = row.get("registration_number") or row.get("code") or ""
             if bid is None or not reg:
                 continue
+            bike_district_id = _bike_district_id(row, fallback_district_id, stats)
+            if bike_district_id is None:
+                continue
             Bike.objects.update_or_create(
                 pk=int(bid),
                 defaults={
                     "code": str(reg)[:64],
-                    "district_id": district_id,
+                    "district_id": bike_district_id,
                     "active": True,
                 },
             )
             stats["bikes"] += 1
 
     return stats
+
+
+def _bike_district_id(row: dict, fallback_district_id: int | None, stats: dict) -> int | None:
+    """Keep each bike on its own district. Older payloads omit district_id and use the profile district."""
+    if "district_id" in row:
+        raw = row.get("district_id")
+        if raw is None or not str(raw).isdigit():
+            return None
+        return _ensure_district(
+            int(raw),
+            row.get("district_name") or "",
+            row.get("province_id"),
+            row.get("province_name") or "",
+            stats,
+        )
+    if fallback_district_id is not None and District.objects.filter(pk=fallback_district_id).exists():
+        return fallback_district_id
+    return None
+
+
+def _ensure_district(
+    district_id: int,
+    district_name: str,
+    province_id,
+    province_name: str,
+    stats: dict,
+) -> int | None:
+    if District.objects.filter(pk=district_id).exists():
+        return district_id
+    if province_id is None or not str(province_id).isdigit():
+        return None
+    province_id = int(province_id)
+    Province.objects.update_or_create(
+        pk=province_id,
+        defaults={"name": (province_name or f"Province {province_id}")[:128], "code": ""},
+    )
+    stats["provinces"] += 1
+    District.objects.update_or_create(
+        pk=district_id,
+        defaults={
+            "province_id": province_id,
+            "name": (district_name or f"District {district_id}")[:128],
+            "support_type": "",
+        },
+    )
+    stats["districts"] += 1
+    return district_id
