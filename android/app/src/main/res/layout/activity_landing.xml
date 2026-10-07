@@ -29,6 +29,14 @@
         android:visibility="visible" />
 
     <Button
+        android:id="@+id/update_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:text="@string/landing_update_button"
+        android:visibility="gone" />
+
+    <Button
         android:id="@+id/sync_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

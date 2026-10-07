@@ -29,6 +29,82 @@ _KIND_SET = {c[0] for c in Facility.Kind.choices}
 _ST_SET = {c[0] for c in Facility._meta.get_field("support_type").choices}
 
 
+def _name_taken(model, lookup: dict, pk: int, name: str) -> bool:
+    return model.objects.filter(**lookup, name=name).exclude(pk=pk).exists()
+
+
+def _with_unique_suffix(base: str, owner_id: int, max_len: int, taken) -> str:
+    """Build a name that satisfies a unique constraint while keeping ``owner_id``."""
+    n = 1
+    candidate = base[:max_len]
+    while taken(candidate):
+        suffix = f" ({owner_id})" if n == 1 else f" ({owner_id}-{n})"
+        trimmed = base[: max_len - len(suffix)].rstrip()
+        candidate = f"{trimmed}{suffix}" if trimmed else suffix[:max_len]
+        n += 1
+        if n > 20:
+            return candidate
+    return candidate
+
+
+def _upsert_district(district_id: int, name: str, province_id: int, stats: dict) -> int:
+    """
+    Save a district without violating unique (province, name).
+
+    The phone SQLite enforces that constraint. The central SQL Server copy often
+    does not, so a bootstrap can contain the same district name twice, or can
+    rename one district onto a name the device already stored.
+    """
+    desired = (str(name).strip() if name else "")[:128] or f"District {district_id}"
+    existing = District.objects.filter(pk=district_id).first()
+
+    def taken(candidate: str, prov: int | None = None) -> bool:
+        return _name_taken(
+            District,
+            {"province_id": province_id if prov is None else prov},
+            district_id,
+            candidate,
+        )
+
+    if existing is not None:
+        new_name = desired
+        new_province = province_id
+        if taken(new_name, new_province):
+            # Keep the row that is already on the device rather than colliding.
+            new_name = existing.name
+            new_province = existing.province_id
+        if new_name != existing.name or new_province != existing.province_id:
+            existing.name = new_name
+            existing.province_id = new_province
+            existing.save(update_fields=["name", "province_id"])
+        stats["districts"] += 1
+        return existing.pk
+
+    create_name = desired if not taken(desired) else _with_unique_suffix(desired, district_id, 128, taken)
+    District.objects.create(
+        pk=district_id,
+        province_id=province_id,
+        name=create_name,
+        support_type="",
+    )
+    stats["districts"] += 1
+    return district_id
+
+
+def _facility_name(facility_id: int, district_id: int, name: str) -> str:
+    desired = (str(name).strip() if name else "")[:256] or f"Facility {facility_id}"
+    existing = Facility.objects.filter(pk=facility_id).first()
+
+    def taken(candidate: str) -> bool:
+        return _name_taken(Facility, {"district_id": district_id}, facility_id, candidate)
+
+    if not taken(desired):
+        return desired
+    if existing is not None and existing.district_id == district_id and not taken(existing.name):
+        return existing.name
+    return _with_unique_suffix(desired, facility_id, 256, taken)
+
+
 @transaction.atomic
 def apply_embedded_bootstrap(payload: dict) -> dict:
     """
@@ -72,15 +148,7 @@ def apply_embedded_bootstrap(payload: dict) -> dict:
                 defaults={"name": str(pname_guess)[:128], "code": ""},
             )
             stats["provinces"] += 1
-            District.objects.update_or_create(
-                pk=int(did),
-                defaults={
-                    "province_id": int(prov_id),
-                    "name": str(dname)[:128],
-                    "support_type": "",
-                },
-            )
-            stats["districts"] += 1
+            _upsert_district(int(did), str(dname), int(prov_id), stats)
 
     fac_lists = []
     for key in ("facilities_district", "facilities_province", "hubs"):
@@ -111,21 +179,13 @@ def apply_embedded_bootstrap(payload: dict) -> dict:
             defaults={"name": pname, "code": ""},
         )
         stats["provinces"] += 1
-        District.objects.update_or_create(
-            pk=did,
-            defaults={
-                "province_id": root_pid,
-                "name": dname,
-                "support_type": "",
-            },
-        )
-        stats["districts"] += 1
+        _upsert_district(did, dname, root_pid, stats)
 
     for fid, row in facilities_by_id.items():
         did = row.get("district_id")
         if did is None:
             continue
-        name = row.get("name") or f"Facility {fid}"
+        name = _facility_name(int(fid), int(did), row.get("name") or f"Facility {fid}")
         kind = row.get("kind") or Facility.Kind.HUB
         if kind not in _KIND_SET:
             kind = Facility.Kind.HUB
@@ -136,7 +196,7 @@ def apply_embedded_bootstrap(payload: dict) -> dict:
             pk=int(fid),
             defaults={
                 "district_id": int(did),
-                "name": str(name)[:256],
+                "name": name,
                 "kind": kind,
                 "support_type": st[:20] if st else "",
                 "site_code": "",
@@ -231,13 +291,9 @@ def _ensure_district(
         defaults={"name": (province_name or f"Province {province_id}")[:128], "code": ""},
     )
     stats["provinces"] += 1
-    District.objects.update_or_create(
-        pk=district_id,
-        defaults={
-            "province_id": province_id,
-            "name": (district_name or f"District {district_id}")[:128],
-            "support_type": "",
-        },
+    return _upsert_district(
+        district_id,
+        district_name or f"District {district_id}",
+        province_id,
+        stats,
     )
-    stats["districts"] += 1
-    return district_id

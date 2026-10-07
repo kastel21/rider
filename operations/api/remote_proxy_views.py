@@ -5,6 +5,8 @@ import urllib.request
 
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
+
+from operations.services.app_update import apply_android_identity_headers
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
@@ -41,7 +43,7 @@ class RiderRemoteProxyView(View):
         if query:
             url = f"{url}?{query}"
 
-        headers = {"Accept": "application/json"}
+        headers = apply_android_identity_headers({"Accept": "application/json"})
         auth = request.META.get("HTTP_AUTHORIZATION")
         if auth:
             headers["Authorization"] = auth

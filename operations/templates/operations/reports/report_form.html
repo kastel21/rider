@@ -170,18 +170,20 @@
     {% if trip_formset or trip_formset_relay %}
     <h2 class="trip-entries-main-heading" style="margin-top:1.5rem;">Trip entries</h2>
     {% if driver_dual_tabs %}
-    <p class="muted" style="margin:-0.25rem 0 0.75rem;font-size:0.9rem;max-width:42rem;">
-      Use the tabs for relayed samples vs first-time transport. Each tab is a full trip list. Enter <strong>0</strong> where there is nothing to report; both tabs save in one submit.
-    </p>
     <div class="driver-trip-tabs" data-driver-trip-tabs>
       <div class="driver-trip-tablist" role="tablist" aria-label="Trip categories">
-        <button type="button" class="driver-trip-tab" role="tab" id="driver-tab-btn-relay" aria-selected="true" aria-controls="driver-tab-panel-relay" data-driver-tab="relay" tabindex="0">
-          Samples relayed (not carried for the first time)
+        <button type="button" class="driver-trip-tab" role="tab" id="driver-tab-btn-relay" aria-selected="true" aria-controls="driver-tab-panel-relay" data-driver-tab="relay" tabindex="0" aria-label="Samples relayed, not carried for the first time">
+          Relayed samples
         </button>
-        <button type="button" class="driver-trip-tab" role="tab" id="driver-tab-btn-first" aria-selected="false" aria-controls="driver-tab-panel-first" data-driver-tab="first" tabindex="-1">
-          Samples transported for the first time
+        <button type="button" class="driver-trip-tab" role="tab" id="driver-tab-btn-first" aria-selected="false" aria-controls="driver-tab-panel-first" data-driver-tab="first" tabindex="-1" aria-label="Samples transported for the first time">
+          First time
         </button>
       </div>
+      <p class="muted driver-trip-tab-hint">
+        <span data-driver-tab-hint="relay">Samples relayed (not carried for the first time). Enter <strong>0</strong> if none.</span>
+        <span data-driver-tab-hint="first" hidden>Samples transported for the first time. Enter <strong>0</strong> if none.</span>
+        Both categories save in one submit.
+      </p>
       <div class="driver-trip-tab-panels">
         <div class="driver-trip-tab-panel" role="tabpanel" id="driver-tab-panel-relay" aria-labelledby="driver-tab-btn-relay" data-driver-tab-panel="relay">
           {% if is_pc_edit %}

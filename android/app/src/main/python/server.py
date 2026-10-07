@@ -60,6 +60,8 @@ def _run_wsgi(
     debug_build: bool = False,
     jwt_signing_key: str = "",
     embedded_import_secret: str = "",
+    app_version_code: str = "",
+    application_id: str = "",
 ) -> None:
     base = os.path.dirname(os.path.abspath(__file__))
     os.environ["DJANGO_BASE_DIR"] = base
@@ -76,6 +78,10 @@ def _run_wsgi(
     emb = str(embedded_import_secret or "").strip()
     if emb:
         os.environ["OPS_EMBEDDED_IMPORT_SECRET"] = emb
+    if str(app_version_code or "").strip():
+        os.environ["OPS_APP_VERSION_CODE"] = str(app_version_code).strip()
+    if str(application_id or "").strip():
+        os.environ["OPS_APP_ID"] = str(application_id).strip()
     os.environ.setdefault("OPS_SYNC_MODE", "jwt")
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings_android")
     os.environ["DJANGO_DEBUG"] = "1" if debug_build else "0"
@@ -130,6 +136,8 @@ def start_server(
     debug_build: object = 0,
     jwt_signing_key: str = "",
     embedded_import_secret: str = "",
+    app_version_code: object = "",
+    application_id: str = "",
 ) -> int:
     """Start Django on 127.0.0.1:port in a daemon thread; return 1 when the port accepts connections."""
     global _SERVER_THREAD
@@ -140,6 +148,8 @@ def start_server(
     dbg = _truthy_debug(debug_build)
     jwt_key = str(jwt_signing_key or "")
     emb_sec = str(embedded_import_secret or "")
+    version_code = str(app_version_code or "").strip()
+    app_id = str(application_id or "").strip()
 
     def target() -> None:
         _run_wsgi(
@@ -149,6 +159,8 @@ def start_server(
             debug_build=dbg,
             jwt_signing_key=jwt_key,
             embedded_import_secret=emb_sec,
+            app_version_code=version_code,
+            application_id=app_id,
         )
 
     _SERVER_THREAD = threading.Thread(target=target, name="django-wsgi", daemon=True)

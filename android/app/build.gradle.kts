@@ -34,6 +34,14 @@ fun buildConfigProp(key: String): String {
     return rootEnvProperties.getProperty(key)?.trim().orEmpty()
 }
 
+/** One keystore for debug and release, so an update can replace the installed app. */
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProperties = Properties()
+val hasSharedKeystore = keystorePropertiesFile.isFile
+if (hasSharedKeystore) {
+    keystorePropertiesFile.inputStream().use { keystoreProperties.load(it) }
+}
+
 /** Host Python for Chaquopy. 32-bit APK needs 3.11; 64-bit APK needs 3.13. */
 fun chaquopyBuildPythonArgs(bit: String): Array<String> {
     val envName = if (bit == "32") "CHAQUOPY_BUILD_PYTHON_32" else "CHAQUOPY_BUILD_PYTHON_64"
@@ -69,8 +77,8 @@ android {
     defaultConfig {
         minSdk = 24
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 3
+        versionName = "1.3"
         val remoteBase = escapeForBuildConfigString(buildConfigProp("OPS_REMOTE_API_BASE"))
         val jwtSigningKey = escapeForBuildConfigString(buildConfigProp("JWT_SIGNING_KEY"))
         val syncUser = escapeForBuildConfigString(buildConfigProp("OPS_SYNC_USERNAME"))
@@ -113,8 +121,27 @@ android {
         }
     }
 
+    if (hasSharedKeystore) {
+        signingConfigs {
+            create("shared") {
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+                storePassword = keystoreProperties.getProperty("storePassword")
+                storeFile = keystoreProperties.getProperty("storeFile")?.let { file(it) }
+            }
+        }
+    }
+
     buildTypes {
+        if (hasSharedKeystore) {
+            getByName("debug") {
+                signingConfig = signingConfigs.getByName("shared")
+            }
+        }
         release {
+            if (hasSharedKeystore) {
+                signingConfig = signingConfigs.getByName("shared")
+            }
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),

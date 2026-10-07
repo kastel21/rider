@@ -2,6 +2,7 @@ from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 from .mobile_export_views import MobileUserExportView
 from .sync_bundle_views import RiderSyncBundleView
+from .app_update_views import RiderAppDownloadView, RiderAppUpdateView
 from .rider_views import (
     RiderApplySyncView,
     RiderBootstrapView,
@@ -19,6 +20,8 @@ app_name = "rider_api"
 
 urlpatterns = [
     path("health/", RiderHealthView.as_view(), name="health"),
+    path("app-update/", RiderAppUpdateView.as_view(), name="app-update"),
+    path("app-download/", RiderAppDownloadView.as_view(), name="app-download"),
     path("login/", RiderLoginView.as_view(), name="login"),
     path("local-session/", RiderLocalSessionView.as_view(), name="local-session"),
     path("refresh/", TokenRefreshView.as_view(), name="token_refresh"),

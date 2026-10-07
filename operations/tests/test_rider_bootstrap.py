@@ -177,6 +177,87 @@ class EmbeddedBootstrapImportGeoTests(TestCase):
         self.assertEqual(mudzi_bike.district.name, "Mudzi")
         self.assertEqual(mudzi_bike.district.province_id, 5)
 
+    def test_import_keeps_district_name_when_rename_would_collide(self):
+        east = Province.objects.create(id=5, name="Mashonaland East", code="")
+        District.objects.create(id=25, province=east, name="UMP", support_type="TA-SDI")
+        District.objects.create(
+            id=65, province=east, name="Uzumba Maramba Pfungwe", support_type="TA-SDI"
+        )
+        apply_embedded_bootstrap(
+            {
+                "profile": {
+                    "province": {"id": 5, "name": "Mashonaland East"},
+                    "district": {
+                        "id": 25,
+                        "name": "Uzumba Maramba Pfungwe",
+                        "province_id": 5,
+                    },
+                },
+                "bootstrap": {
+                    "province_id": 5,
+                    "district_id": 25,
+                    "facilities_province": [],
+                    "facilities_district": [],
+                    "hubs": [],
+                    "labs": [],
+                    "bikes": [],
+                },
+            }
+        )
+        self.assertEqual(District.objects.get(pk=25).name, "UMP")
+        self.assertEqual(District.objects.get(pk=65).name, "Uzumba Maramba Pfungwe")
+
+    def test_import_creates_district_when_name_already_used(self):
+        east = Province.objects.create(id=5, name="Mashonaland East", code="")
+        District.objects.create(id=22, province=east, name="Mudzi", support_type="")
+        stats = apply_embedded_bootstrap(
+            {
+                "profile": {
+                    "province": {"id": 5, "name": "Mashonaland East"},
+                    "district": {"id": 22, "name": "Mudzi", "province_id": 5},
+                },
+                "bootstrap": {
+                    "province_id": 5,
+                    "district_id": 22,
+                    "facilities_province": [
+                        {
+                            "id": 9001,
+                            "name": "Chingwena Clinic",
+                            "district_id": 220,
+                            "district_name": "Mudzi",
+                            "province_id": 5,
+                            "province_name": "Mashonaland East",
+                            "kind": Facility.Kind.HUB,
+                            "support_type": "",
+                        },
+                        {
+                            "id": 9002,
+                            "name": "Chingwena Clinic",
+                            "district_id": 220,
+                            "district_name": "Mudzi",
+                            "province_id": 5,
+                            "province_name": "Mashonaland East",
+                            "kind": Facility.Kind.CLINIC,
+                            "support_type": "",
+                        },
+                    ],
+                    "facilities_district": [],
+                    "hubs": [],
+                    "labs": [],
+                    "bikes": [],
+                },
+            }
+        )
+        self.assertEqual(stats["facilities"], 2)
+        self.assertEqual(District.objects.get(pk=22).name, "Mudzi")
+        extra = District.objects.get(pk=220)
+        self.assertEqual(extra.province_id, 5)
+        self.assertEqual(extra.name, "Mudzi (220)")
+        self.assertEqual(Facility.objects.get(pk=9001).district_id, 220)
+        saved = Facility.objects.get(pk=9002)
+        self.assertEqual(saved.district_id, 220)
+        self.assertEqual(saved.name, "Chingwena Clinic (9002)")
+
 
 class MobileUserExportScopeTests(TestCase):
     def setUp(self):

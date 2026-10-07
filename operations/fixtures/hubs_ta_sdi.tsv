@@ -1,23 +1,23 @@
 # Hub sites: province, district, facility name (tab-separated). Imported with --facility-kind hub.
-Mashonaland East	Uzumba Maramba Pfungwe	Mutawatawa District Hospital
-Manicaland	Chimanimani	Mutambara Mission Hospital
-Manicaland	Nyanga	Nyanga District Hospital
-Mashonaland Central	Centenary	St Albert's Mission Hospital
-Mashonaland Central	Rushinga	Chimhanda District Hospital
-Mashonaland Central	Mbire	Chitsungo Mission Hospital
-Mashonaland Central	Shamva	Shamva District Hospital
-Mashonaland East	Chikomba	Chivhu General Hospital
-Mashonaland East	Chikomba	Sadza District Hospital
-Mashonaland East	Hwedza	Mt St Mary's Mission Hospital
-Mashonaland East	Mudzi	Kotwa District Hospital
-Mashonaland East	Mutoko	Mutoko District Hospital
+Mashonaland East	Uzumba Maramba Pfungwe	me Mutawatawa Hospital
+Manicaland	Chimanimani	ma Mutambara Mission Hospital
+Manicaland	Nyanga	ma Nyanga Hospital
+Mashonaland Central	Centenary	mc St Albert's Mission Hospital
+Mashonaland Central	Rushinga	mc Chimhanda Hospital
+Mashonaland Central	Mbire	mc Chitsungo Mission Hospital
+Mashonaland Central	Shamva	mc Shamva Hospital
+Mashonaland East	Chikomba	me Chivhu General Hospital
+Mashonaland East	Chikomba	me Sadza Hospital
+Mashonaland East	Hwedza	me Mt St Mary's Mission Hospital
+Mashonaland East	Mudzi	me Kotwa Hospital
+Mashonaland East	Mutoko	me Mutoko Hospital
 Mashonaland East	Seke	Epworth Polyclinic
-Mashonaland West	Mhondoro	St. Michaels Mission Hospital
-Mashonaland West	Kariba	Kariba District Hospital
-Masvingo	Bikita	Silveira Mission Hospital
-Matabeleland North	Binga	Binga District Hospital
-Matabeleland South	Mangwe	Plumtree District Hospital
-Midlands	Chirumhanzu	Mvuma District Hospital
+Mashonaland West	Mhondoro	mw St Michael's Mission Hospital
+Mashonaland West	Kariba	mw Kariba Hospital
+Masvingo	Bikita	mv Silveira Mission Hospital
+Matabeleland North	Binga	mn Binga Hospital
+Matabeleland South	Mangwe	ms Plumtree Hospital
+Midlands	Chirumhanzu	mi Mvuma Hospital
 Midlands	Chirumhanzu	St Theresa Hospital
 Midlands	Gweru	Ceeshar
 Midlands	Gweru	City Lab
@@ -28,11 +28,11 @@ Midlands	Gweru	IDH
 Midlands	Gweru	Impala
 Midlands	Gweru	Josiah Tungamirai Air Base
 Midlands	Gweru	Riverdale
-Midlands	Gweru	Vungu Mobile
+Midlands	Gweru	mi Vungu Mobile
 Midlands	Gweru	Whawha Prison
 Midlands	Gweru	Zimbabwe Military Academy
 Midlands	Gweru	Zimbabwe Republic Police
-Midlands	Gokwe North	Gokwe North District Hospital
-Midlands	Shurugwi	Shurugwi District Hospital
-Midlands	Zvishavane	Zvishavane District Hospital
-Matabeleland North	Hwange	Victoria Falls Hospital
+Midlands	Gokwe North	mi Gokwe North Hospital
+Midlands	Shurugwi	mi Shurugwi Hospital
+Midlands	Zvishavane	mi Zvishavane Hospital
+Matabeleland North	Hwange	mn Victoria Falls Hospital

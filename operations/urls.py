@@ -3,12 +3,14 @@ from django.urls import path, reverse_lazy
 from django.views.generic import RedirectView
 
 from . import views
+from .api.app_update_views import AppUpdatePageView
 from .views.referred_samples_views import ReferredSamplesModuleView
 
 app_name = "operations"
 
 urlpatterns = [
     path("service-worker.js", views.service_worker, name="service_worker"),
+    path("app/update/", AppUpdatePageView.as_view(), name="app_update_page"),
     path("login/", views.LoginView.as_view(), name="login"),
     path("logout/", views.LogoutView.as_view(), name="logout"),
     path(

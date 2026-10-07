@@ -33,12 +33,12 @@ class Command(BaseCommand):
     )
 
     def add_arguments(self, parser):
-        default_csv = Path(settings.BASE_DIR) / "sites_rev.csv"
+        default_csv = Path(settings.BASE_DIR) / "sites.xlsx"
         parser.add_argument(
             "--file",
             type=str,
             default=str(default_csv),
-            help="CSV with Province, District, Site columns (DHIS2 prefixes are stripped).",
+            help="CSV or xlsx with Province, District, Site columns. Site names are stored as they appear, including the DHIS2 code (bu, ha, ma).",
         )
         parser.add_argument(
             "--source",
@@ -92,6 +92,7 @@ class Command(BaseCommand):
         self.stdout.write(
             f"unchanged={counts['unchanged']} rename={counts['rename']} "
             f"create={counts['create']} review={counts['review']} "
+            f"absorb={counts.get('absorb', 0)} "
             f"unmatched_existing={counts['unmatched_existing']}"
         )
         for p in written:
@@ -113,7 +114,7 @@ class Command(BaseCommand):
             )
             self.stdout.write(
                 self.style.SUCCESS(
-                    f"Fixtures: renamed={fx['renamed']} created={fx['created']}"
+                    f"Fixtures: renamed={fx['renamed']} created={fx['created']} absorbed={fx.get('absorbed', 0)}"
                 )
             )
 
@@ -129,8 +130,9 @@ class Command(BaseCommand):
                 stats = apply_catalog_plan(db_plan)
             self.stdout.write(
                 self.style.SUCCESS(
-                    f"Database: renamed={stats['renamed']} created={stats['created']} "
-                    f"rename_skipped={stats['rename_skipped']} create_skipped={stats['create_skipped']} "
+                f"Database: renamed={stats['renamed']} created={stats['created']} "
+                f"absorbed={stats.get('absorbed', 0)} "
+                f"rename_skipped={stats['rename_skipped']} create_skipped={stats['create_skipped']} "
                     f"review_left={stats['review_left']} unmatched_kept={stats['unmatched_kept']}"
                 )
             )

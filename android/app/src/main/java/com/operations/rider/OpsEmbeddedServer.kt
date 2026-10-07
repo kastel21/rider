@@ -34,6 +34,8 @@ object OpsEmbeddedServer {
             if (BuildConfig.DEBUG) 1 else 0,
             BuildConfig.JWT_SIGNING_KEY,
             BuildConfig.OPS_EMBEDDED_IMPORT_SECRET,
+            BuildConfig.VERSION_CODE,
+            BuildConfig.APPLICATION_ID,
         )
         if (out?.toString() != "1") {
             throw IllegalStateException("Local Django server did not start on port $PORT")

@@ -387,6 +387,7 @@ class RiderConfigView(APIView):
                 "max_batch_size": config.max_batch_size,
                 "latest_app_version": config.latest_app_version or "",
                 "update_required": config.update_required,
+                "min_version_code": config.min_version_code,
                 "allowed_packages": allowed_package_names(),
             },
             status=status.HTTP_200_OK,

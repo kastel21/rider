@@ -86,7 +86,7 @@ class Facility(models.Model):
 
     class Meta:
         verbose_name_plural = "facilities"
-        unique_together = [("district", "name")]
+        unique_together = [("district", "name", "kind")]
 
     def __str__(self):
         return self.name
@@ -998,14 +998,77 @@ class RiderRemoteConfig(models.Model):
 
     sync_interval = models.PositiveIntegerField(default=60)
     max_batch_size = models.PositiveIntegerField(default=10)
-    latest_app_version = models.CharField(max_length=60, blank=True)
-    update_required = models.BooleanField(default=False)
+    latest_app_version = models.CharField(
+        max_length=60,
+        blank=True,
+        help_text="Version name shown on the phone, for example 1.3.",
+    )
+    update_required = models.BooleanField(
+        default=False,
+        help_text="When on, Android apps older than the minimum version code cannot sign in or sync.",
+    )
+    min_version_code = models.PositiveIntegerField(
+        default=0,
+        help_text=(
+            "Android versionCode phones must be on. The build that checks for updates is "
+            "versionCode 3. Leave this at 0 until an APK is uploaded and you are ready to force it."
+        ),
+    )
 
     class Meta:
         verbose_name = "Rider Remote Config"
 
+    def clean(self):
+        super().clean()
+        if self.update_required and self.min_version_code < 1:
+            raise ValidationError(
+                {
+                    "min_version_code": (
+                        "Set the minimum version code before requiring an update."
+                    )
+                }
+            )
+
     def __str__(self):
         return "Rider app config"
+
+
+class RiderAppRelease(models.Model):
+    """APK offered to installed phones. One row per application id and version code."""
+
+    application_id = models.CharField(
+        max_length=120,
+        db_index=True,
+        help_text=(
+            "Must match the installed app. E-Collect 64-bit is com.ecollect.app.bit64, "
+            "32-bit is com.ecollect.app.bit32. Rider 64-bit is com.operations.rider.bit64, "
+            "32-bit is com.operations.rider.bit32."
+        ),
+    )
+    version_code = models.PositiveIntegerField(
+        help_text="Android versionCode baked into this APK. Must be greater than or equal to the minimum you enforce.",
+    )
+    version_name = models.CharField(
+        max_length=60,
+        blank=True,
+        help_text="Shown on the phone, for example 1.3.",
+    )
+    apk = models.FileField(upload_to="app_releases/")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-version_code", "-pk"]
+        verbose_name = "Rider app release"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["application_id", "version_code"],
+                name="uniq_rider_app_release_version",
+            )
+        ]
+
+    def __str__(self):
+        label = self.version_name or str(self.version_code)
+        return f"{self.application_id} {label}"
 
 
 class AccessibleApp(models.Model):

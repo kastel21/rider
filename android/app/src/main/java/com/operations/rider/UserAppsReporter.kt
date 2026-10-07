@@ -125,6 +125,7 @@ object UserAppsReporter {
             .url("$base/api/rider/report-user-apps/")
             .header("Authorization", "Bearer $accessToken")
             .post(body.toRequestBody(JSON))
+            .withAppIdentity()
             .build()
         try {
             client.newCall(req).execute().use { resp ->

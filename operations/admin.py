@@ -1,4 +1,4 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 
@@ -16,7 +16,9 @@ from .models import (
     RegisteredDevice,
     ReportAuditLog,
     ReportEditSnapshot,
+    RiderAppRelease,
     RiderProfile,
+    RiderRemoteConfig,
     RiderTripEntry,
     RiderWeeklyReport,
     SampleRejection,
@@ -211,6 +213,52 @@ class WeeklyRecordReviewedAdmin(admin.ModelAdmin):
 @admin.register(RegisteredDevice)
 class RegisteredDeviceAdmin(admin.ModelAdmin):
     list_display = ("user", "device_id", "platform", "last_seen_at")
+
+
+@admin.register(RiderRemoteConfig)
+class RiderRemoteConfigAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "sync_interval",
+        "max_batch_size",
+        "latest_app_version",
+        "min_version_code",
+        "update_required",
+    )
+    fieldsets = (
+        (None, {"fields": ("sync_interval", "max_batch_size")}),
+        (
+            "App update",
+            {
+                "description": (
+                    "Upload the APK under Rider app releases first (one file for each app id: "
+                    "64-bit and 32-bit). Then set the minimum version code and turn on "
+                    "Update required. Phones below that version stop syncing. Builds that "
+                    "already include the updater download and install the new APK. Phones still "
+                    "on an older build must open /app/update/ in the browser once."
+                ),
+                "fields": ("latest_app_version", "min_version_code", "update_required"),
+            },
+        ),
+    )
+
+    def has_add_permission(self, request):
+        return not RiderRemoteConfig.objects.exists()
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        if obj.update_required and not RiderAppRelease.objects.exists():
+            messages.warning(
+                request,
+                "Update required is on, but no APK has been uploaded yet.",
+            )
+
+
+@admin.register(RiderAppRelease)
+class RiderAppReleaseAdmin(admin.ModelAdmin):
+    list_display = ("application_id", "version_code", "version_name", "created_at")
+    search_fields = ("application_id", "version_name")
+    ordering = ("-version_code", "application_id")
 
 
 @admin.register(AccessibleApp)

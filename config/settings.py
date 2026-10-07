@@ -72,6 +72,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "operations.middleware.rider_api_cors.RiderApiCorsMiddleware",
+    "operations.middleware.app_version_gate.AppVersionGateMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.middleware.gzip.GZipMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -184,6 +185,9 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 WHITENOISE_USE_FINDERS = DEBUG
 
+MEDIA_URL = "/media/"
+MEDIA_ROOT = DATA_DIR / "media"
+
 LOGIN_URL = "operations:login"
 LOGIN_REDIRECT_URL = "operations:role_redirect"
 LOGOUT_REDIRECT_URL = "operations:login"
@@ -222,6 +226,9 @@ SIMPLE_JWT = {
 OPS_SYNC_MODE = os.environ.get("OPS_SYNC_MODE", "").strip()
 OPS_REMOTE_API_BASE = os.environ.get("OPS_REMOTE_API_BASE", "").strip()
 OPS_ALLOW_LOCAL_JWT_MINT = os.environ.get("OPS_ALLOW_LOCAL_JWT_MINT", "0") == "1"
+
+# Cloud only. Embedded Android sets this off so the on-phone server never locks itself.
+OPS_ENFORCE_APP_VERSION = os.environ.get("OPS_ENFORCE_APP_VERSION", "1") == "1"
 
 # Landing-sync accounts (APK OPS_SYNC_USERNAME). These riders get every facility in
 # GET /api/rider/bootstrap/ and every rider user in GET /api/rider/mobile-user-export/

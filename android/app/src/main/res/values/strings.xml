@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="splash_wordmark">E-Collect</string>
+    <string name="splash_starting">STARTING</string>
     <string name="login_title">Sign in</string>
     <string name="username_hint">Username</string>
     <string name="password_hint">Password</string>
@@ -14,7 +16,7 @@
     <string name="main_loading">Starting…</string>
     <string name="landing_title">Sync data</string>
     <string name="landing_status_starting">Starting…</string>
-    <string name="landing_status_ready">Ready. Tap Sync when you are online.</string>
+    <string name="landing_status_ready">Ready. Tap Download updates when you are online.</string>
     <string name="landing_status_syncing">Syncing…</string>
     <string name="landing_status_sign_in">Signing in…</string>
     <string name="landing_status_download">Downloading data…</string>
@@ -22,15 +24,15 @@
     <string name="landing_status_download_users">Downloading user accounts…</string>
     <string name="landing_status_save_users">Saving user accounts…</string>
     <string name="landing_status_synced">Sync completed. You can continue to login.</string>
-    <string name="landing_sync">Sync now</string>
-    <string name="landing_sync_in_progress">Syncing…</string>
+    <string name="landing_sync">Download updates</string>
+    <string name="landing_sync_in_progress">Downloading…</string>
     <string name="landing_continue">Continue to login</string>
     <string name="landing_config_error">This app is not set up for syncing. Please contact your supervisor or IT support.</string>
     <string name="landing_server_failed">Could not start the app. Please close and reopen the app, or contact support.</string>
     <string name="landing_server_failed_toast">Could not start the app. Please try again.</string>
     <string name="landing_import_failed">Could not save reference data on this device.</string>
     <string name="landing_user_import_failed">Could not download user accounts. Reference data may already be saved.</string>
-    <string name="landing_error_retry_hint">Check your internet connection and tap Sync again.</string>
+    <string name="landing_error_retry_hint">Check your internet connection and tap Download updates again.</string>
     <string name="landing_error_sign_in">Sign-in failed: %1$s</string>
     <string name="landing_error_download">Could not download data: %1$s</string>
     <string name="landing_error_save_local">Could not save data on this device: %1$s</string>
@@ -44,4 +46,21 @@
     <string name="landing_err_network">No connection to the server. Check your internet and try again.</string>
     <string name="landing_err_server">The server is temporarily unavailable. Try again later.</string>
     <string name="landing_err_generic">Something went wrong. Try again or contact support.</string>
+    <string name="landing_update_title">Update required</string>
+    <string name="landing_update_message">This app requires an update (%1$s). Install it now?</string>
+    <string name="landing_update_accept">Update</string>
+    <string name="landing_update_reject">Not now</string>
+    <string name="landing_update_key_mismatch">This update is signed with a different key, so it cannot replace the app on this phone. Ask support for a build signed with the same key.</string>
+    <string name="landing_update_wrong_app">This update is for a different app, so it was not installed.</string>
+    <string name="landing_update_not_newer">This update is older than the app already on this phone, so it was not installed.</string>
+    <string name="landing_update_unreadable">Could not confirm this update uses the same signing key, so it was not installed.</string>
+    <string name="landing_update_required">This version is no longer allowed. Install %1$s to continue.</string>
+    <string name="landing_update_unavailable">This version is no longer allowed, and no update file is on the server yet. Contact support.</string>
+    <string name="landing_update_button">Install update</string>
+    <string name="landing_update_downloading">Downloading update… %1$d%%</string>
+    <string name="landing_update_install">Confirm the install on the next screen.</string>
+    <string name="landing_update_permission">Allow this app to install updates, then come back and tap Install update again.</string>
+    <string name="landing_update_failed">Could not download the update. Check your internet and try again.</string>
+    <string name="landing_update_discarded">The download did not finish or the file was damaged, so it was discarded. The app already on this phone was not changed.</string>
+    <string name="landing_update_version_fallback">the latest version</string>
 </resources>

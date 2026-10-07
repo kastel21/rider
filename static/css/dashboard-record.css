@@ -1106,6 +1106,57 @@ body.dashboard-shell .msg-debug {
   margin-top: 0.25rem;
 }
 
+/* Driver weekly report only. Riders have no tab list; PC accident tabs keep the pill style. */
+.dashboard-shell .driver-trip-tabs .driver-trip-tablist {
+  flex-wrap: nowrap;
+  gap: 0;
+  margin: 0;
+  background: #fff;
+  border-bottom: 1px solid var(--dash-border);
+}
+
+.dashboard-shell .driver-trip-tabs .driver-trip-tab {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0.7rem 0.5rem 0.55rem;
+  text-align: center;
+  font-weight: 500;
+  font-size: 0.95rem;
+  line-height: 1.3;
+  color: var(--dash-muted);
+  background: transparent;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  border-radius: 0;
+  box-shadow: none;
+  margin-bottom: -1px;
+  transition: none;
+}
+
+.dashboard-shell .driver-trip-tabs .driver-trip-tab:hover {
+  background: transparent;
+  color: var(--dash-text);
+}
+
+.dashboard-shell .driver-trip-tabs .driver-trip-tab[aria-selected="true"] {
+  background: transparent;
+  border-bottom: 3px solid var(--dash-primary);
+  color: var(--dash-primary);
+  font-weight: 700;
+  box-shadow: none;
+}
+
+.dashboard-shell .driver-trip-tabs .driver-trip-tab:focus-visible {
+  outline: 2px solid var(--dash-primary);
+  outline-offset: -2px;
+}
+
+.dashboard-shell .driver-trip-tabs .driver-trip-tab-hint {
+  margin: 0.7rem 0 0.85rem;
+  font-size: 0.9rem;
+  max-width: 42rem;
+}
+
 .dashboard-shell .trip-transport-kind {
   max-width: 100%;
 }
@@ -1389,6 +1440,11 @@ body.dashboard-shell .msg-debug {
 
   .dashboard-shell .driver-trip-tab {
     flex-basis: 100%;
+  }
+
+  .dashboard-shell .driver-trip-tabs .driver-trip-tab {
+    flex: 1 1 0;
+    flex-basis: 0;
   }
 
   /*

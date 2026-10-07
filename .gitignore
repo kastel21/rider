@@ -6,6 +6,7 @@ db.sqlite3
 # Bundled desktop snapshot (generated from project db.sqlite3 at build time)
 desktop_seed/db.sqlite3
 staticfiles/
+media/
 .env
 node_modules/
 dist-electron/

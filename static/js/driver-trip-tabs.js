@@ -18,6 +18,14 @@
         panel.setAttribute("hidden", "hidden");
       }
     });
+    root.querySelectorAll("[data-driver-tab-hint]").forEach(function (hint) {
+      var match = hint.getAttribute("data-driver-tab-hint") === key;
+      if (match) {
+        hint.removeAttribute("hidden");
+      } else {
+        hint.setAttribute("hidden", "hidden");
+      }
+    });
   }
 
   document.addEventListener("DOMContentLoaded", function () {

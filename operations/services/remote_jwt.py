@@ -11,6 +11,8 @@ import urllib.request
 
 from django.conf import settings
 
+from operations.services.app_update import apply_android_identity_headers
+
 logger = logging.getLogger(__name__)
 
 
@@ -74,7 +76,9 @@ def fetch_remote_rider_tokens(api_base: str, username: str, password: str, timeo
     req = urllib.request.Request(
         url,
         data=body,
-        headers={"Content-Type": "application/json", "Accept": "application/json"},
+        headers=apply_android_identity_headers(
+            {"Content-Type": "application/json", "Accept": "application/json"}
+        ),
         method="POST",
     )
     try:

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/splash_bg">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <FrameLayout
+            android:layout_width="156dp"
+            android:layout_height="156dp"
+            android:clipChildren="false">
+
+            <View
+                android:id="@+id/splash_ring_1"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_gravity="center"
+                android:alpha="0"
+                android:background="@drawable/splash_ring" />
+
+            <View
+                android:id="@+id/splash_ring_2"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_gravity="center"
+                android:alpha="0"
+                android:background="@drawable/splash_ring" />
+
+            <View
+                android:id="@+id/splash_ring_3"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_gravity="center"
+                android:alpha="0"
+                android:background="@drawable/splash_ring" />
+
+            <com.operations.rider.SplashMarkView
+                android:id="@+id/splash_mark"
+                android:layout_width="76dp"
+                android:layout_height="76dp"
+                android:layout_gravity="center"
+                android:alpha="0" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/splash_wordmark"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:alpha="0"
+            android:fontFamily="sans-serif-medium"
+            android:text="@string/splash_wordmark"
+            android:textColor="@android:color/white"
+            android:textSize="28sp" />
+
+        <TextView
+            android:id="@+id/splash_starting"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:alpha="0"
+            android:fontFamily="sans-serif-medium"
+            android:letterSpacing="0.28"
+            android:text="@string/splash_starting"
+            android:textColor="@color/splash_cyan"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/splash_version"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="22dp"
+        android:alpha="0"
+        android:letterSpacing="0.08"
+        android:textColor="@color/splash_muted"
+        android:textSize="12sp" />
+</FrameLayout>

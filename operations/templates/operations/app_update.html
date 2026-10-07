@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Install app update</title>
+  <style>
+    body { font-family: sans-serif; margin: 0; padding: 24px; line-height: 1.4; color: #1a1a1a; }
+    h1 { font-size: 1.4rem; margin: 0 0 12px; }
+    p { margin: 0 0 16px; }
+    a.download {
+      display: block;
+      margin: 0 0 12px;
+      padding: 14px 16px;
+      background: #0b57d0;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 1.05rem;
+    }
+    .meta { display: block; font-size: 0.85rem; opacity: 0.9; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Install the app update</h1>
+  {% if releases %}
+    <p>Choose the same app that is already on this phone. If you are not sure, try 64-bit first. If Android says the file is not for this device, use 32-bit.</p>
+    {% for row in releases %}
+      <a class="download" href="{{ row.download_path }}">
+        {{ row.label }}
+        <span class="meta">Version {{ row.version_name }}</span>
+      </a>
+    {% endfor %}
+    <p>After it downloads, open the file and tap Install. Use the same app, so your saved data stays on the phone.</p>
+  {% else %}
+    <p>No update file has been published yet. Ask your supervisor to upload the new app.</p>
+  {% endif %}
+</body>
+</html>

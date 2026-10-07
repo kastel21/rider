@@ -17,8 +17,11 @@ from operations.geo_names import canon_district_name, canon_province_name, norm_
 from operations.models import Facility, Province
 from operations.services.district_merge import get_or_create_district
 
-ORG_PREFIX_RE = re.compile(r"^[a-z]{2}\s+", re.I)
+ORG_PREFIX_RE = re.compile(r"^(?:bu|ha|ma|mi|me|mv|mw|mc|mn|ms)\s+", re.I)
 NON_ALNUM_RE = re.compile(r"[^a-z0-9]+")
+_LAB_CODE_RE = re.compile(r"\s+-\s*\d{4,}\s*-\s*", re.I)
+_APOSTROPHE_RE = re.compile(r"['’]")
+_DISTRICT_HOSPITAL_RE = re.compile(r"\bdistrict hospital\b")
 _CLINIC_SUFFIXES = (
     "rural health centres",
     "rural health centers",
@@ -82,6 +85,7 @@ class CatalogPlan:
     rename: list[MatchRow] = field(default_factory=list)
     create: list[MatchRow] = field(default_factory=list)
     review: list[MatchRow] = field(default_factory=list)
+    absorb: list[tuple[ExistingFacility, ExistingFacility]] = field(default_factory=list)
     unmatched_existing: list[ExistingFacility] = field(default_factory=list)
     skipped_csv: list[tuple[int, str]] = field(default_factory=list)
     source: str = ""
@@ -99,6 +103,7 @@ class CatalogPlan:
             "rename": len(self.rename),
             "create": len(self.create),
             "review": len(self.review),
+            "absorb": len(self.absorb),
             "unmatched_existing": len(self.unmatched_existing),
             "skipped_csv": len(self.skipped_csv),
         }
@@ -109,6 +114,50 @@ def strip_org_prefix(raw: str) -> str:
     s = norm_text(raw)
     nxt = ORG_PREFIX_RE.sub("", s, count=1).strip()
     return nxt or s
+
+
+def is_relay_district_lab_name(name: str) -> bool:
+    """Relay From/To still finds these rows by the ``District Lab`` suffix."""
+    return (name or "").strip().casefold().endswith("district lab")
+
+
+def dhis2_match_key(name: str) -> str:
+    """Compare local names to the DHIS2 site column.
+
+    Org-unit codes (``bu``), LIS ids (``- 101041 -``), apostrophes, and a
+    trailing ``District Hospital`` are ignored so ``Mutawatawa District Hospital``
+    matches the spreadsheet's ``Mutawatawa Hospital``.
+    """
+    s = strip_org_prefix(name)
+    s = _LAB_CODE_RE.sub(" ", s)
+    s = _APOSTROPHE_RE.sub("", s)
+    punct = " ".join(NON_ALNUM_RE.sub(" ", s.lower()).split())
+    punct = _DISTRICT_HOSPITAL_RE.sub("hospital", punct)
+    return " ".join(punct.split())
+
+
+def dhis2_match_keys(name: str) -> set[str]:
+    """Keys used to line a stored facility up with a DHIS2 site name."""
+    keys: set[str] = set()
+    primary = dhis2_match_key(name)
+    if _fold_key_is_specific(primary):
+        keys.add(primary)
+    coded = _LAB_CODE_RE.split(strip_org_prefix(name), maxsplit=1)
+    if len(coded) == 2:
+        place = dhis2_match_key(coded[0])
+        if (
+            place
+            and place != primary
+            and _fold_key_is_specific(place)
+            and any(token in place.split() for token in ("hospital", "laboratory"))
+        ):
+            keys.add(place)
+    return keys
+
+
+def _fold_key_is_specific(key: str) -> bool:
+    parts = key.split()
+    return len(parts) >= 2 or len(key) >= 8
 
 
 def _strip_type_suffix(punct: str, suffixes: tuple[str, ...]) -> str:
@@ -149,26 +198,76 @@ def _index_unique(items: list[ExistingFacility], key_fn) -> dict[tuple, Existing
     return {k: v[0] for k, v in buckets.items() if len(v) == 1}
 
 
+def _xlsx_rows(path: Path) -> list[dict[str, str]]:
+    import zipfile
+    from xml.etree import ElementTree as ET
+
+    ns = {"m": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
+    with zipfile.ZipFile(path) as workbook:
+        shared: list[str] = []
+        if "xl/sharedStrings.xml" in workbook.namelist():
+            root = ET.fromstring(workbook.read("xl/sharedStrings.xml"))
+            for si in root.findall("m:si", ns):
+                shared.append("".join(t.text or "" for t in si.findall(".//m:t", ns)))
+        sheet = ET.fromstring(workbook.read("xl/worksheets/sheet1.xml"))
+    table: list[list[str]] = []
+    for row in sheet.findall("m:sheetData/m:row", ns):
+        vals: list[str] = []
+        for cell in row.findall("m:c", ns):
+            value = cell.find("m:v", ns)
+            if value is None or value.text is None:
+                vals.append("")
+            elif cell.get("t") == "s":
+                vals.append(shared[int(value.text)])
+            else:
+                vals.append(value.text)
+        table.append(vals)
+    if not table:
+        return []
+    header = [h.strip() for h in table[0]]
+    rows: list[dict[str, str]] = []
+    for vals in table[1:]:
+        padded = vals + [""] * (len(header) - len(vals))
+        rows.append({header[i]: padded[i] for i in range(len(header))})
+    return rows
+
+
 def parse_sites_csv(path: Path) -> tuple[list[CsvSite], list[tuple[int, str]]]:
     sites: list[CsvSite] = []
     skipped: list[tuple[int, str]] = []
-    raw = path.read_text(encoding="utf-8-sig")
-    reader = csv.DictReader(raw.splitlines())
-    if not reader.fieldnames:
-        raise ValueError(f"CSV has no header: {path}")
-    fields = {h.strip().lower(): h for h in reader.fieldnames if h}
+    if path.suffix.lower() == ".xlsx":
+        dict_rows = _xlsx_rows(path)
+        if not dict_rows and path.stat().st_size:
+            # Header-only workbooks still need column checks below.
+            pass
+        fieldnames = list(dict_rows[0].keys()) if dict_rows else []
+        if not fieldnames:
+            # Read header from an empty data sheet.
+            preview = _xlsx_rows(path)
+            fieldnames = list(preview[0].keys()) if preview else []
+        reader_rows = list(enumerate(dict_rows, start=2))
+        fields = {h.strip().lower(): h for h in fieldnames if h}
+    else:
+        raw = path.read_text(encoding="utf-8-sig")
+        reader = csv.DictReader(raw.splitlines())
+        if not reader.fieldnames:
+            raise ValueError(f"CSV has no header: {path}")
+        fields = {h.strip().lower(): h for h in reader.fieldnames if h}
+        reader_rows = list(enumerate(reader, start=2))
     try:
         p_col, d_col, s_col = fields["province"], fields["district"], fields["site"]
     except KeyError as exc:
         raise ValueError("CSV must have Province, District, Site columns") from exc
 
-    for line_no, row in enumerate(reader, start=2):
+    for line_no, row in reader_rows:
         raw_p = row.get(p_col) or ""
         raw_d = row.get(d_col) or ""
         raw_s = row.get(s_col) or ""
         province = canon_province_name(strip_org_prefix(raw_p))
         district = canon_district_name(strip_org_prefix(raw_d))
-        name = strip_org_prefix(raw_s)
+        # Province and district drop the org code. The site name is stored as the
+        # spreadsheet shows it, including that code: ``bu Bulawayo Family Health Clinic``.
+        name = norm_text(raw_s)
         if not province or not district or not name:
             skipped.append((line_no, "blank province, district, or site"))
             continue
@@ -279,6 +378,15 @@ def plan_catalog(csv_sites: list[CsvSite], existing: list[ExistingFacility], *, 
     for fac in targets:
         by_district[fac.district.casefold()].append(fac)
 
+    by_fold: dict[tuple[str, str], list[ExistingFacility]] = defaultdict(list)
+    by_stripped: dict[tuple[str, str], list[ExistingFacility]] = defaultdict(list)
+    for fac in existing:
+        if is_relay_district_lab_name(fac.name):
+            continue
+        by_stripped[(fac.district.casefold(), strip_org_prefix(fac.name).casefold())].append(fac)
+        for fold in dhis2_match_keys(fac.name):
+            by_fold[(fac.district.casefold(), fold)].append(fac)
+
     claimed: set[tuple[str, str]] = set()
 
     def claim_key(fac: ExistingFacility) -> tuple[str, str]:
@@ -305,9 +413,56 @@ def plan_catalog(csv_sites: list[CsvSite], existing: list[ExistingFacility], *, 
             return None, best_ratio
         return best, best_ratio
 
+    def take_dhis2_group(site: CsvSite, group: list[ExistingFacility]) -> None:
+        """Rename hubs, clinics, and labs to the spreadsheet site name."""
+        labs_hit = [f for f in group if f.kind == Facility.Kind.LAB]
+        pool = [f for f in group if f.kind != Facility.Kind.LAB]
+        for lab in labs_hit:
+            claimed.add(claim_key(lab))
+            if lab.name.casefold() != site.name.casefold():
+                plan.rename.append(MatchRow("rename", site, lab, "dhis2_name"))
+        if not pool:
+            plan.create.append(MatchRow("create", site, None, "alongside_lab"))
+            return
+        hubs = [f for f in pool if f.kind == Facility.Kind.HUB]
+        keeper = hubs[0] if hubs else next(
+            (f for f in pool if f.name.casefold() == site.name.casefold()),
+            pool[0],
+        )
+        for fac in pool:
+            claimed.add(claim_key(fac))
+        if keeper.name.casefold() != site.name.casefold():
+            plan.rename.append(MatchRow("rename", site, keeper, "dhis2_name"))
+        else:
+            plan.unchanged.append(MatchRow("unchanged", site, keeper, "dhis2_name"))
+        for fac in pool:
+            if fac is not keeper:
+                plan.absorb.append((fac, keeper))
+
     for site in csv_sites:
         dkey = site.district.casefold()
         exact, punct, _ = name_keys(site.name)
+        stripped_name = strip_org_prefix(site.name)
+        if stripped_name.casefold() != site.name.casefold():
+            prefix_group = [
+                fac
+                for fac in by_stripped.get((dkey, stripped_name.casefold()), [])
+                if claim_key(fac) not in claimed
+            ]
+            if prefix_group:
+                take_dhis2_group(site, prefix_group)
+                continue
+        fold = dhis2_match_key(site.name)
+        group = []
+        if _fold_key_is_specific(fold):
+            group = [f for f in by_fold.get((dkey, fold), []) if claim_key(f) not in claimed]
+        if group and (
+            len(group) > 1
+            or any(f.kind == Facility.Kind.LAB for f in group)
+            or name_keys(group[0].name)[0] != exact
+        ):
+            take_dhis2_group(site, group)
+            continue
 
         hit = exact_ix.get((dkey, exact))
         if hit and claim_key(hit) not in claimed:
@@ -431,6 +586,23 @@ def write_plan_csvs(plan: CatalogPlan, out_dir: Path) -> list[Path]:
             for f in plan.unmatched_existing
         ],
     )
+    dump(
+        "absorb.csv",
+        ["province", "district", "drop_name", "keep_name", "drop_kind", "keep_kind", "drop_pk", "keep_pk"],
+        [
+            [
+                drop.province,
+                drop.district,
+                drop.name,
+                keep.name,
+                drop.kind,
+                keep.kind,
+                "" if drop.pk is None else str(drop.pk),
+                "" if keep.pk is None else str(keep.pk),
+            ]
+            for drop, keep in plan.absorb
+        ],
+    )
     return written
 
 
@@ -451,55 +623,83 @@ def _support_for_district(district) -> str:
     return (top["support_type"] if top else "") or "DSD"
 
 
+def _facility_for_match(row: ExistingFacility) -> Facility | None:
+    if row.pk:
+        fac = Facility.objects.filter(pk=row.pk).first()
+        if fac is not None:
+            return fac
+    return (
+        Facility.objects.filter(
+            district__name__iexact=row.district,
+            district__province__name__iexact=row.province,
+            name__iexact=row.name,
+            kind=row.kind,
+        )
+        .first()
+    )
+
+
 def apply_catalog_plan(plan: CatalogPlan) -> dict[str, int]:
-    """Rename safe matches and create unmatched CSV sites. Does not delete or touch labs/review."""
+    """Rename DHIS2 matches and create unmatched CSV sites. Does not delete relay district labs."""
+    from operations.services.district_merge import merge_facility
+
     stats = {
         "renamed": 0,
         "created": 0,
+        "absorbed": 0,
         "rename_skipped": 0,
         "create_skipped": 0,
         "review_left": len(plan.review),
         "unmatched_kept": len(plan.unmatched_existing),
     }
 
-    for row in plan.rename:
-        fac = None
-        if row.existing and row.existing.pk:
-            fac = Facility.objects.filter(pk=row.existing.pk).exclude(kind=Facility.Kind.LAB).first()
-        if fac is None and row.existing:
-            fac = (
-                Facility.objects.filter(
-                    district__name__iexact=row.existing.district,
-                    district__province__name__iexact=row.existing.province,
-                    name__iexact=row.existing.name,
-                )
-                .exclude(kind=Facility.Kind.LAB)
-                .first()
-            )
+    for drop, keep in plan.absorb:
+        drop_row = _facility_for_match(drop)
+        keep_row = _facility_for_match(keep)
+        if drop_row is None or keep_row is None or drop_row.pk == keep_row.pk:
+            continue
+        if drop_row.kind == Facility.Kind.LAB or keep_row.kind == Facility.Kind.LAB:
+            continue
+        merge_facility(keep_row, drop_row)
+        stats["absorbed"] += 1
+
+    rename_rows = [row for row in plan.rename if row.existing]
+    pk_rows = [row.existing.pk for row in rename_rows if row.existing and row.existing.pk]
+    facs = {fac.pk: fac for fac in Facility.objects.filter(pk__in=pk_rows)} if pk_rows else {}
+    occupied = {
+        (did, nam.casefold(), kind)
+        for did, nam, kind in Facility.objects.values_list("district_id", "name", "kind")
+    }
+    pending_renames: list[Facility] = []
+    for row in rename_rows:
+        fac = facs.get(row.existing.pk) if row.existing and row.existing.pk else None
+        if fac is None:
+            fac = _facility_for_match(row.existing)
         if fac is None:
             stats["rename_skipped"] += 1
             continue
         new_name = row.csv.name
         if fac.name == new_name:
             continue
-        clash = (
-            Facility.objects.filter(district_id=fac.district_id, name__iexact=new_name)
-            .exclude(pk=fac.pk)
-            .exists()
-        )
-        if clash:
+        old_key = (fac.district_id, fac.name.casefold(), fac.kind)
+        new_key = (fac.district_id, new_name.casefold(), fac.kind)
+        if new_key in occupied and new_key != old_key:
             stats["rename_skipped"] += 1
             continue
+        occupied.discard(old_key)
+        occupied.add(new_key)
         fac.name = new_name
-        fac.save(update_fields=["name"])
-        stats["renamed"] += 1
+        pending_renames.append(fac)
+    if pending_renames:
+        Facility.objects.bulk_update(pending_renames, ["name"], batch_size=200)
+        stats["renamed"] = len(pending_renames)
 
     province_cache: dict[str, object] = {}
     district_cache: dict[tuple[int, str], object] = {}
     support_cache: dict[int, str] = {}
     existing_names = {
-        (did, nam.casefold())
-        for did, nam in Facility.objects.values_list("district_id", "name")
+        (did, nam.casefold(), kind)
+        for did, nam, kind in Facility.objects.values_list("district_id", "name", "kind")
     }
     pending: list[Facility] = []
     pending_keys: set[tuple[int, str]] = set()
@@ -513,7 +713,7 @@ def apply_catalog_plan(plan: CatalogPlan) -> dict[str, int]:
         if dkey not in district_cache:
             district_cache[dkey], _ = get_or_create_district(province, row.csv.district)
         district = district_cache[dkey]
-        name_key = (district.pk, row.csv.name.casefold())
+        name_key = (district.pk, row.csv.name.casefold(), Facility.Kind.CLINIC)
         if name_key in existing_names or name_key in pending_keys:
             stats["create_skipped"] += 1
             continue
@@ -537,15 +737,31 @@ def apply_catalog_plan(plan: CatalogPlan) -> dict[str, int]:
 
 
 def apply_plan_to_fixtures(plan: CatalogPlan, fixtures_dir: Path) -> dict[str, int]:
-    """Rewrite clinic/hub TSVs: rename in place, append creates. Labs file is left untouched."""
-    stats = {"renamed": 0, "created": 0, "rename_skipped": 0}
-    rename_map: dict[tuple[str, str], str] = {}
+    """Rewrite clinic/hub/lab TSVs: rename in place, drop absorbed duplicates, append creates."""
+    stats = {"renamed": 0, "created": 0, "rename_skipped": 0, "absorbed": 0}
+    rename_map: dict[tuple[str, str, str], str] = {}
     for row in plan.rename:
         if not row.existing:
             continue
-        rename_map[(row.existing.district.casefold(), row.existing.name.casefold())] = row.csv.name
+        rename_map[
+            (row.existing.district.casefold(), row.existing.name.casefold(), row.existing.kind)
+        ] = row.csv.name
+    drop_keys = {
+        (drop.district.casefold(), drop.name.casefold(), drop.kind) for drop, _keep in plan.absorb
+    }
 
-    data_files = ("facilities_dsd.tsv", "facilities_ta_sdi.tsv", "hubs_ta_sdi.tsv")
+    data_files = (
+        "facilities_dsd.tsv",
+        "facilities_ta_sdi.tsv",
+        "hubs_ta_sdi.tsv",
+        "facility_labs.tsv",
+    )
+    kind_for_file = {
+        "facilities_dsd.tsv": Facility.Kind.CLINIC,
+        "facilities_ta_sdi.tsv": Facility.Kind.CLINIC,
+        "hubs_ta_sdi.tsv": Facility.Kind.HUB,
+        "facility_labs.tsv": Facility.Kind.LAB,
+    }
     district_file_counts: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
 
     for fname in data_files:
@@ -565,7 +781,11 @@ def apply_plan_to_fixtures(plan: CatalogPlan, fixtures_dir: Path) -> dict[str, i
                 continue
             district = canon_district_name(parts[1].strip())
             name = "\t".join(parts[2:]).strip()
-            key = (district.casefold(), name.casefold())
+            kind = kind_for_file[fname]
+            key = (district.casefold(), name.casefold(), kind)
+            if key in drop_keys:
+                stats["absorbed"] += 1
+                continue
             new_name = rename_map.get(key)
             if new_name and new_name != name:
                 parts = [parts[0], parts[1], new_name]
@@ -574,7 +794,7 @@ def apply_plan_to_fixtures(plan: CatalogPlan, fixtures_dir: Path) -> dict[str, i
                 name = new_name
             else:
                 out_lines.append(raw)
-            if fname != "hubs_ta_sdi.tsv":
+            if fname in ("facilities_dsd.tsv", "facilities_ta_sdi.tsv"):
                 district_file_counts[district.casefold()][fname] += 1
         path.write_text("\n".join(out_lines) + "\n", encoding="utf-8")
 

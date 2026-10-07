@@ -28,6 +28,7 @@ class PrefixAndAliasTests(SimpleTestCase):
     def test_strip_org_prefix(self):
         self.assertEqual(strip_org_prefix("bu Cowdray Park Clinic"), "Cowdray Park Clinic")
         self.assertEqual(strip_org_prefix("ha Harare  "), "Harare")
+        self.assertEqual(strip_org_prefix("St Luke's Mission Hospital"), "St Luke's Mission Hospital")
 
     def test_sanyati_alias(self):
         self.assertEqual(canon_district_name("Sanyati"), "Kadoma Sanyati")
@@ -69,14 +70,88 @@ class CatalogPlanTests(SimpleTestCase):
         names = {row.csv.name for row in plan.create + plan.review}
         self.assertEqual(names, {"Khami Road Clinic", "Khami - Ceshhar Clinic"})
 
-    def test_does_not_rename_labs(self):
+    def test_does_not_rename_labs_already_using_the_excel_name(self):
         plan = plan_catalog(
             [_site("Mpilo Central Hospital")],
             [_fac("Mpilo Central Hospital", kind=Facility.Kind.LAB)],
             source="test",
         )
         self.assertEqual(plan.rename, [])
-        self.assertTrue(plan.create or plan.review)
+        self.assertEqual([row.csv.name for row in plan.create], ["Mpilo Central Hospital"])
+
+    def test_coded_lab_takes_excel_site_name(self):
+        plan = plan_catalog(
+            [_site("Mpilo Central Hospital")],
+            [_fac("Mpilo - 101041 - Central Hospital", kind=Facility.Kind.LAB, pk=9)],
+            source="test",
+        )
+        self.assertEqual(len(plan.rename), 1)
+        self.assertEqual(plan.rename[0].existing.kind, Facility.Kind.LAB)
+        self.assertEqual(plan.rename[0].csv.name, "Mpilo Central Hospital")
+        self.assertEqual([row.csv.name for row in plan.create], ["Mpilo Central Hospital"])
+
+    def test_district_hospital_hub_takes_excel_name(self):
+        plan = plan_catalog(
+            [_site("Mutawatawa Hospital", district="Uzumba Maramba Pfungwe", province="Mashonaland East")],
+            [
+                _fac(
+                    "Mutawatawa District Hospital",
+                    district="Uzumba Maramba Pfungwe",
+                    province="Mashonaland East",
+                    kind=Facility.Kind.HUB,
+                    pk=4,
+                )
+            ],
+            source="test",
+        )
+        self.assertEqual(len(plan.rename), 1)
+        self.assertEqual(plan.rename[0].csv.name, "Mutawatawa Hospital")
+        self.assertEqual(plan.rename[0].existing.kind, Facility.Kind.HUB)
+        self.assertEqual(plan.create, [])
+
+    def test_duplicate_excel_clinic_is_absorbed_into_hub(self):
+        plan = plan_catalog(
+            [_site("Mutawatawa Hospital", district="Uzumba Maramba Pfungwe", province="Mashonaland East")],
+            [
+                _fac(
+                    "Mutawatawa District Hospital",
+                    district="Uzumba Maramba Pfungwe",
+                    province="Mashonaland East",
+                    kind=Facility.Kind.HUB,
+                    pk=4,
+                ),
+                _fac(
+                    "Mutawatawa Hospital",
+                    district="Uzumba Maramba Pfungwe",
+                    province="Mashonaland East",
+                    kind=Facility.Kind.CLINIC,
+                    pk=5,
+                ),
+            ],
+            source="test",
+        )
+        self.assertEqual(len(plan.absorb), 1)
+        self.assertEqual(plan.absorb[0][0].name, "Mutawatawa Hospital")
+        self.assertEqual(plan.absorb[0][1].kind, Facility.Kind.HUB)
+        self.assertEqual(plan.create, [])
+
+    def test_relay_district_lab_name_is_not_replaced(self):
+        plan = plan_catalog(
+            [_site("Chipinge Hospital", district="Chipinge", province="Manicaland")],
+            [
+                _fac(
+                    "Chipinge District Lab",
+                    district="Chipinge",
+                    province="Manicaland",
+                    kind=Facility.Kind.LAB,
+                    pk=8,
+                )
+            ],
+            source="test",
+        )
+        self.assertEqual(plan.rename, [])
+        self.assertEqual(plan.absorb, [])
+        self.assertEqual([row.csv.name for row in plan.create], ["Chipinge Hospital"])
 
     def test_trailing_clinic_vs_health_centre(self):
         plan = plan_catalog(
@@ -109,7 +184,27 @@ class ParseCsvTests(SimpleTestCase):
         self.assertEqual(skipped, [])
         self.assertEqual(sites[0].province, "Bulawayo")
         self.assertEqual(sites[0].district, "Bulawayo")
-        self.assertEqual(sites[0].name, "Dr Shennan Clinic")
+        self.assertEqual(sites[0].name, "bu Dr Shennan Clinic")
+
+    def test_sheet_code_is_kept_on_the_facility_name(self):
+        plan = plan_catalog(
+            [_site("bu Bulawayo Family Health Clinic")],
+            [_fac("Bulawayo Family Health Clinic")],
+            source="test",
+        )
+        self.assertEqual(len(plan.rename), 1)
+        self.assertEqual(plan.rename[0].csv.name, "bu Bulawayo Family Health Clinic")
+        self.assertEqual(plan.rename[0].existing.name, "Bulawayo Family Health Clinic")
+
+    def test_short_sheet_name_keeps_the_code(self):
+        plan = plan_catalog(
+            [_site("bu CIMAS")],
+            [_fac("CIMAS")],
+            source="test",
+        )
+        self.assertEqual(len(plan.rename), 1)
+        self.assertEqual(plan.rename[0].csv.name, "bu CIMAS")
+        self.assertEqual(plan.create, [])
 
 
 class ApplyCatalogPlanTests(TestCase):
@@ -182,3 +277,58 @@ class ApplyCatalogPlanTests(TestCase):
         self.assertFalse(Facility.objects.filter(name="Budiriro Satellite Clinic").exists())
         self.assertEqual(stats["renamed"], 1)
         self.assertEqual(stats["created"], 1)
+
+    def test_hub_takes_excel_name_and_lab_can_share_it(self):
+        hub = Facility.objects.create(
+            district=self.district,
+            name="Mutawatawa District Hospital",
+            kind=Facility.Kind.HUB,
+            support_type="DSD",
+        )
+        clinic = Facility.objects.create(
+            district=self.district,
+            name="Mutawatawa Hospital",
+            kind=Facility.Kind.CLINIC,
+            support_type="DSD",
+        )
+        lab = self.lab
+        clinic_mpilo = Facility.objects.create(
+            district=self.district,
+            name="Mpilo Central Hospital",
+            kind=Facility.Kind.CLINIC,
+            support_type="DSD",
+        )
+        sites = [
+            _site("Mutawatawa Hospital"),
+            _site("Mpilo Central Hospital"),
+        ]
+        existing = [
+            ExistingFacility(
+                "Bulawayo", "Bulawayo", hub.name, Facility.Kind.HUB, "DSD", hub.pk
+            ),
+            ExistingFacility(
+                "Bulawayo", "Bulawayo", clinic.name, Facility.Kind.CLINIC, "DSD", clinic.pk
+            ),
+            ExistingFacility(
+                "Bulawayo", "Bulawayo", lab.name, Facility.Kind.LAB, "", lab.pk
+            ),
+            ExistingFacility(
+                "Bulawayo",
+                "Bulawayo",
+                "Mpilo Central Hospital",
+                Facility.Kind.CLINIC,
+                "DSD",
+                clinic_mpilo.pk,
+            ),
+        ]
+        plan = plan_catalog(sites, existing, source="test")
+        apply_catalog_plan(plan)
+        hub.refresh_from_db()
+        lab.refresh_from_db()
+        self.assertEqual(hub.name, "Mutawatawa Hospital")
+        self.assertFalse(Facility.objects.filter(pk=clinic.pk).exists())
+        self.assertEqual(lab.name, "Mpilo Central Hospital")
+        self.assertEqual(
+            Facility.objects.filter(district=self.district, name="Mpilo Central Hospital").count(),
+            2,
+        )
