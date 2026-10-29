@@ -1,6 +1,6 @@
 """
 Django settings for operations dashboard.
-DB: MSSQL (production) → PostgreSQL → SQLite fallback via env.
+DB: fixed SQL Server in this file (ignores DJANGO_DB_ENGINE / MSSQL_* env).
 """
 import os
 import sys
@@ -106,52 +106,25 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-# --- Database (env-driven) ---
-_db_engine = os.environ.get("DJANGO_DB_ENGINE", "").lower()
-
-if _db_engine == "mssql":
-    DATABASES = {
-        "default": {
-            "ENGINE": "mssql",
-            "NAME": os.environ.get("MSSQL_DATABASE", ""),
-            "USER": os.environ.get("MSSQL_USER", ""),
-            "PASSWORD": os.environ.get("MSSQL_PASSWORD", ""),
-            "HOST": os.environ.get("MSSQL_HOST", "localhost"),
-            "PORT": os.environ.get("MSSQL_PORT", "1433"),
-            "OPTIONS": {
-                "driver": os.environ.get("ODBC_DRIVER", "ODBC Driver 18 for SQL Server"),
-                "extra_params": os.environ.get("MSSQL_EXTRA_PARAMS", "Encrypt=yes;TrustServerCertificate=yes;"),
-            },
-            "ATOMIC_REQUESTS": True,
-        }
+# Fixed SQL Server. Host, database, and login are not read from the environment,
+# so DJANGO_DB_ENGINE / MSSQL_* cannot point this app at another server.
+DATABASES = {
+    "default": {
+        "ENGINE": "mssql",
+        "NAME": "bikes",
+        "USER": "admin",
+        "PASSWORD": "Adm!n123",
+        "HOST": "138.197.231.77",
+        "PORT": "1433",
+        "OPTIONS": {
+            "driver": os.environ.get("ODBC_DRIVER", "ODBC Driver 18 for SQL Server"),
+            "extra_params": os.environ.get(
+                "MSSQL_EXTRA_PARAMS", "Encrypt=yes;TrustServerCertificate=yes;"
+            ),
+        },
+        "ATOMIC_REQUESTS": True,
     }
-elif _db_engine == "postgresql":
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.environ.get("POSTGRES_DB", "operations"),
-            "USER": os.environ.get("POSTGRES_USER", "postgres"),
-            "PASSWORD": os.environ.get("POSTGRES_PASSWORD", ""),
-            "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
-            "PORT": os.environ.get("POSTGRES_PORT", "5432"),
-            "ATOMIC_REQUESTS": True,
-        }
-    }
-else:
-    # Default SQLite path is under the project tree; on many hosts (e.g. PaaS) that path is not writable.
-    # Set DJANGO_SQLITE_PATH to an absolute path in a writable directory if you must use SQLite.
-    _sqlite_name = os.environ.get("DJANGO_SQLITE_PATH", "").strip()
-    if _sqlite_name:
-        _sqlite_path = Path(_sqlite_name).expanduser().resolve()
-    else:
-        _sqlite_path = DATA_DIR / "db.sqlite3"
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": str(_sqlite_path),
-            "ATOMIC_REQUESTS": True,
-        }
-    }
+}
 
 # Second DB alias for one-off imports: copy legacy SQLite into default (e.g. MSSQL).
 # Set DJANGO_SQLITE_IMPORT_PATH to an absolute path of db.sqlite3, reload, then run:
